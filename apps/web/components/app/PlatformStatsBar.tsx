@@ -25,7 +25,12 @@ export function PlatformStatsBar() {
         <strong className="text-white">{stats?.listings.rentActive ?? "—"}</strong> alquiler
       </span>
       <span className="text-neutral-600">|</span>
-      <span>Último scrape: {last ? `${last.source} (${last.status})` : "sin runs"}</span>
+      <span>
+        Último scrape:{" "}
+        {last
+          ? `${last.source} (${last.status}${last.listings_inserted === 0 ? " · 0 nuevos" : ""})`
+          : "sin runs"}
+      </span>
       <span className="hidden text-neutral-600 md:inline">|</span>
       <span className="hidden md:inline">
         kelify {stats?.listings.saleByPortal?.kelify ?? 0} · pisos{" "}

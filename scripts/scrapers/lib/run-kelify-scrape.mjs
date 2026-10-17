@@ -121,6 +121,7 @@ export async function runKelifySale(citySlug) {
     const centerLat = (city.bbox[1] + city.bbox[3]) / 2;
 
     let inserted = 0;
+    let lastUpsertError = null;
     for (let i = 0; i < unique.length; i++) {
       const card = unique[i];
       const sourceUrl = card.href.startsWith("http") ? card.href : `https://kelify.com${card.href}`;
@@ -169,10 +170,23 @@ export async function runKelifySale(citySlug) {
         .upsert(payload, { onConflict: "source_portal,source_external_id" })
         .select("id")
         .maybeSingle();
-      if (!error && upserted?.id) {
-        await supabase.rpc("patch_listing_geom", { listing_id: upserted.id, lon, lat });
-        inserted++;
+      if (error) {
+        lastUpsertError = error.message;
+        continue;
       }
+      inserted++;
+      const listingId = upserted?.id;
+      if (listingId) {
+        await supabase.rpc("patch_listing_geom", { listing_id: listingId, lon, lat });
+      }
+    }
+
+    if (inserted === 0 && unique.length > 0) {
+      throw new Error(
+        lastUpsertError
+          ? `Kelify: 0 upserts (${unique.length} cards): ${lastUpsertError}`
+          : `Kelify: 0 upserts con ${unique.length} tarjetas`
+      );
     }
 
     await supabase
@@ -181,6 +195,7 @@ export async function runKelifySale(citySlug) {
         status: "completed",
         finished_at: new Date().toISOString(),
         listings_inserted: inserted,
+        error_message: inserted < unique.length && lastUpsertError ? `partial: ${lastUpsertError}` : null,
       })
       .eq("id", run.id);
 
