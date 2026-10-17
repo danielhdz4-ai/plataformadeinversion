@@ -13,8 +13,8 @@
 | **P0** | **pisos.com** | https://www.pisos.com | Sí | Sí | Scraper HTML/API pública; cobertura amplia |
 | **P0** | **Hipoges** | https://realestate.hipoges.com | Sí | — | API `POST /api/assets/listing` + CSRF; España venta residencial |
 | **P0** | **Solvia** | https://www.solvia.es | Sí | — | API `POST /api/inmuebles/v2/buscarInmuebles` por provincia |
-| **P1** | Fotocasa | https://www.fotocasa.es/es/ | Sí | Sí | Secundario |
-| **P1** | habitaclia | https://www.habitaclia.com | Sí | Sí | Secundario |
+| **P1** | Fotocasa | https://www.fotocasa.es/es/ | Sí | — | JSON embebido en HTML listados; job `scrape-p1-portals-spain.mjs` |
+| **P1** | habitaclia | https://www.habitaclia.com | Sí | — | Playwright listados por ciudad; mismo job P1 |
 
 **Orden de implementación:** kelify.com + pisos.com en paralelo (MVP) → Fotocasa → habitaclia.
 
@@ -48,8 +48,7 @@ En UI: badge de origen (kelify.com / pisos.com / …) + enlace al anuncio origin
 | `scrape-kelify-sale.yml` / `scrape-kelify-rent.yml` | kelify.com |
 | `scrape-pisos-sale.yml` / `scrape-pisos-rent.yml` | pisos.com |
 | `scrape-bank-portals.yml` | Hipoges + Solvia (España venta) |
-| `scrape-fotocasa-*.yml` | P1 |
-| `scrape-habitaclia-*.yml` | P1 |
+| `scrape-p1-portals.yml` | Fotocasa + habitaclia (España venta) |
 
 Cron MVP: P0 cada 12 h; P1 cada 24 h.
 
@@ -61,7 +60,7 @@ Mostrar solo fuentes con job activo:
 
 - kelify.com  
 - pisos.com  
-- Fotocasa / habitaclia (cuando existan)
+- Fotocasa · habitaclia
 
 ---
 
