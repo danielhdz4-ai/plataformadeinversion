@@ -2,6 +2,8 @@ import { chromium } from "playwright";
 import { dryRun, getSupabase, maxListings } from "./env.mjs";
 import { geocodeSpain } from "./geocode-es.mjs";
 import { kelifyLoginIfConfigured } from "./kelify-auth.mjs";
+import { collectKelifyCards, discoverKelifySubListUrls, sleep } from "./kelify-collect.mjs";
+import { kelifyListingUrls } from "./kelify-urls.mjs";
 import { getCityConfig } from "./spain-city.mjs";
 
 const PORTAL = "kelify";
@@ -12,7 +14,6 @@ function parsePrice(text) {
   return Number(m[1].replace(/\./g, ""));
 }
 
-/** Prefer visible card text over URL slug (evita barrios falsos tipo "Pedralbes" en el path). */
 function titleFromKelifyCard(card) {
   const t = (card.text ?? "").replace(/\s+/g, " ").trim();
   const beforePrice = t.split(/\d[\d.]*\s*€/)[0]?.trim();
@@ -24,69 +25,8 @@ function titleFromKelifyCard(card) {
   return slug && slug.length > 3 ? slug : `Kelify ${card.propertyId}`;
 }
 
-function sleep(ms) {
-  return new Promise((r) => setTimeout(r, ms));
-}
-
-const EXTRA_DISTRICTS = {
-  barcelona: [
-    "https://kelify.com/venta/pisos/particulares/barcelona/ciutat-vella/la-barceloneta",
-    "https://kelify.com/venta/pisos/particulares/barcelona/eixample",
-    "https://kelify.com/venta/pisos/particulares/barcelona/gracia",
-    "https://kelify.com/venta/pisos/particulares/barcelona/sants-montjuic",
-  ],
-};
-
-function hrefMatchesCity(href, city) {
-  const h = href.toLowerCase();
-  const needles = [
-    city.kelifySlug ?? city.slug,
-    city.slug,
-    city.name
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/\p{M}/gu, "")
-      .replace(/\s+/g, "-"),
-  ].filter(Boolean);
-  return needles.some((n) => h.includes(`/venta/pisos/${n}/`) || h.includes(`/venta/pisos/particulares/${n}`));
-}
-
-async function collectCards(page, city, limit) {
-  const unique = [];
-  const seen = new Set();
-
-  for (let round = 0; round < 18 && unique.length < limit; round++) {
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-    await sleep(700);
-    const cards = await page.$$eval("[data-property-card]", (nodes) =>
-      nodes.map((el) => {
-        const root = el.closest("[data-property-id]") ?? el;
-        const propertyId = root.getAttribute("data-property-id") ?? "";
-        const link = el.querySelector("a[href*='/venta/pisos/']");
-        const href = link?.getAttribute("href") ?? "";
-        const text = (el.textContent ?? "").replace(/\s+/g, " ").trim();
-        const img = el.querySelector("img");
-        const thumb = img?.getAttribute("src") ?? img?.getAttribute("data-src") ?? "";
-        return { propertyId, href, text, thumb };
-      })
-    );
-    let added = 0;
-    for (const c of cards) {
-      if (unique.length >= limit) break;
-      if (!c.propertyId || !c.href || seen.has(c.propertyId)) continue;
-      if (!hrefMatchesCity(c.href, city)) continue;
-      seen.add(c.propertyId);
-      unique.push(c);
-      added++;
-    }
-    if (added === 0 && round > 4) break;
-  }
-  return unique;
-}
-
 export async function runKelifySale(citySlug) {
   const city = getCityConfig(citySlug);
-  const kelifySlug = city.kelifySlug ?? city.slug;
   const supabase = getSupabase();
   const { data: run, error: runErr } = await supabase
     .from("scrape_runs")
@@ -95,29 +35,53 @@ export async function runKelifySale(citySlug) {
     .single();
   if (runErr) throw runErr;
 
-  const startUrls = EXTRA_DISTRICTS[city.slug] ?? [
-    `https://kelify.com/venta/pisos/particulares/${kelifySlug}`,
-    `https://kelify.com/venta/pisos/${kelifySlug}`,
-  ];
+  const limit = maxListings();
+  const scrollRounds = Number(process.env.KELIFY_SCROLL_ROUNDS ?? "45");
 
   try {
     const browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
     await kelifyLoginIfConfigured(page);
-    const limit = maxListings();
+
+    const listUrls = new Set(kelifyListingUrls(city));
     const unique = [];
     const seen = new Set();
 
-    for (const startUrl of startUrls) {
+    for (const startUrl of listUrls) {
       if (unique.length >= limit) break;
-      await page.goto(startUrl, { waitUntil: "domcontentloaded", timeout: 120_000 });
       try {
-        await page.waitForSelector("[data-property-card]", { timeout: 45_000 });
+        await page.goto(startUrl, { waitUntil: "domcontentloaded", timeout: 120_000 });
+        await page.waitForSelector("[data-property-card], a[href*='/venta/pisos/']", {
+          timeout: 35_000,
+        });
       } catch {
         continue;
       }
-      await sleep(1500);
-      const batch = await collectCards(page, city, limit - unique.length);
+      await sleep(1200);
+      for (const sub of await discoverKelifySubListUrls(page, city)) {
+        listUrls.add(sub);
+      }
+      const batch = await collectKelifyCards(page, city, limit - unique.length, { scrollRounds });
+      for (const c of batch) {
+        if (seen.has(c.propertyId)) continue;
+        seen.add(c.propertyId);
+        unique.push(c);
+      }
+    }
+
+    for (const subUrl of listUrls) {
+      if (unique.length >= limit) break;
+      if (kelifyListingUrls(city).includes(subUrl)) continue;
+      try {
+        await page.goto(subUrl, { waitUntil: "domcontentloaded", timeout: 90_000 });
+        await page.waitForSelector("[data-property-card]", { timeout: 25_000 });
+      } catch {
+        continue;
+      }
+      await sleep(800);
+      const batch = await collectKelifyCards(page, city, limit - unique.length, {
+        scrollRounds: Math.min(scrollRounds, 25),
+      });
       for (const c of batch) {
         if (seen.has(c.propertyId)) continue;
         seen.add(c.propertyId);
@@ -129,6 +93,14 @@ export async function runKelifySale(citySlug) {
 
     if (unique.length === 0) throw new Error(`Kelify: sin tarjetas en ${city.slug}`);
 
+    await supabase.from("kelify_crawl_runs").insert({
+      city_slug: city.slug,
+      list_url: [...listUrls][0] ?? null,
+      cards_found: unique.length,
+      upserted: 0,
+      finished_at: null,
+    });
+
     const centerLon = (city.bbox[0] + city.bbox[2]) / 2;
     const centerLat = (city.bbox[1] + city.bbox[3]) / 2;
 
@@ -137,18 +109,19 @@ export async function runKelifySale(citySlug) {
     for (let i = 0; i < unique.length; i++) {
       const card = unique[i];
       const sourceUrl = card.href.startsWith("http") ? card.href : `https://kelify.com${card.href}`;
-      const price = parsePrice(card.text) ?? 280_000 + i * 12_000;
+      const price = parsePrice(card.text);
+      if (price == null || price < 5000) continue;
       const title = titleFromKelifyCard(card);
       let lon = centerLon + ((i % 7) - 3) * 0.002;
       let lat = centerLat + ((i % 5) - 2) * 0.002;
-      let geocodeQuality = 2;
+      let geocodeQuality = 4;
       const geo = await geocodeSpain(`${title}, ${city.name}, España`);
       if (geo) {
         lon = geo.lon;
         lat = geo.lat;
         geocodeQuality = 3;
       }
-      if (i > 0 && i % 5 === 0) await sleep(350);
+      if (i > 0 && i % 4 === 0) await sleep(280);
 
       const payload = {
         source_portal: PORTAL,
@@ -156,8 +129,9 @@ export async function runKelifySale(citySlug) {
         operation: "sale",
         title: title.slice(0, 200),
         price,
-        sqm: 55 + (i % 35),
-        bedrooms: 1 + (i % 3),
+        sqm: null,
+        bedrooms: null,
+        bathrooms: null,
         city: city.name,
         ccaa: city.ccaa,
         source_url: sourceUrl,
@@ -168,6 +142,8 @@ export async function runKelifySale(citySlug) {
             : null,
         status: "active",
         geocode_quality: geocodeQuality,
+        kelify_hydrated: false,
+        scraped_at: new Date().toISOString(),
       };
 
       if (dryRun()) {
@@ -219,7 +195,7 @@ export async function runKelifySale(citySlug) {
       { onConflict: "slug" }
     );
 
-    return { ok: true, portal: PORTAL, city: city.slug, cards: unique.length, inserted };
+    return { ok: true, portal: PORTAL, city: city.slug, cards: unique.length, inserted, listUrls: listUrls.size };
   } catch (e) {
     await supabase
       .from("scrape_runs")

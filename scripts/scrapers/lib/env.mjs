@@ -12,6 +12,8 @@ export function dryRun() {
 }
 
 export function maxListings() {
-  const n = Number(process.env.MAX_LISTINGS ?? process.env.KELIFY_MAX_LISTINGS ?? "220");
-  return Number.isFinite(n) ? n : 220;
+  const n = Number(
+    process.env.MAX_LISTINGS ?? process.env.KELIFY_MAX_LISTINGS ?? (process.env.KELIFY_FULL === "1" ? "3000" : "800")
+  );
+  return Number.isFinite(n) ? n : 800;
 }

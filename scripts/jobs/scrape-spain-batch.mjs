@@ -13,7 +13,7 @@ import { runPisosRent, runPisosSale } from "../scrapers/lib/run-pisos-scrape.mjs
 import { citiesForRotation, getCityConfig, listCities } from "../scrapers/lib/spain-city.mjs";
 
 const pauseMs = Number(process.env.PAUSE_MS ?? "2500");
-process.env.MAX_LISTINGS = process.env.MAX_LISTINGS ?? "220";
+process.env.MAX_LISTINGS = process.env.MAX_LISTINGS ?? process.env.KELIFY_MAX_LISTINGS ?? "800";
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -34,6 +34,11 @@ if (explicit?.length) {
 const results = [];
 for (const city of cities) {
   try {
+    if (process.env.KELIFY_ONLY === "1") {
+      const kelify = await runKelifySale(city.slug);
+      results.push({ city: city.slug, ok: true, kelify, pisosSkipped: true, kelifyOnly: true });
+      continue;
+    }
     if (city.pisosSkip) {
       const kelify = await runKelifySale(city.slug);
       results.push({ city: city.slug, ok: true, kelify, pisosSkipped: true });

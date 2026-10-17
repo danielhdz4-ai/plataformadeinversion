@@ -47,14 +47,18 @@ for (const row of rows ?? []) {
 }
 
 const toArchive = [];
-for (const [, list] of groups) {
+  for (const [, list] of groups) {
   if (list.length < 2) continue;
+  if (list.every((x) => x.source_portal === "kelify")) continue;
   list.sort((a, b) => {
     const dr = rank(b.source_portal) - rank(a.source_portal);
     if (dr !== 0) return dr;
     return new Date(b.scraped_at).getTime() - new Date(a.scraped_at).getTime();
   });
-  for (const loser of list.slice(1)) toArchive.push(loser.id);
+  for (const loser of list.slice(1)) {
+    if (loser.source_portal === "kelify") continue;
+    toArchive.push(loser.id);
+  }
 }
 
 if (toArchive.length === 0) {
