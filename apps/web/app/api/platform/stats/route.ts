@@ -26,9 +26,12 @@ export async function GET() {
     .eq("status", "active");
   const { data: runs } = await admin
     .from("scrape_runs")
-    .select("source, status, started_at, listings_inserted")
+    .select("source, status, started_at, finished_at, listings_inserted")
     .order("started_at", { ascending: false })
-    .limit(8);
+    .limit(24);
+  const lastCompleted =
+    (runs ?? []).find((r) => r.status === "completed" || r.status === "failed") ?? null;
+  const lastRunning = (runs ?? []).find((r) => r.status === "running") ?? null;
   const { data: coverage } = await admin.from("coverage_regions").select("slug, last_scrape_at, tier");
 
   return NextResponse.json({
@@ -38,6 +41,8 @@ export async function GET() {
       saleByPortal: portalCounts,
     },
     scrapeRuns: runs ?? [],
+    lastScrape: lastCompleted,
+    scrapeInProgress: lastRunning,
     coverage: coverage ?? [],
   });
 }

@@ -1,4 +1,5 @@
 import { fetchOfficialMarketForPostal } from "@/lib/listing/official-market-query";
+import { fetchNotaryForListing } from "@/lib/notariado/resolve-notary";
 import { getDbClient } from "@/lib/supabase/request-client";
 import { NextResponse } from "next/server";
 
@@ -27,18 +28,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     : data.listing_enrichment;
 
   const postal = (data as { postal_code?: string }).postal_code;
-  let notary = null;
+  const { row: notary } = await fetchNotaryForListing(supabase, postal ?? null);
   let official = null;
-  if (postal) {
-    const { data: n } = await supabase
-      .from("notary_stats")
-      .select("*")
-      .eq("postal_code", postal)
-      .order("period", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    notary = n;
-  }
   official = postal ? await fetchOfficialMarketForPostal(supabase, postal) : [];
 
   return NextResponse.json({

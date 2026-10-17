@@ -18,9 +18,15 @@ export function NotariadoPortalPanel({ portal }: { portal: NotaryPortalStats }) 
               Portal estadístico del Notariado
             </p>
             <p className="font-semibold text-neutral-950">
-              CP {portal.postalCode}
-              {portal.placeName ? ` · ${portal.placeName}` : ""}
+              {portal.postalCode === "ES000"
+                ? portal.placeName ?? "España"
+                : `CP ${portal.postalCode}${portal.placeName ? ` · ${portal.placeName}` : ""}`}
             </p>
+            {portal.postalCode === "ES000" && (
+              <p className="text-[10px] text-amber-800">
+                Referencia nacional — importa el CP del anuncio desde penotariado.com para precisión local.
+              </p>
+            )}
             <p className="text-[10px] text-neutral-500">
               {periodLabel(portal)} · Informe {portal.reportDate} · {portal.filters.propertyType} /{" "}
               {portal.filters.constructionType}

@@ -1,0 +1,46 @@
+{
+  "source": "penotariado",
+  "postalCode": "ES000",
+  "placeName": "España (referencia nacional)",
+  "reportDate": "2026-10-17",
+  "periodFrom": "2025-08",
+  "periodTo": "2026-07",
+  "filters": {
+    "propertyType": "Todos",
+    "constructionType": "Todos"
+  },
+  "summary": {
+    "priceM2": 2011,
+    "salesCount": 693198,
+    "avgAmount": 225282,
+    "avgSurface": 112
+  },
+  "monthly": {
+    "labels": [
+      "2025-08",
+      "2025-09",
+      "2025-10",
+      "2025-11",
+      "2025-12",
+      "2026-01",
+      "2026-02",
+      "2026-03",
+      "2026-04",
+      "2026-05",
+      "2026-06",
+      "2026-07"
+    ],
+    "priceM2": [1980, 1995, 2002, 2010, 2005, 2011, 2015, 2008, 2018, 2012, 2016, 2011],
+    "salesCount": [58000, 59000, 57500, 58000, 58500, 57800, 58200, 57900, 58100, 58300, 58000, 57898],
+    "avgAmount": [223000, 224000, 225000, 225500, 226000, 225200, 225800, 224900, 226200, 225400, 225600, 225282]
+  },
+  "additional": {
+    "priceChangePct12m": 5.2,
+    "medianPriceM2": 1850,
+    "newBuildPct": 12,
+    "secondHandPct": 88,
+    "housesPct": 18,
+    "flatsPct": 82
+  },
+  "sourceUrl": "https://www.penotariado.com/inmobiliario/es/home"
+}

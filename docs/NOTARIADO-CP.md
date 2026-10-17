@@ -9,6 +9,14 @@ Tabla `notary_stats`:
 - Columnas resumen: `price_m2`, `avg_price` (importe medio), `avg_surface`, `operations_count`, `period`
 - `raw.portal`: informe completo (series mensuales, sociodemografía, nueva/segunda mano, etc.) — mismo contenido que el PDF «Más estadísticas»
 
+## Referencia nacional (`ES000`)
+
+`scripts/jobs/data/notary/ES000.json` — resumen España (mapa penotariado). La app lo usa como **fallback** cuando el anuncio no tiene CP en `notary_stats`.
+
+```bash
+pnpm notary:import scripts/jobs/data/notary/ES000.json
+```
+
 ## Importar un CP (ej. 08026 Sant Martí)
 
 1. En penotariado.com: mapa → CP → **Más estadísticas** → descarga PDF (referencia).

@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 
 type Stats = {
   listings: { saleActive: number; rentActive: number; saleByPortal?: Record<string, number> };
-  scrapeRuns: { source: string; status: string; started_at: string; listings_inserted: number | null }[];
+  lastScrape?: {
+    source: string;
+    status: string;
+    started_at: string;
+    listings_inserted: number | null;
+  } | null;
+  scrapeInProgress?: { source: string; status: string } | null;
 };
 
 export function PlatformStatsBar() {
@@ -16,7 +22,8 @@ export function PlatformStatsBar() {
       .catch(() => setStats(null));
   }, []);
 
-  const last = stats?.scrapeRuns?.[0];
+  const last = stats?.lastScrape;
+  const running = stats?.scrapeInProgress;
   return (
     <div className="flex flex-wrap items-center gap-3 border-t border-neutral-800 px-4 py-2 text-[11px] text-neutral-400 md:px-6 md:text-xs">
       <span>
@@ -28,8 +35,9 @@ export function PlatformStatsBar() {
       <span>
         Último scrape:{" "}
         {last
-          ? `${last.source} (${last.status}${last.listings_inserted === 0 ? " · 0 nuevos" : ""})`
+          ? `${last.source} (${last.status}${last.listings_inserted != null ? ` · ${last.listings_inserted} upserts` : ""})`
           : "sin runs"}
+        {running ? ` · en curso: ${running.source}` : ""}
       </span>
       <span className="hidden text-neutral-600 md:inline">|</span>
       <span className="hidden md:inline">

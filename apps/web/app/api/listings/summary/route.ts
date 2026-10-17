@@ -1,4 +1,5 @@
 import { buildListingSummary } from "@/lib/listing/build-summary";
+import { NOTARY_NATIONAL_POSTAL } from "@/lib/notariado/resolve-notary";
 import { fetchOfficialMarketForPostals } from "@/lib/listing/official-market-query";
 import { fetchItpPctForCcaa } from "@/lib/listing/tax-itp";
 import type { RentComparable } from "@/lib/listing/summary-types";
@@ -32,17 +33,24 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   const postals = [...new Set((listings ?? []).map((l) => l.postal_code).filter(Boolean))] as string[];
+  const notaryLookupCodes = [...new Set([...postals, NOTARY_NATIONAL_POSTAL])];
   const notaryByPostal = new Map<string, Record<string, unknown>>();
 
-  if (postals.length > 0) {
+  if (notaryLookupCodes.length > 0) {
     const { data: notaryRows } = await supabase
       .from("notary_stats")
       .select("*")
-      .in("postal_code", postals);
+      .in("postal_code", notaryLookupCodes);
     for (const n of notaryRows ?? []) {
       const pc = n.postal_code as string;
       if (!notaryByPostal.has(pc)) notaryByPostal.set(pc, n);
     }
+  }
+
+  const nationalNotary = notaryByPostal.get(NOTARY_NATIONAL_POSTAL) ?? null;
+  function notaryForListing(postal: string | null | undefined) {
+    if (postal && notaryByPostal.has(postal)) return notaryByPostal.get(postal)!;
+    return nationalNotary;
   }
 
   const officialByPostal = await fetchOfficialMarketForPostals(
@@ -101,7 +109,7 @@ export async function POST(req: NextRequest) {
           : null,
       },
       comparablesById.get(row.id) ?? [],
-      row.postal_code ? notaryByPostal.get(row.postal_code) ?? null : null,
+      notaryForListing(row.postal_code as string | null),
       row.postal_code ? officialByPostal.get(row.postal_code) ?? [] : [],
       itpPct
     );
