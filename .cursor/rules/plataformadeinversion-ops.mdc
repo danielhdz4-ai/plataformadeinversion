@@ -21,12 +21,15 @@ El agente **hace sin preguntar**:
 - Workflows Actions, deploy preview/prod en Vercel.
 - Cambiar cuenta CLI activa (`gh auth switch`, `vercel switch`) hacia la cuenta canónica si hay varias sesiones.
 
-**Solo escalar al usuario** para lo que no se puede automatizar:
+**No pedir al usuario** que ejecute PowerShell, git, gh, vercel ni supabase: el agente lo corre él.
+
+**Solo escalar al usuario** para:
 
 - Crear buzón / verificar dominio en Resend u otro.
-- Comprar dominio, DNS, certificados fuera de Vercel.
-- 2FA / captcha / login manual en un servicio nuevo sin CLI.
-- Decisiones de producto ambiguas o gasto > 0 € sin autorización explícita.
+- Comprar dominio, DNS.
+- Decisiones de producto o gasto > 0 € sin autorización.
+
+Si falta login CLI en la máquina, usar la cuenta ya autenticada en keyring y seguir (push/deploy); no mandar tutoriales al usuario.
 
 ## Stack fijo
 

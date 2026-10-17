@@ -29,7 +29,7 @@
 
 ## GitHub
 
-- Repo remoto: `danielhdz4-ai/plataformadeinversion` (privado).
+- Repo remoto: https://github.com/danielhdz-ai/plataformadeinversion (privado; CLI `gh` en esta máquina).
 - Secrets Actions (fase scrapers/enrich): `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, etc.
 
 ## CLI en máquina de desarrollo
