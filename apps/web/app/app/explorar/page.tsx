@@ -115,7 +115,7 @@ export default function ExplorarPage() {
       <aside className="flex min-h-0 w-full shrink-0 flex-col border-r border-neutral-200 bg-[#f7f6f3] lg:w-[min(380px,34vw)]">
         <AppPanelHeader
           title="Explorar mercado"
-          subtitle={`${listings.length} ventas activas · kelify + pisos.com`}
+          subtitle={`${listings.length} ventas activas · kelify · pisos.com · Hipoges · Solvia · Fotocasa · habitaclia`}
           action={
             <Link
               href="/app/scan/nuevo"

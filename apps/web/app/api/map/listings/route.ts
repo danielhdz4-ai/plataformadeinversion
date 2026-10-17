@@ -1,5 +1,13 @@
 import { decodeListingTitle } from "@/lib/decode-html";
 import { isResidentialPropertyKind } from "@/lib/listing/residential-kind";
+import { balanceListingsByPortal } from "@/lib/map/balance-listings-by-portal";
+import {
+  loadMapListingsInBbox,
+  MAP_LISTINGS_FETCH,
+  MAP_LISTINGS_LIMIT,
+  type MapBboxRow,
+} from "@/lib/map/load-bbox-listings";
+import { fetchListingRowsInChunks } from "@/lib/supabase/fetch-in-chunks";
 import { getDbClient, requireAppUser } from "@/lib/supabase/request-client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -21,52 +29,71 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Invalid bbox", code: "VALIDATION" }, { status: 400 });
   }
 
-  const { data, error } = await supabase.rpc("map_listings_in_bbox", {
-    min_lng: minLng,
-    min_lat: minLat,
-    max_lng: maxLng,
-    max_lat: maxLat,
-    max_rows: 500,
+  const { rows: loadedRows, error: loadError } = await loadMapListingsInBbox(supabase, {
+    minLng,
+    minLat,
+    maxLng,
+    maxLat,
   });
 
-  if (error) {
-    return NextResponse.json({ error: error.message, code: "DB" }, { status: 500 });
+  if (loadError) {
+    return NextResponse.json({ error: loadError, code: "DB" }, { status: 500 });
   }
 
-  type BboxRow = {
-    id: string;
-    lng: number;
-    lat: number;
-    roi_gross: number | null;
-    price: number;
-    geocode_quality?: number;
-    rent_confidence?: string | null;
-  };
-
-  let rows = (data ?? []) as BboxRow[];
+  let rows = loadedRows;
   if (zoom != null && zoom >= 14) {
     rows = rows.filter((r) => (r.geocode_quality ?? 1) < 5);
   }
 
   const ids = rows.map((row) => row.id);
-  const { data: meta } =
-    ids.length > 0
-      ? await supabase
-          .from("listings")
-          .select(
-            "id, source_portal, title, source_url, city, thumbnail_url, bedrooms, bathrooms, sqm, property_kind, scraped_at, listing_investment(rent_est, rent_confidence)"
-          )
-          .in("id", ids)
-      : { data: [] };
-  const metaMap = new Map((meta ?? []).map((m) => [m.id, m]));
+  type ListingMetaRow = {
+    id: string;
+    source_portal: string;
+    title: string | null;
+    source_url: string | null;
+    city: string | null;
+    thumbnail_url: string | null;
+    bedrooms: number | null;
+    bathrooms: number | null;
+    sqm: number | null;
+    property_kind: string | null;
+    scraped_at: string | null;
+    listing_investment:
+      | { rent_est: number | null; rent_confidence: string | null }
+      | { rent_est: number | null; rent_confidence: string | null }[]
+      | null;
+  };
 
-  const features = rows
-    .filter((row) => {
-      const m = metaMap.get(row.id) as { property_kind?: string | null } | undefined;
-      return isResidentialPropertyKind(m?.property_kind);
-    })
-    .map(
-    (row: BboxRow) => {
+  let meta: ListingMetaRow[] = [];
+  if (ids.length > 0) {
+    try {
+      meta = await fetchListingRowsInChunks<ListingMetaRow>(
+        supabase,
+        "listings",
+        "id, source_portal, title, source_url, city, thumbnail_url, bedrooms, bathrooms, sqm, property_kind, scraped_at, listing_investment(rent_est, rent_confidence)",
+        ids
+      );
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Meta fetch failed";
+      return NextResponse.json({ error: message, code: "DB" }, { status: 500 });
+    }
+  }
+  const metaMap = new Map(meta.map((m) => [m.id, m]));
+
+  const residentialRows = rows.filter((row) => {
+    const m = metaMap.get(row.id) as { property_kind?: string | null } | undefined;
+    return isResidentialPropertyKind(m?.property_kind);
+  });
+
+  const balancedRows = balanceListingsByPortal(
+    residentialRows,
+    (id) => (metaMap.get(id) as { source_portal?: string } | undefined)?.source_portal,
+    MAP_LISTINGS_LIMIT,
+    MAP_LISTINGS_FETCH
+  );
+
+  const features = balancedRows.map(
+    (row: MapBboxRow) => {
       const m = metaMap.get(row.id) as Record<string, unknown> | undefined;
       const inv = m?.listing_investment as
         | { rent_est?: number; rent_confidence?: string | null }

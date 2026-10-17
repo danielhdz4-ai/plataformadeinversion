@@ -48,20 +48,27 @@ async function upsertInvestment(saleId, price, rentEst, confidence, comparablesC
   return !upErr;
 }
 
-const { data: sales, error } = await supabase
-  .from("listings")
-  .select("id, price, sqm, bedrooms")
-  .eq("operation", "sale")
-  .eq("status", "active")
-  .limit(800);
-
-if (error) throw error;
-
+const batchSize = Number(process.env.ROI_PRECOMPUTE_BATCH ?? "4500");
 let updated = 0;
 let spatial = 0;
 const globalRents = rents ?? [];
+let offset = 0;
+let salesTotal = 0;
 
-for (const sale of sales ?? []) {
+while (offset < batchSize) {
+  const pageSize = Math.min(1000, batchSize - offset);
+  const { data: sales, error } = await supabase
+    .from("listings")
+    .select("id, price, sqm, bedrooms")
+    .eq("operation", "sale")
+    .eq("status", "active")
+    .range(offset, offset + pageSize - 1);
+
+  if (error) throw error;
+  if (!sales?.length) break;
+  salesTotal += sales.length;
+
+  for (const sale of sales) {
   const price = Number(sale.price);
   if (!Number.isFinite(price) || price <= 0) continue;
 
@@ -88,6 +95,10 @@ for (const sale of sales ?? []) {
   if (await upsertInvestment(sale.id, price, h.rentEst, h.confidence, h.comparablesCount)) {
     updated++;
   }
+  }
+
+  offset += sales.length;
+  if (sales.length < pageSize) break;
 }
 
-console.log(JSON.stringify({ ok: true, sales: sales?.length ?? 0, updated, spatial }));
+console.log(JSON.stringify({ ok: true, sales: salesTotal, updated, spatial }));
