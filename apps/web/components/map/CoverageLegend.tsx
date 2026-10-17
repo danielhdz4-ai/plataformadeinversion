@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 
-type Region = { slug: string; name: string; tier: number; last_scrape_at: string | null };
+type Region = {
+  slug: string;
+  name: string;
+  tier: number;
+  last_scrape_at: string | null;
+  sale_count?: number;
+  rent_count?: number;
+};
 
 export function CoverageLegend({ className = "" }: { className?: string }) {
   const [regions, setRegions] = useState<Region[]>([]);
@@ -34,11 +41,12 @@ export function CoverageLegend({ className = "" }: { className?: string }) {
             }`}
             title={
               r.last_scrape_at
-                ? `Tier ${r.tier ?? 2} · ${new Date(r.last_scrape_at).toLocaleString("es-ES")}`
-                : `Tier ${r.tier ?? 2} · sin scrape reciente`
+                ? `Tier ${r.tier ?? 2} · ${r.sale_count ?? "?"} ventas · ${new Date(r.last_scrape_at).toLocaleString("es-ES")}`
+                : `Tier ${r.tier ?? 2} · ${r.sale_count ?? "?"} ventas · sin scrape reciente`
             }
           >
             {r.name}
+            {r.sale_count != null && r.sale_count > 0 ? ` (${r.sale_count})` : ""}
           </li>
         ))}
       </ul>

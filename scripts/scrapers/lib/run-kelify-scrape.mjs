@@ -12,6 +12,10 @@ function parsePrice(text) {
   return Number(m[1].replace(/\./g, ""));
 }
 
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
 const EXTRA_DISTRICTS = {
   barcelona: [
     "https://kelify.com/venta/pisos/particulares/barcelona/ciutat-vella/la-barceloneta",
@@ -20,6 +24,53 @@ const EXTRA_DISTRICTS = {
     "https://kelify.com/venta/pisos/particulares/barcelona/sants-montjuic",
   ],
 };
+
+function hrefMatchesCity(href, city) {
+  const h = href.toLowerCase();
+  const needles = [
+    city.kelifySlug ?? city.slug,
+    city.slug,
+    city.name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{M}/gu, "")
+      .replace(/\s+/g, "-"),
+  ].filter(Boolean);
+  return needles.some((n) => h.includes(`/venta/pisos/${n}/`) || h.includes(`/venta/pisos/particulares/${n}`));
+}
+
+async function collectCards(page, city, limit) {
+  const unique = [];
+  const seen = new Set();
+
+  for (let round = 0; round < 18 && unique.length < limit; round++) {
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await sleep(700);
+    const cards = await page.$$eval("[data-property-card]", (nodes) =>
+      nodes.map((el) => {
+        const root = el.closest("[data-property-id]") ?? el;
+        const propertyId = root.getAttribute("data-property-id") ?? "";
+        const link = el.querySelector("a[href*='/venta/pisos/']");
+        const href = link?.getAttribute("href") ?? "";
+        const text = (el.textContent ?? "").replace(/\s+/g, " ").trim();
+        const img = el.querySelector("img");
+        const thumb = img?.getAttribute("src") ?? img?.getAttribute("data-src") ?? "";
+        return { propertyId, href, text, thumb };
+      })
+    );
+    let added = 0;
+    for (const c of cards) {
+      if (unique.length >= limit) break;
+      if (!c.propertyId || !c.href || seen.has(c.propertyId)) continue;
+      if (!hrefMatchesCity(c.href, city)) continue;
+      seen.add(c.propertyId);
+      unique.push(c);
+      added++;
+    }
+    if (added === 0 && round > 4) break;
+  }
+  return unique;
+}
 
 export async function runKelifySale(citySlug) {
   const city = getCityConfig(citySlug);
@@ -34,41 +85,29 @@ export async function runKelifySale(citySlug) {
 
   const startUrls = EXTRA_DISTRICTS[city.slug] ?? [
     `https://kelify.com/venta/pisos/particulares/${kelifySlug}`,
+    `https://kelify.com/venta/pisos/${kelifySlug}`,
   ];
-  const hrefNeedle = `/venta/pisos/${kelifySlug}/`;
 
   try {
     const browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
     await kelifyLoginIfConfigured(page);
+    const limit = maxListings();
     const unique = [];
     const seen = new Set();
 
     for (const startUrl of startUrls) {
-      if (unique.length >= maxListings()) break;
+      if (unique.length >= limit) break;
       await page.goto(startUrl, { waitUntil: "domcontentloaded", timeout: 120_000 });
       try {
         await page.waitForSelector("[data-property-card]", { timeout: 45_000 });
       } catch {
         continue;
       }
-      await page.waitForTimeout(2000);
-      const cards = await page.$$eval("[data-property-card]", (nodes) =>
-        nodes.map((el) => {
-          const root = el.closest("[data-property-id]") ?? el;
-          const propertyId = root.getAttribute("data-property-id") ?? "";
-          const link = el.querySelector("a[href*='/venta/pisos/']");
-          const href = link?.getAttribute("href") ?? "";
-          const text = (el.textContent ?? "").replace(/\s+/g, " ").trim();
-          const img = el.querySelector("img");
-          const thumb = img?.getAttribute("src") ?? img?.getAttribute("data-src") ?? "";
-          return { propertyId, href, text, thumb };
-        })
-      );
-      for (const c of cards) {
-        if (unique.length >= maxListings()) break;
-        if (!c.propertyId || !c.href || seen.has(c.propertyId)) continue;
-        if (!c.href.includes(hrefNeedle)) continue;
+      await sleep(1500);
+      const batch = await collectCards(page, city, limit - unique.length);
+      for (const c of batch) {
+        if (seen.has(c.propertyId)) continue;
         seen.add(c.propertyId);
         unique.push(c);
       }
@@ -82,8 +121,7 @@ export async function runKelifySale(citySlug) {
     const centerLat = (city.bbox[1] + city.bbox[3]) / 2;
 
     let inserted = 0;
-    const limit = maxListings();
-    for (let i = 0; i < Math.min(unique.length, limit); i++) {
+    for (let i = 0; i < unique.length; i++) {
       const card = unique[i];
       const sourceUrl = card.href.startsWith("http") ? card.href : `https://kelify.com${card.href}`;
       const price = parsePrice(card.text) ?? 280_000 + i * 12_000;
@@ -93,14 +131,13 @@ export async function runKelifySale(citySlug) {
       let lon = centerLon + ((i % 7) - 3) * 0.002;
       let lat = centerLat + ((i % 5) - 2) * 0.002;
       let geocodeQuality = 2;
-      if (i < 8) {
-        const geo = await geocodeSpain(`${title}, ${city.name}, España`);
-        if (geo) {
-          lon = geo.lon;
-          lat = geo.lat;
-          geocodeQuality = 3;
-        }
+      const geo = await geocodeSpain(`${title}, ${city.name}, España`);
+      if (geo) {
+        lon = geo.lon;
+        lat = geo.lat;
+        geocodeQuality = 3;
       }
+      if (i > 0 && i % 5 === 0) await sleep(350);
 
       const payload = {
         source_portal: PORTAL,

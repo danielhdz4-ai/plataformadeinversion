@@ -1,7 +1,7 @@
 import type { ListingSummary, RentComparable } from "@/lib/listing/summary-types";
 import { portalFromNotaryRaw } from "@/lib/notariado/normalize-portal";
 
-const DEFAULT_ITP_PCT = 10;
+import { DEFAULT_ITP_PCT } from "@/lib/listing/tax-itp";
 
 /** Serie indicativa Barcelona (venta/alquiler €/m²) — alineada con fuentes oficiales en UI. */
 function buildPriceEvolution(cpAvgM2: number | null) {
@@ -49,6 +49,7 @@ type ListingRow = {
   price: number;
   sqm: number | null;
   postal_code: string | null;
+  ccaa?: string | null;
   listing_investment?: {
     rent_est: number | null;
     roi_gross: number | null;
@@ -61,12 +62,13 @@ export function buildListingSummary(
   row: ListingRow,
   comparables: RentComparable[],
   notary: Record<string, unknown> | null,
-  officialMarket: { source: string; period: string; metrics: Record<string, unknown> }[]
+  officialMarket: { source: string; period: string; metrics: Record<string, unknown> }[],
+  itpPct: number = DEFAULT_ITP_PCT
 ): ListingSummary {
   const inv = row.listing_investment;
   const rent = inv?.rent_est ?? null;
   const price = Number(row.price);
-  const purchaseTaxAmount = price * (DEFAULT_ITP_PCT / 100);
+  const purchaseTaxAmount = price * (itpPct / 100);
   const totalCashInvested = price + purchaseTaxAmount;
   const grossRoiPct =
     inv?.roi_gross ??
@@ -86,7 +88,7 @@ export function buildListingSummary(
     roi: {
       rentEstMonthly: rent,
       purchasePrice: price,
-      purchaseTaxPct: DEFAULT_ITP_PCT,
+      purchaseTaxPct: itpPct,
       purchaseTaxAmount,
       totalCashInvested,
       grossRoiPct,
@@ -116,7 +118,7 @@ export function buildListingSummary(
     demographics: {
       note: "Datos de sección censal (INE) — sincronización en roadmap. Usa mercado notarial del CP como proxy.",
     },
-    localDevelopments: [...BARCELONA_DEVELOPMENTS],
+    localDevelopments: notary?.price_m2 != null ? [] : [...BARCELONA_DEVELOPMENTS],
     nearbyPlaces: {
       note: "Mapa de POIs (educación, transporte, salud) — próxima iteración con OSM.",
     },

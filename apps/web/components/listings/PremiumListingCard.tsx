@@ -147,7 +147,7 @@ export function PremiumListingCard({
             </span>
           </div>
         </div>
-        {city && <p className="text-xs text-neutral-500">{city}</p>}
+        {city && <p className="text-xs text-neutral-500">{decodeListingTitle(city)}</p>}
         {specs && <p className="text-xs text-neutral-600">{specs}</p>}
         <div className="flex flex-wrap items-end justify-between gap-2 pt-1">
           <p className="text-lg font-bold tabular-nums text-neutral-950">{price.toLocaleString("es-ES")} €</p>

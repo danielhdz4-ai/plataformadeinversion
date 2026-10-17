@@ -1,47 +1,35 @@
+import { isResidentialPropertyKind } from "@/lib/listing/residential-kind";
+import { applyBedroomFilter, type ScanRunFilters } from "@/lib/scan/bedroom-filter";
+import { listingMatchesScanFilters, normalizeScanFilters } from "@/lib/scan/apply-scan-filters";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ScanPolygon } from "@/lib/scan/types";
 import { grossRoiPct } from "@pi/roi-engine";
 
-type Filters = {
-  priceMin?: number;
-  priceMax?: number;
-  bedroomsMin?: number;
-};
-
 export async function runScanForPolygon(
   scanId: string,
   polygon: ScanPolygon,
-  filters: Filters
+  filters: ScanRunFilters
 ) {
   const admin = createAdminClient();
   await admin.from("scans").update({ status: "running", progress_pct: 10 }).eq("id", scanId);
 
-  const ring = polygon.coordinates[0]!;
-  const lngs = ring.map((c) => c[0]!);
-  const lats = ring.map((c) => c[1]!);
-  const minLng = Math.min(...lngs);
-  const maxLng = Math.max(...lngs);
-  const minLat = Math.min(...lats);
-  const maxLat = Math.max(...lats);
+  const norm = normalizeScanFilters(filters as Record<string, unknown>);
+  const priceMin = norm.priceMin ?? 0;
+  const priceMax = norm.priceMax ?? 999_999_999;
+  if (!Number.isFinite(priceMin) || !Number.isFinite(priceMax)) {
+    throw new Error("Filtros de precio inválidos");
+  }
 
   const geojson = JSON.stringify(polygon);
   const { data: inPoly, error: polyErr } = await admin.rpc("listings_in_polygon", {
     geojson,
   });
 
-  let ids: string[];
-  if (!polyErr && inPoly && (inPoly as { id: string }[]).length > 0) {
-    ids = (inPoly as { id: string }[]).map((r) => r.id);
-  } else {
-    const { data: inBbox, error: bboxErr } = await admin.rpc("listings_in_bbox", {
-      min_lng: minLng,
-      min_lat: minLat,
-      max_lng: maxLng,
-      max_lat: maxLat,
-    });
-    if (bboxErr) throw bboxErr;
-    ids = (inBbox as { id: string }[]).map((r) => r.id);
+  if (polyErr) {
+    throw new Error(`Consulta de polígono fallida: ${polyErr.message}`);
   }
+  const inPolyRows = (inPoly ?? []) as { id: string }[];
+  const ids = inPolyRows.map((r) => r.id);
   if (ids.length === 0) {
     await admin.from("scans").update({ status: "completed", progress_pct: 100 }).eq("id", scanId);
     return 0;
@@ -49,14 +37,14 @@ export async function runScanForPolygon(
 
   let q = admin
     .from("listings")
-    .select("id, price, bedrooms")
+    .select("id, price, bedrooms, property_kind")
     .in("id", ids)
     .eq("status", "active")
     .eq("operation", "sale")
-    .gte("price", filters.priceMin ?? 0)
-    .lte("price", filters.priceMax ?? 999_999_999);
+    .gte("price", priceMin)
+    .lte("price", priceMax);
 
-  if (filters.bedroomsMin) q = q.gte("bedrooms", filters.bedroomsMin);
+  q = applyBedroomFilter(q, norm);
 
   const { data: listings, error } = await q;
   if (error) throw error;
@@ -71,7 +59,15 @@ export async function runScanForPolygon(
     (investments ?? []).map((i) => [i.listing_id as string, i as { rent_est: number | null; roi_gross: number | null }])
   );
 
-  const ranked = (listings ?? [])
+  const filteredListings = (listings ?? []).filter((l) =>
+    isResidentialPropertyKind(l.property_kind as string | null) &&
+    listingMatchesScanFilters(
+      { price: Number(l.price), bedrooms: l.bedrooms as number | null },
+      norm
+    )
+  );
+
+  const ranked = filteredListings
     .map((l) => {
       const inv = invMap.get(l.id as string);
       const roi =

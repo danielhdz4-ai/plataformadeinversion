@@ -9,7 +9,7 @@ import type { ListingSummary } from "@/lib/listing/summary-types";
 import { portalBadge } from "@/lib/portals";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type Tab = "resumen" | "roi" | "barrio";
 
@@ -17,18 +17,29 @@ export default function ListingDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [tab, setTab] = useState<Tab>("resumen");
   const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [summary, setSummary] = useState<ListingSummary | null>(null);
   const [enriching, setEnriching] = useState(false);
 
-  function reload() {
-    fetch(`/api/listings/${id}`)
-      .then((r) => r.json())
-      .then(setData);
-  }
+  const reload = useCallback(async () => {
+    setLoadError(null);
+    const res = await fetch(`/api/listings/${id}`);
+    const body = (await res.json()) as Record<string, unknown>;
+    if (!res.ok || body.error) {
+      setData(null);
+      setLoadError(
+        res.status === 404
+          ? "Este inmueble no existe o ya no está activo."
+          : String(body.error ?? "Error al cargar la ficha.")
+      );
+      return;
+    }
+    setData(body);
+  }, [id]);
 
   useEffect(() => {
-    reload();
-  }, [id]);
+    void reload();
+  }, [reload]);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,10 +62,23 @@ export default function ListingDetailPage() {
     setEnriching(true);
     await fetch(`/api/listings/${id}/enrich`, { method: "POST" });
     setEnriching(false);
-    reload();
+    void reload();
   }
 
-  if (!data || (data as { error?: string }).error) {
+  if (loadError) {
+    return (
+      <AppScrollPage>
+        <div className="mx-auto max-w-lg space-y-4 rounded-xl border border-neutral-200 bg-white p-6">
+          <p className="text-neutral-800">{loadError}</p>
+          <Link href="/app/explorar" className="text-sm font-medium text-neutral-950 underline">
+            Volver a explorar
+          </Link>
+        </div>
+      </AppScrollPage>
+    );
+  }
+
+  if (!data) {
     return (
       <AppScrollPage>
         <p className="text-neutral-600">Cargando ficha…</p>
@@ -84,6 +108,7 @@ export default function ListingDetailPage() {
       es_estimado: boolean;
     } | null;
     officialMarket?: { source: string; period: string; metrics: Record<string, unknown> }[];
+    scraped_at?: string | null;
   };
 
   const portal = portalBadge(listing.source_portal);
@@ -128,7 +153,14 @@ export default function ListingDetailPage() {
           <div className="p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <Badge tone="info">{portal.name}</Badge>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone="info">{portal.name}</Badge>
+                  {listing.scraped_at && (
+                    <Badge tone="neutral">
+                      Datos {new Date(listing.scraped_at).toLocaleDateString("es-ES")}
+                    </Badge>
+                  )}
+                </div>
                 <h1 className="mt-2 text-2xl font-semibold text-neutral-950">
                   {decodeListingTitle(listing.title)}
                 </h1>

@@ -70,7 +70,7 @@
     { "slug": "burgos", "name": "Burgos", "ccaa": "Castilla y León", "pisosSlug": "burgos", "center": [-3.7, 42.34], "bboxDelta": 0.07 },
     { "slug": "caceres", "name": "Cáceres", "ccaa": "Extremadura", "pisosSlug": "caceres", "center": [-6.37, 39.47], "bboxDelta": 0.07 },
     { "slug": "cadiz", "name": "Cádiz", "ccaa": "Andalucía", "pisosSlug": "cadiz", "center": [-6.14, 36.53], "bboxDelta": 0.07 },
-    { "slug": "castellon", "name": "Castellón", "ccaa": "Comunidad Valenciana", "pisosSlug": "castellon", "center": [-0.05, 39.99], "bboxDelta": 0.07 },
+    { "slug": "castellon", "name": "Castellón", "ccaa": "Comunidad Valenciana", "pisosSlug": "castellon", "kelifySlug": "castellon", "center": [-0.05, 39.99], "bboxDelta": 0.08 },
     { "slug": "ciudad-real", "name": "Ciudad Real", "ccaa": "Castilla-La Mancha", "pisosSlug": "ciudad-real", "pisosSkip": true, "kelifySlug": "ciudad-real", "center": [-3.93, 38.98], "bboxDelta": 0.1 },
     { "slug": "cordoba", "name": "Córdoba", "ccaa": "Andalucía", "pisosSlug": "cordoba", "center": [-4.78, 37.88], "bboxDelta": 0.08 },
     { "slug": "cuenca", "name": "Cuenca", "ccaa": "Castilla-La Mancha", "pisosSlug": "cuenca", "center": [-2.13, 40.07], "bboxDelta": 0.06 },

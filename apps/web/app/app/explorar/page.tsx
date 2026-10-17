@@ -13,7 +13,7 @@ import { SPAIN_VIEW } from "@/lib/map/spain-bounds";
 import { decodeListingTitle } from "@/lib/decode-html";
 import { AppPanelHeader } from "@/components/app/AppPanelHeader";
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 type ListingPin = {
   id: string;
@@ -30,22 +30,39 @@ type ListingPin = {
   bathrooms?: number | null;
   sqm?: number | null;
   rentEst?: number | null;
+  rentConfidence?: string | null;
+  geocodeQuality?: number | null;
 };
 
 export default function ExplorarPage() {
   const [listings, setListings] = useState<ListingPin[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
+  const lastBboxRef = useRef<[number, number, number, number] | null>(null);
+  const [requestSent, setRequestSent] = useState(false);
 
-  const loadMap = useCallback(async (bbox: [number, number, number, number]) => {
+  const loadMap = useCallback(async (bbox: [number, number, number, number], meta?: { zoom: number }) => {
+    lastBboxRef.current = bbox;
     const [minLng, minLat, maxLng, maxLat] = bbox;
+    const zoomQ = meta?.zoom != null ? `&zoom=${meta.zoom}` : "";
     const res = await fetch(
-      `/api/map/listings?minLng=${minLng}&minLat=${minLat}&maxLng=${maxLng}&maxLat=${maxLat}`
+      `/api/map/listings?minLng=${minLng}&minLat=${minLat}&maxLng=${maxLng}&maxLat=${maxLat}${zoomQ}`
     );
     if (!res.ok) return;
     const data = (await res.json()) as { features: ListingPin[] };
     setListings(data.features ?? []);
   }, []);
 
+  async function requestCoverage() {
+    const bbox = lastBboxRef.current;
+    if (!bbox) return;
+    const [minLng, minLat, maxLng, maxLat] = bbox;
+    const res = await fetch("/api/map/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ minLng, minLat, maxLng, maxLat, note: "Explorar sin pins" }),
+    });
+    if (res.ok) setRequestSent(true);
+  }
 
   const listingIds = useMemo(() => {
     const ids = listings.map((l) => l.id);
@@ -63,6 +80,8 @@ export default function ExplorarPage() {
         roi: l.roi,
         price: l.price,
         rentEst: l.rentEst ?? null,
+        rentConfidence: l.rentConfidence ?? null,
+        geocodeQuality: l.geocodeQuality ?? null,
       })),
     [listings]
   );
@@ -108,10 +127,20 @@ export default function ExplorarPage() {
         />
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3">
           {listings.length === 0 && (
-            <p className="rounded-lg border border-neutral-200 bg-white p-4 text-sm text-neutral-600">
-              Acerca el mapa a una ciudad con cobertura (leyenda abajo) o desplázate por España. Si no hay
-              pins, estamos ampliando scrape en esa zona.
-            </p>
+            <div className="rounded-lg border border-neutral-200 bg-white p-4 text-sm text-neutral-600">
+              <p>
+                Acerca el mapa a una ciudad con cobertura (leyenda abajo) o desplázate por España. Si no hay
+                pins, estamos ampliando scrape en esa zona.
+              </p>
+              <button
+                type="button"
+                disabled={requestSent}
+                onClick={() => void requestCoverage()}
+                className="mt-3 rounded-lg border border-neutral-950 bg-neutral-950 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+              >
+                {requestSent ? "Solicitud enviada" : "Solicitar datos en esta zona"}
+              </button>
+            </div>
           )}
           {listings.map((l) => (
             <PremiumListingCard

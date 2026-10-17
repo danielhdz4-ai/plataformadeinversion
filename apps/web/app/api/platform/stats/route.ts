@@ -3,16 +3,16 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   const admin = createAdminClient();
-  const { data: byPortal } = await admin
-    .from("listings")
-    .select("source_portal")
-    .eq("operation", "sale")
-    .eq("status", "active");
-  const portalCounts = (byPortal ?? []).reduce<Record<string, number>>((acc, row) => {
-    const k = row.source_portal as string;
-    acc[k] = (acc[k] ?? 0) + 1;
-    return acc;
-  }, {});
+  const portalCounts: Record<string, number> = {};
+  for (const portal of ["kelify", "pisos.com", "pisos", "idealista"]) {
+    const { count } = await admin
+      .from("listings")
+      .select("id", { count: "exact", head: true })
+      .eq("operation", "sale")
+      .eq("status", "active")
+      .eq("source_portal", portal);
+    if ((count ?? 0) > 0) portalCounts[portal] = count ?? 0;
+  }
 
   const saleActive = await admin
     .from("listings")

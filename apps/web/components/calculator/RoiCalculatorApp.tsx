@@ -66,22 +66,41 @@ export function RoiCalculatorApp() {
     setDownPaymentPct(Math.min(100, Math.max(0, (euro / purchasePrice) * 100)));
   };
 
-  const rentalBase = {
-    purchasePrice,
-    itpPct,
-    ajdPct,
-    renovation,
-    monthlyRent,
-    occupancyPct: mode === "buy_to_rent" ? occupancyPct : occupancyPct,
-    leverage,
-    downPaymentPct,
-    mortgageYears,
-    mortgageRatePct,
-    ibiRatePct,
-    cadastralValuePct,
-    monthlyOpex,
-    furnishing: mode === "airbnb" ? furnishing : 0,
-  };
+  const rentalBase = useMemo(
+    () => ({
+      purchasePrice,
+      itpPct,
+      ajdPct,
+      renovation,
+      monthlyRent,
+      occupancyPct,
+      leverage,
+      downPaymentPct,
+      mortgageYears,
+      mortgageRatePct,
+      ibiRatePct,
+      cadastralValuePct,
+      monthlyOpex,
+      furnishing: mode === "airbnb" ? furnishing : 0,
+    }),
+    [
+      purchasePrice,
+      itpPct,
+      ajdPct,
+      renovation,
+      monthlyRent,
+      occupancyPct,
+      leverage,
+      downPaymentPct,
+      mortgageYears,
+      mortgageRatePct,
+      ibiRatePct,
+      cadastralValuePct,
+      monthlyOpex,
+      furnishing,
+      mode,
+    ]
+  );
 
   const btlResult = useMemo(
     () => (mode === "buy_to_rent" ? calculateBuyToLetPro(rentalBase) : null),

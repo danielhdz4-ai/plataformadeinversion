@@ -1,9 +1,11 @@
 import { fetchRcFromCoords } from "@pi/catastro-client";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getDbClient } from "@/lib/supabase/request-client";
+import { getDbClient, requireAppUser } from "@/lib/supabase/request-client";
 import { NextResponse } from "next/server";
 
 export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+  const auth = await requireAppUser();
+  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const { id } = await ctx.params;
   const admin = createAdminClient();
   const supabase = await getDbClient();

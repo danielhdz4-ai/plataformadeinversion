@@ -3,12 +3,22 @@ import { getDbClient, requireAppUser } from "@/lib/supabase/request-client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+const filtersSchema = z
+  .object({
+    priceMin: z.coerce.number().min(0).optional(),
+    priceMax: z.coerce.number().min(0).optional(),
+    bedroomsMin: z.coerce.number().min(0).optional(),
+    allowedBedrooms: z.array(z.coerce.number().int().min(0).max(20)).optional(),
+    bedroomsMinPlus: z.coerce.number().int().min(1).nullable().optional(),
+  })
+  .passthrough();
+
 const bodySchema = z.object({
   polygon: z.object({
     type: z.literal("Polygon"),
     coordinates: z.array(z.array(z.tuple([z.number(), z.number()]))),
   }),
-  filters: z.record(z.unknown()).optional(),
+  filters: filtersSchema.optional(),
   operation: z.string().default("buy_to_rent"),
 });
 

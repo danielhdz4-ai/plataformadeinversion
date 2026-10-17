@@ -29,7 +29,9 @@ export function PlatformStatsBar() {
       <span className="hidden text-neutral-600 md:inline">|</span>
       <span className="hidden md:inline">
         kelify {stats?.listings.saleByPortal?.kelify ?? 0} · pisos{" "}
-        {stats?.listings.saleByPortal?.pisos_com ?? 0}
+        {(stats?.listings.saleByPortal?.["pisos.com"] ??
+          stats?.listings.saleByPortal?.pisos ??
+          0) as number}
       </span>
     </div>
   );

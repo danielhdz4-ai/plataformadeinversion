@@ -2,7 +2,9 @@ import { openAccessUserId } from "@/lib/open-access";
 import { runScanForPolygon } from "@/lib/scan/runScan";
 import type { ScanPolygon } from "@/lib/scan/types";
 import { getDbClient, requireAppUser } from "@/lib/supabase/request-client";
-import { NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { after, NextResponse } from "next/server";
+import type { ScanRunFilters } from "@/lib/scan/bedroom-filter";
 
 export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id: sourceId } = await ctx.params;
@@ -42,17 +44,20 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ error: insErr?.message ?? "insert failed" }, { status: 500 });
   }
 
-  try {
-    const count = await runScanForPolygon(
-      created.id,
-      source.polygon as ScanPolygon,
-      (source.filters ?? {}) as { priceMin?: number; priceMax?: number; bedroomsMin?: number }
-    );
-    return NextResponse.json({ scanId: created.id, ok: true, count });
-  } catch (e) {
-    return NextResponse.json(
-      { scanId: created.id, error: e instanceof Error ? e.message : "run failed" },
-      { status: 500 }
-    );
-  }
+  const polygon = source.polygon as ScanPolygon;
+  const filters = (source.filters ?? {}) as ScanRunFilters;
+
+  await supabase.from("scans").update({ status: "running", progress_pct: 5 }).eq("id", created.id);
+
+  after(async () => {
+    const admin = createAdminClient();
+    try {
+      await runScanForPolygon(created.id, polygon, filters);
+    } catch (e) {
+      await admin.from("scans").update({ status: "failed", progress_pct: 0 }).eq("id", created.id);
+      console.error("scan repeat failed", created.id, e);
+    }
+  });
+
+  return NextResponse.json({ scanId: created.id, ok: true, status: "running" }, { status: 202 });
 }

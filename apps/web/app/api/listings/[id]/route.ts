@@ -1,3 +1,4 @@
+import { fetchOfficialMarketForPostal } from "@/lib/listing/official-market-query";
 import { getDbClient } from "@/lib/supabase/request-client";
 import { NextResponse } from "next/server";
 
@@ -38,14 +39,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       .maybeSingle();
     notary = n;
   }
-  const { data: o } = await supabase
-    .from("official_market_stats")
-    .select("*")
-    .eq("geo_level", "province")
-    .ilike("geo_name", "%Barcelona%")
-    .order("scraped_at", { ascending: false })
-    .limit(3);
-  official = o;
+  official = postal ? await fetchOfficialMarketForPostal(supabase, postal) : [];
 
   return NextResponse.json({
     ...data,

@@ -36,7 +36,7 @@ export function useListingSummaries(ids: string[]) {
     return () => {
       cancelled = true;
     };
-  }, [key]);
+  }, [key, ids]);
 
   return { summaries, loading };
 }

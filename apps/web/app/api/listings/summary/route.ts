@@ -1,4 +1,6 @@
 import { buildListingSummary } from "@/lib/listing/build-summary";
+import { fetchOfficialMarketForPostals } from "@/lib/listing/official-market-query";
+import { fetchItpPctForCcaa } from "@/lib/listing/tax-itp";
 import type { RentComparable } from "@/lib/listing/summary-types";
 import { getDbClient } from "@/lib/supabase/request-client";
 import { NextRequest, NextResponse } from "next/server";
@@ -21,7 +23,7 @@ export async function POST(req: NextRequest) {
     .from("listings")
     .select(
       `
-      id, price, sqm, postal_code, city,
+      id, price, sqm, postal_code, city, ccaa,
       listing_investment ( rent_est, roi_gross, rent_confidence, comparables_count )
     `
     )
@@ -43,19 +45,10 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const { data: official } = await supabase
-    .from("official_market_stats")
-    .select("source, period, metrics")
-    .eq("geo_level", "province")
-    .or("geo_name.ilike.%Barcelona%,geo_code.eq.08")
-    .order("scraped_at", { ascending: false })
-    .limit(3);
-
-  const officialMarket = (official ?? []).map((o) => ({
-    source: o.source as string,
-    period: o.period as string,
-    metrics: (o.metrics as Record<string, unknown>) ?? {},
-  }));
+  const officialByPostal = await fetchOfficialMarketForPostals(
+    supabase,
+    (listings ?? []).map((l) => l.postal_code)
+  );
 
   const comparablesById = new Map<string, RentComparable[]>();
 
@@ -90,12 +83,14 @@ export async function POST(req: NextRequest) {
     const inv = Array.isArray(row.listing_investment)
       ? row.listing_investment[0]
       : row.listing_investment;
+    const itpPct = await fetchItpPctForCcaa(supabase, row.ccaa as string | null);
     summaries[row.id] = buildListingSummary(
       {
         id: row.id,
         price: Number(row.price),
         sqm: row.sqm != null ? Number(row.sqm) : null,
         postal_code: row.postal_code,
+        ccaa: row.ccaa as string | null,
         listing_investment: inv
           ? {
               rent_est: inv.rent_est != null ? Number(inv.rent_est) : null,
@@ -107,7 +102,8 @@ export async function POST(req: NextRequest) {
       },
       comparablesById.get(row.id) ?? [],
       row.postal_code ? notaryByPostal.get(row.postal_code) ?? null : null,
-      officialMarket
+      row.postal_code ? officialByPostal.get(row.postal_code) ?? [] : [],
+      itpPct
     );
   }
 

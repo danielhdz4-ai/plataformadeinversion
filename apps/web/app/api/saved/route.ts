@@ -48,3 +48,26 @@ export async function POST(req: NextRequest) {
   }
   return NextResponse.json({ ok: true, saved: true });
 }
+
+export async function DELETE(req: NextRequest) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const listingId = req.nextUrl.searchParams.get("listingId");
+  const parsed = postSchema.safeParse({ listingId });
+  if (!parsed.success) {
+    return NextResponse.json({ error: "listingId required" }, { status: 400 });
+  }
+
+  const { error } = await supabase
+    .from("saved_deals")
+    .delete()
+    .eq("user_id", user.id)
+    .eq("listing_id", parsed.data.listingId);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ ok: true, saved: false });
+}

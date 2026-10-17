@@ -6,7 +6,9 @@ import { ScanWizardSteps } from "@/components/scan/ScanWizardSteps";
 import { Badge } from "@/components/ui/Badge";
 import { RangeField } from "@/components/ui/RangeField";
 import { circleAreaKm2, circlePolygon } from "@/lib/map/circle-polygon";
+import { SPAIN_VIEW } from "@/lib/map/spain-bounds";
 import { SCAN_OPERATIONS, type ScanOperation } from "@/lib/investment/operations";
+import { bedroomFilterFromRooms } from "@/lib/scan/bedroom-filter";
 import { DEMO_POLYGON } from "@/lib/scan/demo-polygon";
 import type { ScanPolygon } from "@/lib/scan/types";
 import { maxPurchasePriceFromCash } from "@pi/roi-engine";
@@ -31,9 +33,10 @@ export default function NewScanPage() {
   const [center, setCenter] = useState<{ lng: number; lat: number } | null>(null);
   const [radiusKm, setRadiusKm] = useState(1.5);
   const [flyTo, setFlyTo] = useState<{ center: [number, number]; zoom: number } | null>(null);
+  const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [operation, setOperation] = useState<ScanOperation>("buy_to_rent");
-  const [filterMode, setFilterMode] = useState<FilterMode>("entry_budget");
+  const [filterMode, setFilterMode] = useState<FilterMode>("price_range");
   const [leverage, setLeverage] = useState(true);
   const [notifyEmail, setNotifyEmail] = useState(false);
   const [rooms, setRooms] = useState({
@@ -49,7 +52,7 @@ export default function NewScanPage() {
     taxPct: 7.7,
     ratePct: 2,
     years: 20,
-    priceMin: 80_000,
+    priceMin: 0,
     priceMax: 350_000,
   });
 
@@ -70,17 +73,14 @@ export default function NewScanPage() {
   );
 
   const effectivePriceMax =
-    filterMode === "entry_budget" ? Math.round(maxPriceFromBudget) : finance.priceMax;
-  const effectivePriceMin = filterMode === "entry_budget" ? 0 : finance.priceMin;
+    filterMode === "entry_budget"
+      ? Math.min(Math.round(maxPriceFromBudget), finance.priceMax)
+      : finance.priceMax;
+  const effectivePriceMin =
+    filterMode === "entry_budget" ? Math.max(0, finance.priceMin) : finance.priceMin;
 
-  const bedroomsMin = useMemo(() => {
-    if (rooms.studio) return 0;
-    if (rooms.r1) return 1;
-    if (rooms.r2) return 2;
-    if (rooms.r3) return 3;
-    if (rooms.r4) return 4;
-    return 1;
-  }, [rooms]);
+  const bedroomFilter = useMemo(() => bedroomFilterFromRooms(rooms), [rooms]);
+  const bedroomsMin = bedroomFilter.bedroomsMin;
 
   useEffect(() => {
     if (locationMode !== "search" || !center) return;
@@ -117,7 +117,13 @@ export default function NewScanPage() {
     setPlaceLabel(hit.label);
     setSuggestions([]);
     setCenter({ lng: hit.lng, lat: hit.lat });
-    setFlyTo({ center: [hit.lng, hit.lat], zoom: 14 });
+    const zoom = hit.bbox
+      ? Math.min(
+          15,
+          Math.max(11, 13 - Math.log2(Math.max(hit.bbox[2] - hit.bbox[0], hit.bbox[3] - hit.bbox[1]) * 80))
+        )
+      : 13;
+    setFlyTo({ center: [hit.lng, hit.lat], zoom });
     setPolygon(circlePolygon(hit.lng, hit.lat, radiusKm));
   }
 
@@ -134,6 +140,8 @@ export default function NewScanPage() {
           priceMin: effectivePriceMin,
           priceMax: effectivePriceMax,
           bedroomsMin,
+          allowedBedrooms: bedroomFilter.allowedBedrooms,
+          bedroomsMinPlus: bedroomFilter.bedroomsMinPlus,
           rooms,
           filterMode,
           leverage,
@@ -150,8 +158,13 @@ export default function NewScanPage() {
       alert(body.error ?? "Error al crear scan");
       return;
     }
-    await fetch(`/api/scans/${body.scanId}/run`, { method: "POST" });
+    const runRes = await fetch(`/api/scans/${body.scanId}/run`, { method: "POST" });
     setLoading(false);
+    if (!runRes.ok && runRes.status !== 202) {
+      const runBody = (await runRes.json().catch(() => ({}))) as { error?: string };
+      alert(runBody.error ?? "El scan no pudo ejecutarse. Revisa la zona e inténtalo de nuevo.");
+      return;
+    }
     router.push(`/app/scan/${body.scanId}`);
   }
 
@@ -184,7 +197,10 @@ export default function NewScanPage() {
               <div className="flex rounded-lg border border-neutral-200 p-1">
                 <button
                   type="button"
-                  onClick={() => setLocationMode("search")}
+                  onClick={() => {
+                    setLocationMode("search");
+                    setSelectedPinId(null);
+                  }}
                   className={`flex-1 rounded-md py-2 text-sm font-medium ${locationMode === "search" ? "bg-neutral-950 text-white" : "text-neutral-700"}`}
                 >
                   Buscar
@@ -194,6 +210,9 @@ export default function NewScanPage() {
                   onClick={() => {
                     setLocationMode("draw");
                     setCenter(null);
+                    setPolygon(null);
+                    setPlaceLabel(null);
+                    setSelectedPinId(null);
                   }}
                   className={`flex-1 rounded-md py-2 text-sm font-medium ${locationMode === "draw" ? "bg-neutral-950 text-white" : "text-neutral-700"}`}
                 >
@@ -211,13 +230,13 @@ export default function NewScanPage() {
                         pickPlace(suggestions[0]);
                       }
                     }}
-                    placeholder="CP o barrio — ej. 08905, La Florida"
+                    placeholder="CP (5 dígitos) o barrio — ej. 08906, Castellón"
                     className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm"
                   />
                   {suggestions.length > 0 && (
                     <ul className="absolute z-20 mt-1 max-h-48 w-full overflow-auto rounded-lg border bg-white shadow-lg">
-                      {suggestions.map((s) => (
-                        <li key={s.label}>
+                      {suggestions.map((s, idx) => (
+                        <li key={`${s.lat},${s.lng},${idx}`}>
                           <button
                             type="button"
                             onClick={() => pickPlace(s)}
@@ -231,13 +250,28 @@ export default function NewScanPage() {
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-neutral-600">
-                  Dibuja el polígono en el mapa. Solo territorio español.
-                </p>
+                <div className="space-y-2 text-sm text-neutral-600">
+                  <p>Dibuja el polígono en el mapa (solo España).</p>
+                  <p className="text-xs text-neutral-500">
+                    Mínimo 3 clics en el mapa → «Cerrar zona» o doble clic. Los pins del mapa se
+                    seleccionan con un clic normal.
+                  </p>
+                  {polygon && (
+                    <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">
+                      Zona cerrada — ya puedes pulsar Siguiente.
+                    </p>
+                  )}
+                </div>
               )}
               {placeLabel && locationMode === "search" && (
                 <p className="rounded-lg border border-neutral-200 bg-[#f7f6f3] px-3 py-2 text-sm text-neutral-800">
                   Encontrado — área ~{areaKm2.toFixed(1)} km² (radio {radiusKm} km)
+                </p>
+              )}
+              {selectedPinId && locationMode === "search" && (
+                <p className="rounded-lg border border-neutral-200 bg-[#f7f6f3] px-3 py-2 text-sm text-neutral-800">
+                  Pin seleccionado — centro del scan en ese inmueble (radio {radiusKm} km). Pulsa
+                  Siguiente cuando quieras.
                 </p>
               )}
               {locationMode === "search" && (
@@ -436,15 +470,20 @@ export default function NewScanPage() {
                   />
                 </>
               ) : (
+                <div className="space-y-2">
+                  <p className="text-xs text-neutral-500">
+                    Solo se incluirán anuncios entre el precio mín. y máx. (venta en portales).
+                  </p>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="text-xs text-neutral-600">
                     Precio mín.
                     <input
                       type="number"
                       value={finance.priceMin}
-                      onChange={(e) =>
-                        setFinance((f) => ({ ...f, priceMin: Number(e.target.value) }))
-                      }
+                      onChange={(e) => {
+                        setFilterMode("price_range");
+                        setFinance((f) => ({ ...f, priceMin: Number(e.target.value) }));
+                      }}
                       className="mt-1 w-full rounded-lg border px-2 py-2 text-sm"
                     />
                   </label>
@@ -453,12 +492,14 @@ export default function NewScanPage() {
                     <input
                       type="number"
                       value={finance.priceMax}
-                      onChange={(e) =>
-                        setFinance((f) => ({ ...f, priceMax: Number(e.target.value) }))
-                      }
+                      onChange={(e) => {
+                        setFilterMode("price_range");
+                        setFinance((f) => ({ ...f, priceMax: Number(e.target.value) }));
+                      }}
                       className="mt-1 w-full rounded-lg border px-2 py-2 text-sm"
                     />
                   </label>
+                </div>
                 </div>
               )}
 
@@ -513,8 +554,27 @@ export default function NewScanPage() {
           onPolygonChange={(p) => {
             setPolygon(p);
             if (p) setPlaceLabel("Zona dibujada (España)");
+            else if (locationMode === "draw") setPlaceLabel(null);
           }}
+          initialView={SPAIN_VIEW}
+          autoFitPolygon={Boolean(polygon && step === 0)}
           pins={pins}
+          selectedId={selectedPinId}
+          onSelectPin={(id) => {
+            setSelectedPinId(id);
+            const pin = pins.find((x) => x.id === id);
+            if (!pin) return;
+            if (locationMode === "search") {
+              setCenter({ lng: pin.lng, lat: pin.lat });
+              setPolygon(circlePolygon(pin.lng, pin.lat, radiusKm));
+              setPlaceLabel(
+                `Inmueble · ${pin.price.toLocaleString("es-ES")} €${
+                  pin.roi != null ? ` · ${pin.roi.toFixed(1)}% ROI` : ""
+                }`
+              );
+              setFlyTo({ center: [pin.lng, pin.lat], zoom: 15 });
+            }
+          }}
           onBboxChange={loadMap}
           flyTo={flyTo}
           maxPins={72}

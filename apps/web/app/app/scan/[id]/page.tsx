@@ -11,6 +11,10 @@ import { ScanProgressOverlay } from "@/components/scan/ScanProgressOverlay";
 import { AppPanelHeader } from "@/components/app/AppPanelHeader";
 import { ScanResultsToolbar } from "@/components/scan/ScanResultsToolbar";
 import type { ScanPolygon } from "@/lib/scan/types";
+import { boundsFromPins, polygonBounds } from "@/lib/map/polygon-bounds";
+import { parseScanPolygon } from "@/lib/map/parse-scan-polygon";
+import { SPAIN_VIEW } from "@/lib/map/spain-bounds";
+import type { ScanRunFilters } from "@/lib/scan/bedroom-filter";
 import { useParams, useRouter } from "next/navigation";
 import { useListingSummaries } from "@/lib/listing/use-listing-summaries";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -47,32 +51,57 @@ export default function ScanResultsPage() {
   const [mapCount, setMapCount] = useState(0);
   const [sort, setSort] = useState<"roi_desc" | "price_asc">("roi_desc");
   const [mapFallback, setMapFallback] = useState(false);
+  const [flyTo, setFlyTo] = useState<{ center: [number, number]; zoom: number } | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [scanFilters, setScanFilters] = useState<ScanRunFilters | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       const s = await fetch(`/api/scans/${id}`);
-      const scan = (await s.json()) as { status: string; polygon?: ScanPolygon };
+      if (!s.ok) {
+        if (!cancelled) {
+          setLoadError(s.status === 403 ? "No tienes acceso a este scan." : "Scan no encontrado.");
+          setStatus("failed");
+        }
+        return;
+      }
+      const scan = (await s.json()) as { status: string; polygon?: unknown };
       if (!cancelled) {
-        setStatus(scan.status);
-        if (scan.polygon) setPolygon(scan.polygon);
+        setLoadError(null);
+        setStatus(scan.status ?? "failed");
+        const parsedPoly = parseScanPolygon(scan.polygon);
+        if (parsedPoly) setPolygon(parsedPoly);
       }
       const r = await fetch(`/api/scans/${id}/results`);
+      if (!r.ok) {
+        if (!cancelled && s.ok) {
+          setLoadError("No se pudieron cargar los resultados.");
+          if (scan.status !== "completed") setStatus("failed");
+        }
+        return;
+      }
       const data = (await r.json()) as {
         results: ResultRow[];
         pins?: Pin[];
         mapCount?: number;
         usedMapFallback?: boolean;
+        polygon?: ScanPolygon;
+        filters?: ScanRunFilters;
       };
       if (!cancelled) {
         setRows(data.results ?? []);
         setPins(data.pins ?? []);
         setMapCount(data.mapCount ?? data.pins?.length ?? 0);
         setMapFallback(Boolean(data.usedMapFallback));
+        if (data.filters) setScanFilters(data.filters);
+        const polyFromResults = parseScanPolygon(data.polygon);
+        if (polyFromResults) setPolygon(polyFromResults);
       }
     }
     load();
-    const t = setInterval(load, status === "completed" ? 8000 : 2000);
+    const terminal = status === "completed" || status === "failed";
+    const t = setInterval(load, terminal ? 8000 : 2000);
     return () => {
       cancelled = true;
       clearInterval(t);
@@ -94,12 +123,6 @@ export default function ScanResultsPage() {
   const { summaries, loading: summariesLoading } = useListingSummaries(listingIds);
 
   const didInitialSelect = useRef(false);
-  useEffect(() => {
-    if (didInitialSelect.current || sortedRows.length === 0) return;
-    didInitialSelect.current = true;
-    setSelected(sortedRows[0]!.listing.id);
-  }, [sortedRows]);
-
   const rentById = useMemo(() => {
     const m = new Map<string, number | null>();
     for (const row of rows) {
@@ -116,6 +139,24 @@ export default function ScanResultsPage() {
       })),
     [pins, rentById]
   );
+
+  const selectListing = (listingId: string, panMap = false) => {
+    setSelected(listingId);
+    if (!panMap) return;
+    const pin = roiPins.find((p) => p.id === listingId);
+    if (pin) setFlyTo({ center: [pin.lng, pin.lat], zoom: 15 });
+  };
+
+  useEffect(() => {
+    if (didInitialSelect.current || sortedRows.length === 0) return;
+    didInitialSelect.current = true;
+    setSelected(sortedRows[0]!.listing.id);
+  }, [sortedRows]);
+
+  const mapFitBounds = useMemo(() => {
+    if (polygon) return polygonBounds(polygon);
+    return boundsFromPins(pins);
+  }, [polygon, pins]);
 
   const selectedListing = useMemo((): SidePanelListing | null => {
     if (!selected) return null;
@@ -193,7 +234,7 @@ export default function ScanResultsPage() {
     try {
       const res = await fetch(`/api/scans/${id}/repeat`, { method: "POST" });
       const data = (await res.json()) as { scanId?: string; error?: string };
-      if (!res.ok || !data.scanId) {
+      if ((!res.ok && res.status !== 202) || !data.scanId) {
         alert(data.error ?? "No se pudo repetir el scan");
         return;
       }
@@ -215,22 +256,38 @@ export default function ScanResultsPage() {
         repeating={repeating}
       />
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
-        {running && <ScanProgressOverlay activeStep={progressStep} />}
         <aside className="flex min-h-0 w-full shrink-0 flex-col border-r border-neutral-200 bg-[#f7f6f3] lg:w-[min(380px,34vw)]">
+          {loadError && (
+            <p className="mx-3 mt-3 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-900">
+              {loadError}
+            </p>
+          )}
+          {status === "failed" && !loadError && (
+            <p className="mx-3 mt-3 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-900">
+              El scan falló. Repite con otra zona o filtros más amplios.
+            </p>
+          )}
           <AppPanelHeader
             title="Resultados del scan"
             subtitle={`${sortedRows.length} ranking · ${mapCount} pisos en mapa (kelify + pisos.com)`}
           />
+          {scanFilters && (
+            <p className="mx-3 -mt-1 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[11px] text-neutral-700">
+              Filtros: {(scanFilters.priceMin ?? 0).toLocaleString("es-ES")}–
+              {(scanFilters.priceMax ?? 0).toLocaleString("es-ES")} € · dorm. según wizard
+            </p>
+          )}
           <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3">
             {mapFallback && sortedRows.length > 0 && (
               <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950">
-                Ningún piso pasó los filtros del scan (precio máx., dorm.). Mostramos los del mapa en esta
-                zona para que puedas revisarlos o repetir el scan con filtros más amplios.
+                Ningún piso encajó en el ranking del scan con tus filtros actuales. Mostramos anuncios en
+                la zona que sí cumplen precio y dormitorios (puede haber más en portales aún no scrapeados).
               </p>
             )}
             {sortedRows.length === 0 && status === "completed" && (
               <p className="rounded-xl border border-neutral-200 bg-white p-4 text-sm text-neutral-600">
-                Sin resultados. Amplía la zona o sube el precio máximo.
+                Sin resultados en inventario para esta zona y rango de precio. Prueba «Modo rango de precio de
+                compra» (p. ej. 120 000–130 000 €), amplía el radio o repite el scan.
               </p>
             )}
             {sortedRows.map((row) => (
@@ -249,8 +306,8 @@ export default function ScanResultsPage() {
                 sqm={row.listing.sqm}
                 city={row.listing.city}
                 selected={selected === row.listing.id}
-                onHover={() => setSelected(row.listing.id)}
-                onSelect={() => setSelected(row.listing.id)}
+                onHover={() => selectListing(row.listing.id, false)}
+                onSelect={() => selectListing(row.listing.id, true)}
                 compact
                 summary={summaries[row.listing.id] ?? null}
                 summaryLoading={summariesLoading}
@@ -259,11 +316,18 @@ export default function ScanResultsPage() {
           </div>
         </aside>
         <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden bg-neutral-100">
+          {running && rows.length === 0 && <ScanProgressOverlay activeStep={progressStep} />}
           <RoiScanMap
+            key={id}
             pins={roiPins}
             polygon={polygon}
+            zoneVisual="radius"
             selectedId={selected}
-            onSelectPin={setSelected}
+            onSelectPin={(pid) => selectListing(pid, true)}
+            initialView={SPAIN_VIEW}
+            mapFitBounds={mapFitBounds}
+            fitKey={`${id}-${pins.length}-${polygon ? "p" : "n"}`}
+            flyTo={flyTo}
             maxPins={72}
             className="absolute inset-0 h-full w-full"
           />

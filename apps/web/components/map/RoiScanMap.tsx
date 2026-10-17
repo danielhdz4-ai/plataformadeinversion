@@ -2,7 +2,8 @@
 
 import type { ScanPolygon } from "@/lib/scan/types";
 import { MapViewControls } from "@/components/map/MapViewControls";
-import { BARCELONA_VIEW, SPAIN_BBOX, SPAIN_MAX_BOUNDS, type SpainMapView } from "@/lib/map/spain-bounds";
+import { polygonBounds } from "@/lib/map/polygon-bounds";
+import { BARCELONA_VIEW, SPAIN_BBOX, SPAIN_MAX_BOUNDS, SPAIN_VIEW, type SpainMapView } from "@/lib/map/spain-bounds";
 import { layoutMapPins } from "@/lib/map/layout-map-pins";
 import { mapStyleFor, type MapTheme, type MapVisualMode } from "@/lib/map/map-styles";
 import maplibregl from "maplibre-gl";
@@ -15,6 +16,8 @@ export type RoiPin = {
   roi: number | null;
   price: number;
   rentEst?: number | null;
+  rentConfidence?: string | null;
+  geocodeQuality?: number | null;
 };
 
 type Props = {
@@ -22,7 +25,7 @@ type Props = {
   drawMode?: boolean;
   polygon?: ScanPolygon | null;
   onPolygonChange?: (polygon: ScanPolygon | null) => void;
-  onBboxChange?: (bbox: [number, number, number, number]) => void;
+  onBboxChange?: (bbox: [number, number, number, number], meta?: { zoom: number }) => void;
   selectedId?: string | null;
   onSelectPin?: (id: string) => void;
   className?: string;
@@ -35,6 +38,13 @@ type Props = {
   centerMarker?: { lng: number; lat: number } | null;
   /** Vista al crear el mapa (explorar = España; scan = Barcelona por defecto). */
   initialView?: SpainMapView;
+  /** Encuadra el mapa cuando cambia el polígono de scan (resultados / geocodificar). */
+  autoFitPolygon?: boolean;
+  /** Encuadra según pins (p. ej. resultados del scan) si no hay polígono. */
+  autoFitPins?: boolean;
+  /** Encuadre explícito (prioridad sobre autoFit*). Cambia fitKey al cambiar scan/zona. */
+  mapFitBounds?: [[number, number], [number, number]] | null;
+  fitKey?: string;
 };
 
 function isInSpain(lng: number, lat: number) {
@@ -62,7 +72,11 @@ export function RoiScanMap({
   maxPins = 120,
   zoneVisual = "radius",
   centerMarker = null,
-  initialView = BARCELONA_VIEW,
+  initialView = SPAIN_VIEW,
+  autoFitPolygon = false,
+  autoFitPins = false,
+  mapFitBounds = null,
+  fitKey = "",
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -77,10 +91,31 @@ export function RoiScanMap({
   const [theme, setTheme] = useState<MapTheme>("claro");
   const [visual, setVisual] = useState<MapVisualMode>("2d");
   const themeAppliedOnce = useRef(false);
+  const wasDrawModeRef = useRef(false);
+  const lastFitPolygonKeyRef = useRef<string | null>(null);
+  const lastFitPinsKeyRef = useRef<string | null>(null);
+  const lastExplicitFitKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     drawModeRef.current = drawMode;
-  }, [drawMode]);
+    const enteringDraw = drawMode && !wasDrawModeRef.current;
+    wasDrawModeRef.current = drawMode;
+    if (enteringDraw) {
+      drawRingRef.current = [];
+      const map = mapRef.current;
+      if (map && mapReady) updateDrawLayer(map, [], false);
+    }
+  }, [drawMode, mapReady]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+    if (drawMode) {
+      map.doubleClickZoom.disable();
+    } else {
+      map.doubleClickZoom.enable();
+    }
+  }, [drawMode, mapReady]);
 
   useEffect(() => {
     zoneVisualRef.current = zoneVisual;
@@ -117,18 +152,33 @@ export function RoiScanMap({
     mapRef.current = map;
     map.addControl(new maplibregl.NavigationControl(), "top-right");
 
-    const emitBbox = () => {
-      setZoom(map.getZoom());
+    let bboxTimer: ReturnType<typeof setTimeout> | null = null;
+    const emitBbox = (immediate = false) => {
+      const z = map.getZoom();
+      setZoom(z);
       const b = map.getBounds();
-      onBboxRef.current?.([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]);
+      const payload: [number, number, number, number] = [
+        b.getWest(),
+        b.getSouth(),
+        b.getEast(),
+        b.getNorth(),
+      ];
+      const fire = () => onBboxRef.current?.(payload, { zoom: z });
+      if (immediate) {
+        if (bboxTimer) clearTimeout(bboxTimer);
+        fire();
+        return;
+      }
+      if (bboxTimer) clearTimeout(bboxTimer);
+      bboxTimer = setTimeout(fire, 300);
     };
 
-    map.on("moveend", emitBbox);
-    map.on("zoomend", emitBbox);
+    map.on("moveend", () => emitBbox(false));
+    map.on("zoomend", () => emitBbox(false));
     map.once("load", () => {
       map.resize();
       setMapReady(true);
-      emitBbox();
+      emitBbox(true);
     });
 
     const ro = new ResizeObserver(() => {
@@ -136,15 +186,36 @@ export function RoiScanMap({
     });
     if (containerRef.current) ro.observe(containerRef.current);
 
-    map.on("click", (e) => {
+    const onMapClick = (e: maplibregl.MapMouseEvent) => {
       if (!drawModeRef.current) return;
+      if (polygonRef.current) return;
+      const target = e.originalEvent.target as HTMLElement | null;
+      if (target?.closest?.(".roi-pin, .map-view-controls, .map-draw-toolbar")) return;
       const { lng, lat } = e.lngLat;
       if (!isInSpain(lng, lat)) return;
       drawRingRef.current.push([lng, lat]);
       updateDrawLayer(map, drawRingRef.current, false);
-    });
+    };
+
+    const onMapDblClick = (e: maplibregl.MapMouseEvent) => {
+      if (!drawModeRef.current) return;
+      e.preventDefault();
+      const ring = drawRingRef.current;
+      if (ring.length < 3) return;
+      const closed: ScanPolygon = {
+        type: "Polygon",
+        coordinates: [[...ring, ring[0]!]],
+      };
+      updateDrawLayer(map, ring, true);
+      onPolyRef.current?.(closed);
+    };
+
+    map.on("click", onMapClick);
+    map.on("dblclick", onMapDblClick);
 
     return () => {
+      map.off("click", onMapClick);
+      map.off("dblclick", onMapDblClick);
       ro.disconnect();
       markersRef.current.forEach((m) => m.remove());
       markersRef.current = [];
@@ -189,8 +260,56 @@ export function RoiScanMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady || !flyTo) return;
-    map.flyTo({ center: flyTo.center, zoom: flyTo.zoom, essential: true });
+    map.flyTo({ center: flyTo.center, zoom: flyTo.zoom, essential: true, duration: 600 });
   }, [flyTo, mapReady]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady || !mapFitBounds) return;
+    const token = fitKey || JSON.stringify(mapFitBounds);
+    if (lastExplicitFitKeyRef.current === token) return;
+    lastExplicitFitKeyRef.current = token;
+    map.fitBounds(mapFitBounds, { padding: 56, maxZoom: 15, duration: 0 });
+  }, [mapFitBounds, mapReady, fitKey]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady || !autoFitPolygon || !polygon) return;
+    const key = JSON.stringify(polygon.coordinates[0]);
+    if (lastFitPolygonKeyRef.current === key) return;
+    lastFitPolygonKeyRef.current = key;
+    const bounds = polygonBounds(polygon);
+    map.fitBounds(bounds, { padding: 56, maxZoom: 15, duration: 700 });
+  }, [polygon, mapReady, autoFitPolygon]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady || !autoFitPins || pins.length === 0) return;
+    if (autoFitPolygon && polygon) return;
+    const key = pins
+      .map((p) => `${p.id}:${p.lng.toFixed(5)},${p.lat.toFixed(5)}`)
+      .sort()
+      .join("|");
+    if (lastFitPinsKeyRef.current === key) return;
+    lastFitPinsKeyRef.current = key;
+    let minLng = pins[0]!.lng;
+    let maxLng = pins[0]!.lng;
+    let minLat = pins[0]!.lat;
+    let maxLat = pins[0]!.lat;
+    for (const p of pins) {
+      if (p.lng < minLng) minLng = p.lng;
+      if (p.lng > maxLng) maxLng = p.lng;
+      if (p.lat < minLat) minLat = p.lat;
+      if (p.lat > maxLat) maxLat = p.lat;
+    }
+    map.fitBounds(
+      [
+        [minLng, minLat],
+        [maxLng, maxLat],
+      ],
+      { padding: 56, maxZoom: 15, duration: 700 }
+    );
+  }, [pins, mapReady, autoFitPins, autoFitPolygon, polygon]);
 
   function updateDrawLayer(map: maplibregl.Map, ring: [number, number][], closed: boolean) {
     const geojson =
@@ -253,7 +372,14 @@ export function RoiScanMap({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !mapReady || !polygon) return;
+    if (!map || !mapReady) return;
+    if (!polygon) {
+      if (!drawModeRef.current) updateDrawLayer(map, [], false);
+      return;
+    }
+    if (drawModeRef.current && drawRingRef.current.length > 0 && drawRingRef.current.length < 3) {
+      return;
+    }
     const ring = polygon.coordinates[0]!.slice(0, -1) as [number, number][];
     drawRingRef.current = ring;
     updateDrawLayer(map, ring, true);
@@ -273,7 +399,18 @@ export function RoiScanMap({
     for (const p of displayPins) {
       const el = document.createElement("button");
       el.type = "button";
-      el.className = `roi-pin${compact ? " compact" : ""}${selectedId === p.id ? " selected" : ""}`;
+      const conf = (p.rentConfidence ?? "").toLowerCase();
+      const confClass =
+        conf === "high" || conf === "alta"
+          ? " conf-high"
+          : conf === "low" || conf === "baja"
+            ? " conf-low"
+            : conf
+              ? " conf-med"
+              : "";
+      const approx =
+        p.geocodeQuality != null && p.geocodeQuality >= 5 && zoom >= 14 ? " approx-geo" : "";
+      el.className = `roi-pin${compact ? " compact" : ""}${confClass}${approx}${selectedId === p.id ? " selected" : ""}`;
       const roi = p.roi != null ? `${p.roi.toFixed(1)}%` : "—";
       const rent =
         !compact && p.rentEst ? ` · ${Math.round(p.rentEst)}€` : "";
@@ -284,8 +421,11 @@ export function RoiScanMap({
           : "Sin ROI";
       el.addEventListener("click", (ev) => {
         ev.stopPropagation();
+        ev.preventDefault();
         onSelectRef.current?.(p.id);
       });
+      el.addEventListener("mousedown", (ev) => ev.stopPropagation());
+      el.addEventListener("dblclick", (ev) => ev.stopPropagation());
       const marker = new maplibregl.Marker({ element: el, anchor: "bottom" })
         .setLngLat([p.lng, p.lat])
         .addTo(map);
@@ -336,7 +476,7 @@ export function RoiScanMap({
         <MapViewControls theme={theme} visual={visual} onTheme={setTheme} onVisual={setVisual} />
       )}
       {drawMode && (
-        <div className="absolute bottom-4 left-4 flex flex-wrap gap-2">
+        <div className="map-draw-toolbar absolute bottom-4 left-4 flex max-w-lg flex-wrap gap-2">
           <button
             type="button"
             onClick={closePolygon}
@@ -346,13 +486,24 @@ export function RoiScanMap({
           </button>
           <button
             type="button"
+            onClick={() => {
+              drawRingRef.current = drawRingRef.current.slice(0, -1);
+              const map = mapRef.current;
+              if (map) updateDrawLayer(map, drawRingRef.current, false);
+            }}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm shadow"
+          >
+            Deshacer punto
+          </button>
+          <button
+            type="button"
             onClick={resetDraw}
             className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm shadow"
           >
             Borrar
           </button>
           <span className="rounded-lg bg-white/90 px-3 py-2 text-xs text-slate-600 shadow">
-            Solo España: dibuja el polígono sobre el mapa
+            Clic en el mapa = vértice · doble clic o «Cerrar zona» (mín. 3) · los pins se seleccionan sin dibujar
           </span>
         </div>
       )}

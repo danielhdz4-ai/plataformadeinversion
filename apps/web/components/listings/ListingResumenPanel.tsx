@@ -44,11 +44,16 @@ export function ListingResumenPanel({
 
 }) {
 
-  const { roi, comparables, notary, neighborhood, officialMarket, priceEvolution } = summary;
+  const { roi, comparables, notary, neighborhood, officialMarket, priceEvolution, postalCode } =
+    summary;
 
   const saleLast = priceEvolution.saleM2[priceEvolution.saleM2.length - 1]?.y;
 
   const rentLast = priceEvolution.rentM2[priceEvolution.rentM2.length - 1]?.y;
+
+  const priceTrendLabel = postalCode
+    ? `CP ${postalCode} (indicativo, notariado)`
+    : "Mercado local (indicativo)";
 
 
 
@@ -148,7 +153,7 @@ export function ListingResumenPanel({
 
         <h4 className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
 
-          Evolución de precios — Barcelona (indicativo)
+          Evolución de precios — {priceTrendLabel}
 
         </h4>
 

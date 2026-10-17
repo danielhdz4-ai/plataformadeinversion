@@ -133,7 +133,7 @@ export function ListingDetailSidePanel({
 
   return (
     <aside
-      className={`${panelShell} fixed inset-y-0 right-0 z-40 shadow-2xl xl:static xl:shadow-none`}
+      className={`${panelShell} fixed inset-y-0 right-0 z-50 shadow-2xl xl:static xl:z-auto xl:shadow-none`}
     >
       <div className="shrink-0 border-b border-neutral-200 bg-[#f7f6f3]">
         {imgSrc && (
@@ -153,7 +153,9 @@ export function ListingDetailSidePanel({
                 )}
               </div>
               <h2 className="mt-1 line-clamp-2 text-sm font-semibold capitalize text-neutral-950">{title}</h2>
-              {resolved.city && <p className="text-xs text-neutral-500">{resolved.city}</p>}
+              {resolved.city && (
+                <p className="text-xs text-neutral-500">{decodeListingTitle(resolved.city)}</p>
+              )}
               {specs && <p className="text-xs text-neutral-600">{specs}</p>}
             </div>
             {onClose && (
