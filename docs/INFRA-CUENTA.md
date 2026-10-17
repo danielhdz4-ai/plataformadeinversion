@@ -34,4 +34,10 @@
 
 ## CLI en máquina de desarrollo
 
-Si `gh auth status` o `vercel whoami` no muestran `danielhdz4-ai`, el agente debe alinear sesión antes de push/deploy (sin molestar al usuario salvo login interactivo imposible).
+| Herramienta | Estado típico | Acción agente |
+|-------------|---------------|---------------|
+| `gh` | Debe operar como **`danielhdz4-ai`**. Si solo aparece `danielhdz-ai` en `gh api user`, no puede crear repos en `danielhdz4-ai` hasta `gh auth login` en esa cuenta (único paso que puede requerir navegador). |
+| `vercel` | Alinear con **`danielhdz4-ai`** (`vercel login` / switch team) antes de deploy. |
+| `supabase` | `supabase link --project-ref bwxyskymbgyaidhubhnt` tras login CLI. |
+
+Repo Git objetivo: **`https://github.com/danielhdz4-ai/plataformadeinversion`** (privado). Commit local existe aunque el remote falte hasta auth correcta.
