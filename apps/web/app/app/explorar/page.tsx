@@ -13,6 +13,7 @@ import { SPAIN_VIEW } from "@/lib/map/spain-bounds";
 import { decodeListingTitle } from "@/lib/decode-html";
 import { AppPanelHeader } from "@/components/app/AppPanelHeader";
 import Link from "next/link";
+import { portalBadge } from "@/lib/portals";
 import { useCallback, useMemo, useRef, useState } from "react";
 
 type ListingPin = {
@@ -51,6 +52,18 @@ export default function ExplorarPage() {
     const data = (await res.json()) as { features: ListingPin[] };
     setListings(data.features ?? []);
   }, []);
+
+  const portalSummary = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const l of listings) {
+      const key = l.source ?? "unknown";
+      counts[key] = (counts[key] ?? 0) + 1;
+    }
+    const parts = Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([key, n]) => `${portalBadge(key).name} ${n}`);
+    return parts.length > 0 ? parts.join(" · ") : null;
+  }, [listings]);
 
   async function requestCoverage() {
     const bbox = lastBboxRef.current;
@@ -115,7 +128,11 @@ export default function ExplorarPage() {
       <aside className="flex min-h-0 w-full shrink-0 flex-col border-r border-neutral-200 bg-[#f7f6f3] lg:w-[min(380px,34vw)]">
         <AppPanelHeader
           title="Explorar mercado"
-          subtitle={`${listings.length} ventas activas · kelify · pisos.com · Hipoges · Solvia · Fotocasa · habitaclia`}
+          subtitle={
+            listings.length === 0
+              ? "Acerca el mapa a una ciudad con cobertura"
+              : `${listings.length} ventas activas${portalSummary ? ` · ${portalSummary}` : ""}`
+          }
           action={
             <Link
               href="/app/scan/nuevo"

@@ -1,6 +1,9 @@
 import { decodeListingTitle } from "@/lib/decode-html";
 import { isResidentialPropertyKind } from "@/lib/listing/residential-kind";
-import { balanceListingsByPortal } from "@/lib/map/balance-listings-by-portal";
+import {
+  balanceListingsByPortal,
+  interleaveByPortal,
+} from "@/lib/map/balance-listings-by-portal";
 import {
   loadMapListingsInBbox,
   MAP_LISTINGS_FETCH,
@@ -92,7 +95,27 @@ export async function GET(req: NextRequest) {
     MAP_LISTINGS_FETCH
   );
 
-  const features = balancedRows.map(
+  type MapFeature = {
+    id: string;
+    lng: number;
+    lat: number;
+    roi: number | null;
+    price: number;
+    geocodeQuality: number | null;
+    rentConfidence: string | null;
+    source: string | null;
+    title: string | null;
+    sourceUrl: string | null;
+    city: string | null;
+    thumbnailUrl: string | null;
+    bedrooms: number | null;
+    bathrooms: number | null;
+    sqm: number | null;
+    rentEst: number | null;
+    scrapedAt: string | null;
+  };
+
+  const features: MapFeature[] = balancedRows.map(
     (row: MapBboxRow) => {
       const m = metaMap.get(row.id) as Record<string, unknown> | undefined;
       const inv = m?.listing_investment as
@@ -125,5 +148,7 @@ export async function GET(req: NextRequest) {
     }
   );
 
-  return NextResponse.json({ features });
+  const interleaved = interleaveByPortal(features, (f) => f.source);
+
+  return NextResponse.json({ features: interleaved });
 }

@@ -22,18 +22,6 @@ export const MAP_PORTALS = [
   "habitaclia",
 ] as const;
 
-/** Bbox mayor que ~una comunidad autónoma → mezclar fuentes por portal. */
-export function isLargeMapBbox(
-  minLng: number,
-  minLat: number,
-  maxLng: number,
-  maxLat: number
-): boolean {
-  const spanLng = Math.abs(maxLng - minLng);
-  const spanLat = Math.abs(maxLat - minLat);
-  return spanLng * spanLat > 2.2;
-}
-
 type RpcArgs = {
   min_lng: number;
   min_lat: number;
@@ -43,47 +31,59 @@ type RpcArgs = {
   portal_filter?: string;
 };
 
+/** Top-N por ROI en un solo portal domina el mapa; pedimos cupo por fuente. */
 export async function loadMapListingsInBbox(
   supabase: SupabaseClient,
   bbox: { minLng: number; minLat: number; maxLng: number; maxLat: number }
 ): Promise<{ rows: MapBboxRow[]; error?: string }> {
+  const perPortal = Math.max(40, Math.ceil(MAP_LISTINGS_LIMIT / MAP_PORTALS.length));
   const base: RpcArgs = {
     min_lng: bbox.minLng,
     min_lat: bbox.minLat,
     max_lng: bbox.maxLng,
     max_lat: bbox.maxLat,
-    max_rows: MAP_LISTINGS_FETCH,
+    max_rows: perPortal,
   };
 
-  if (!isLargeMapBbox(bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat)) {
-    const { data, error } = await supabase.rpc("map_listings_in_bbox", base);
-    if (error) return { rows: [], error: error.message };
-    return { rows: (data ?? []) as MapBboxRow[] };
-  }
-
-  const perPortal = Math.max(40, Math.ceil(MAP_LISTINGS_LIMIT / MAP_PORTALS.length));
   const merged = new Map<string, MapBboxRow>();
+  let portalFilterMissing = false;
 
-  for (const portal of MAP_PORTALS) {
-    const { data, error } = await supabase.rpc("map_listings_in_bbox", {
-      ...base,
-      max_rows: perPortal,
-      portal_filter: portal,
-    });
+  const batches = await Promise.all(
+    MAP_PORTALS.map(async (portal) => {
+      const { data, error } = await supabase.rpc("map_listings_in_bbox", {
+        ...base,
+        portal_filter: portal,
+      });
+      return { portal, data, error };
+    })
+  );
+
+  for (const { data, error } of batches) {
     if (error) {
       if (
         error.message.includes("portal_filter") ||
         error.message.includes("Could not find the function")
       ) {
-        const fallback = await supabase.rpc("map_listings_in_bbox", base);
-        if (fallback.error) return { rows: [], error: fallback.error.message };
-        return { rows: (fallback.data ?? []) as MapBboxRow[] };
+        portalFilterMissing = true;
+        break;
       }
       return { rows: [], error: error.message };
     }
     for (const row of (data ?? []) as MapBboxRow[]) {
       merged.set(row.id, row);
     }
+  }
+
+  if (portalFilterMissing) {
+    const { data, error } = await supabase.rpc("map_listings_in_bbox", {
+      min_lng: base.min_lng,
+      min_lat: base.min_lat,
+      max_lng: base.max_lng,
+      max_lat: base.max_lat,
+      max_rows: MAP_LISTINGS_FETCH,
+    });
+    if (error) return { rows: [], error: error.message };
+    return { rows: (data ?? []) as MapBboxRow[] };
   }
 
   return { rows: [...merged.values()] };

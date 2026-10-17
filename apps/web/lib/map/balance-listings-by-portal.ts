@@ -39,3 +39,40 @@ export function balanceListingsByPortal<T extends { id: string }>(
 
   return picked;
 }
+
+/** Lista en UI: alternar fuentes para que no parezca solo pisos.com arriba del todo. */
+export function interleaveByPortal<T>(
+  items: T[],
+  portalFor: (item: T) => string | null | undefined
+): T[] {
+  if (items.length <= 1) return items;
+
+  const byPortal = new Map<string, T[]>();
+  for (const item of items) {
+    const portal = portalFor(item) ?? "unknown";
+    const list = byPortal.get(portal);
+    if (list) list.push(item);
+    else byPortal.set(portal, [item]);
+  }
+
+  if (byPortal.size <= 1) return items;
+
+  const portals = [...byPortal.keys()];
+  const out: T[] = [];
+  let round = 0;
+
+  while (out.length < items.length) {
+    let added = false;
+    for (const portal of portals) {
+      const row = byPortal.get(portal)?.[round];
+      if (!row) continue;
+      out.push(row);
+      added = true;
+      if (out.length >= items.length) break;
+    }
+    if (!added) break;
+    round++;
+  }
+
+  return out;
+}
