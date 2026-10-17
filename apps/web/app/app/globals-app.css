@@ -1,0 +1,36 @@
+/* Shell tipo ROI Explorer — claro, mapa protagonista */
+.app-light {
+  --app-bg: #f4f6f8;
+  --app-panel: #ffffff;
+  --app-border: #e2e8f0;
+  --app-text: #0f172a;
+  --app-muted: #64748b;
+  --app-accent: #0d9488;
+  --app-accent-soft: #ccfbf1;
+  background: var(--app-bg);
+  color: var(--app-text);
+}
+
+.app-light .glass-panel {
+  background: var(--app-panel);
+  border-color: var(--app-border);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 6%);
+}
+
+.roi-pin {
+  background: #fff;
+  border: 2px solid #e4e4e7;
+  color: #0f172a;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.roi-pin.selected {
+  background: #0d9488;
+  color: #fff;
+}

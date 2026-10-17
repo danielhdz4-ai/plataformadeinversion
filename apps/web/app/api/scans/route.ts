@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { openAccessUserId } from "@/lib/open-access";
+import { getDbClient, requireAppUser } from "@/lib/supabase/request-client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -12,11 +13,12 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized", code: "AUTH" }, { status: 401 });
+  const auth = await requireAppUser();
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error, code: "AUTH" }, { status: auth.status });
+  }
+  const supabase = await getDbClient();
+  const user = auth.user;
 
   const json = await req.json();
   const parsed = bodySchema.safeParse(json);
@@ -27,7 +29,7 @@ export async function POST(req: NextRequest) {
   const { data, error } = await supabase
     .from("scans")
     .insert({
-      user_id: user.id,
+      user_id: user.id || openAccessUserId(),
       polygon: parsed.data.polygon,
       filters: parsed.data.filters ?? {},
       operation: parsed.data.operation,

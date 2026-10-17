@@ -29,7 +29,9 @@ El agente **hace sin preguntar**:
 - Comprar dominio, DNS.
 - Decisiones de producto o gasto > 0 € sin autorización.
 
-Si falta login CLI en la máquina, usar la cuenta ya autenticada en keyring y seguir (push/deploy); no mandar tutoriales al usuario.
+Antes de `gh repo create` o `git push`: usar cuenta **`danielhdz4-ai`**. Push canónico: `node scripts/ops/git-push-main.mjs` (lee `GH_TOKEN` de `.env.local`). No pedir PowerShell al usuario. **Nunca** usar `danielhdz-ai` / `danielhdz3-ai` en remoto.
+
+Antes de `vercel deploy` / `vercel link`: **`vercel teams ls` debe incluir `danielhdz4-ais-projects`** y el proyecto enlazado debe estar en ese scope (no `danielhdz3-ais-projects`). Si `.vercel/project.json` apunta a otro team, borrar `.vercel` y `vercel link --scope danielhdz4-ais-projects`.
 
 ## Stack fijo
 

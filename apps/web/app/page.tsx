@@ -1,33 +1,34 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export default function LandingPage() {
+  if (process.env.NEXT_PUBLIC_OPEN_ACCESS === "1") {
+    redirect("/app/scan/nuevo");
+  }
+
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col justify-center gap-8 px-6 py-16">
-      <p className="text-sm uppercase tracking-widest text-emerald-400">ROI-first · España</p>
-      <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
-        Encuentra pisos con ROI defendible antes de comprar
+    <main className="mx-auto flex min-h-screen max-w-5xl flex-col justify-center gap-10 bg-[#f7f6f3] px-6 py-16">
+      <p className="text-sm uppercase tracking-widest text-neutral-500">Plataforma de inversión</p>
+      <h1 className="max-w-3xl text-4xl font-semibold leading-tight text-neutral-950 md:text-5xl">
+        ROI defendible en minutos, no en Excel
       </h1>
-      <p className="max-w-2xl text-lg text-slate-300">
-        Dibuja una zona en el mapa, filtra oportunidades de compra y contrasta renta estimada con
-        comparables y datos oficiales.
+      <p className="max-w-2xl text-lg text-neutral-600">
+        Scan geográfico, ranking buy-to-let, kelify y pisos.com en mapa.
       </p>
       <div className="flex flex-wrap gap-4">
         <Link
-          href="/login"
-          className="rounded-lg bg-emerald-500 px-6 py-3 font-medium text-slate-950 hover:bg-emerald-400"
+          href="/app/scan/nuevo"
+          className="rounded-lg bg-neutral-950 px-6 py-3 font-medium text-white hover:bg-neutral-800"
         >
-          Probar scan
+          Entrar a la plataforma
         </Link>
         <Link
-          href="/app/calculator"
-          className="rounded-lg border border-slate-600 px-6 py-3 hover:border-slate-400"
+          href="/app/explorar"
+          className="rounded-lg border border-neutral-300 bg-white px-6 py-3 hover:border-neutral-950"
         >
-          Calculadora buy-to-let
+          Explorar mapa
         </Link>
       </div>
-      <p className="text-xs text-slate-500">
-        Información orientativa, no asesoramiento financiero, legal ni fiscal.
-      </p>
     </main>
   );
 }

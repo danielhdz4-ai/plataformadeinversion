@@ -1,0 +1,109 @@
+{
+  "source": "penotariado",
+  "postalCode": "08026",
+  "placeName": "Sant Martí · Barcelona",
+  "reportDate": "2026-10-13",
+  "periodFrom": "2025-08",
+  "periodTo": "2026-07",
+  "filters": {
+    "propertyType": "Todos",
+    "constructionType": "Todos"
+  },
+  "summary": {
+    "priceM2": 4448,
+    "salesCount": 365,
+    "avgAmount": 313753,
+    "avgSurface": 71
+  },
+  "monthly": {
+    "labels": [
+      "2025-08",
+      "2025-09",
+      "2025-10",
+      "2025-11",
+      "2025-12",
+      "2026-01",
+      "2026-02",
+      "2026-03",
+      "2026-04",
+      "2026-05",
+      "2026-06",
+      "2026-07"
+    ],
+    "priceM2": [4316, 4086, 4772, 4478, 3755, 4545, 4610, 4096, 5087, 4574, 5059, 4256],
+    "salesCount": [11, 41, 29, 26, 47, 29, 32, 22, 39, 22, 31, 36],
+    "avgAmount": [324091, 305788, 326463, 314609, 283138, 282137, 315300, 303112, 353329, 315600, 362342, 292543]
+  },
+  "additional": {
+    "priceChangePct12m": 9.33,
+    "priceChangeByYear": [
+      { "year": 2016, "pct": 9.45 },
+      { "year": 2017, "pct": 37.75 },
+      { "year": 2018, "pct": -11.84 },
+      { "year": 2019, "pct": 14.52 },
+      { "year": 2020, "pct": -1.56 },
+      { "year": 2021, "pct": 5.11 },
+      { "year": 2022, "pct": -5.12 },
+      { "year": 2023, "pct": 9.89 },
+      { "year": 2024, "pct": 7.84 },
+      { "year": 2025, "pct": 9.33 }
+    ],
+    "medianPriceM2": 4235,
+    "medianByYear": [
+      { "year": 2014, "priceM2": 1958 },
+      { "year": 2015, "priceM2": 2145 },
+      { "year": 2016, "priceM2": 2340 },
+      { "year": 2017, "priceM2": 3099 },
+      { "year": 2018, "priceM2": 3268 },
+      { "year": 2019, "priceM2": 3368 },
+      { "year": 2020, "priceM2": 3294 },
+      { "year": 2021, "priceM2": 3306 },
+      { "year": 2022, "priceM2": 3456 },
+      { "year": 2023, "priceM2": 3545 },
+      { "year": 2024, "priceM2": 3772 },
+      { "year": 2025, "priceM2": 4235 }
+    ],
+    "newBuildPct": 1.92,
+    "secondHandPct": 98.08,
+    "housesPct": 4.93,
+    "flatsPct": 95.07
+  },
+  "sociodemographic": {
+    "buyerAgeDistribution": [
+      { "band": "Menores de 31 años", "pct": 10.33 },
+      { "band": "De 31 a 40 años", "pct": 43.48 },
+      { "band": "De 41 a 50 años", "pct": 22.83 },
+      { "band": "De 51 a 60 años", "pct": 14.13 },
+      { "band": "De 61 a 70 años", "pct": 7.34 },
+      { "band": "Mayores de 70 años", "pct": 1.9 }
+    ],
+    "medianBuyerAge": 39,
+    "medianBuyerAgeByYear": [
+      { "year": 2014, "age": 43 },
+      { "year": 2015, "age": 44 },
+      { "year": 2016, "age": 43 },
+      { "year": 2017, "age": 44 },
+      { "year": 2018, "age": 43 },
+      { "year": 2019, "age": 42 },
+      { "year": 2020, "age": 42 },
+      { "year": 2021, "age": 41 },
+      { "year": 2022, "age": 41 },
+      { "year": 2023, "age": 42 },
+      { "year": 2024, "age": 41 },
+      { "year": 2025, "age": 39 }
+    ],
+    "naturalPersonsPct": 92.1,
+    "legalEntitiesPct": 7.9,
+    "nationalBuyersPct": 68.23,
+    "foreignBuyersPct": 31.77,
+    "foreignByNationality": [
+      { "country": "Italia", "residentsPct": 29.03, "nonResidentsPct": 3.23, "totalPct": 32.26 },
+      { "country": "Francia", "residentsPct": 12.1, "nonResidentsPct": 0, "totalPct": 12.1 },
+      { "country": "China", "residentsPct": 6.45, "nonResidentsPct": 0, "totalPct": 6.45 },
+      { "country": "Alemania", "residentsPct": 6.45, "nonResidentsPct": 0, "totalPct": 6.45 },
+      { "country": "Rusia", "residentsPct": 6.45, "nonResidentsPct": 0, "totalPct": 6.45 },
+      { "country": "Otros", "residentsPct": 36.29, "nonResidentsPct": 0, "totalPct": 36.29 }
+    ]
+  },
+  "sourceUrl": "https://www.penotariado.com/inmobiliario/es/home"
+}

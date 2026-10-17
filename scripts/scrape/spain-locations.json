@@ -1,0 +1,107 @@
+{
+  "tier1": [
+    {
+      "slug": "barcelona",
+      "name": "Barcelona",
+      "ccaa": "Cataluña",
+      "pisosSlug": "barcelona",
+      "bbox": [2.05, 41.32, 2.25, 41.48],
+      "regionPattern": "barcelona"
+    },
+    {
+      "slug": "madrid",
+      "name": "Madrid",
+      "ccaa": "Comunidad de Madrid",
+      "pisosSlug": "madrid",
+      "bbox": [-3.88, 40.31, -3.52, 40.56],
+      "regionPattern": "madrid"
+    },
+    {
+      "slug": "valencia",
+      "name": "Valencia",
+      "ccaa": "Comunidad Valenciana",
+      "pisosSlug": "valencia",
+      "bbox": [-0.55, 39.30, -0.25, 39.52]
+    },
+    {
+      "slug": "sevilla",
+      "name": "Sevilla",
+      "ccaa": "Andalucía",
+      "pisosSlug": "sevilla",
+      "bbox": [-6.08, 37.30, -5.88, 37.44],
+      "regionPattern": "sevilla"
+    },
+    {
+      "slug": "malaga",
+      "name": "Málaga",
+      "ccaa": "Andalucía",
+      "pisosSlug": "malaga",
+      "bbox": [-4.52, 36.66, -4.32, 36.78]
+    },
+    {
+      "slug": "bilbao",
+      "name": "Bilbao",
+      "ccaa": "País Vasco",
+      "pisosSlug": "bilbao",
+      "bbox": [-3.02, 43.20, -2.88, 43.30]
+    },
+    {
+      "slug": "zaragoza",
+      "name": "Zaragoza",
+      "ccaa": "Aragón",
+      "pisosSlug": "zaragoza",
+      "bbox": [-1.00, 41.60, -0.82, 41.70]
+    },
+    {
+      "slug": "murcia",
+      "name": "Murcia",
+      "ccaa": "Región de Murcia",
+      "pisosSlug": "murcia",
+      "bbox": [-1.20, 37.93, -1.06, 38.04]
+    }
+  ],
+  "tier2": [
+    { "slug": "a-coruna", "name": "A Coruña", "ccaa": "Galicia", "pisosSlug": "a-coruna", "pisosSkip": true, "kelifySlug": "a-coruna", "center": [-8.4, 43.37], "bboxDelta": 0.08 },
+    { "slug": "albacete", "name": "Albacete", "ccaa": "Castilla-La Mancha", "pisosSlug": "albacete", "center": [-1.86, 38.99], "bboxDelta": 0.07 },
+    { "slug": "alicante", "name": "Alicante", "ccaa": "Comunidad Valenciana", "pisosSlug": "alicante", "center": [-0.48, 38.35], "bboxDelta": 0.08 },
+    { "slug": "almeria", "name": "Almería", "ccaa": "Andalucía", "pisosSlug": "almeria", "center": [-2.46, 36.84], "bboxDelta": 0.07 },
+    { "slug": "avila", "name": "Ávila", "ccaa": "Castilla y León", "pisosSlug": "avila", "center": [-4.7, 40.65], "bboxDelta": 0.06 },
+    { "slug": "badajoz", "name": "Badajoz", "ccaa": "Extremadura", "pisosSlug": "badajoz", "center": [-6.97, 38.88], "bboxDelta": 0.07 },
+    { "slug": "burgos", "name": "Burgos", "ccaa": "Castilla y León", "pisosSlug": "burgos", "center": [-3.7, 42.34], "bboxDelta": 0.07 },
+    { "slug": "caceres", "name": "Cáceres", "ccaa": "Extremadura", "pisosSlug": "caceres", "center": [-6.37, 39.47], "bboxDelta": 0.07 },
+    { "slug": "cadiz", "name": "Cádiz", "ccaa": "Andalucía", "pisosSlug": "cadiz", "center": [-6.14, 36.53], "bboxDelta": 0.07 },
+    { "slug": "castellon", "name": "Castellón", "ccaa": "Comunidad Valenciana", "pisosSlug": "castellon", "center": [-0.05, 39.99], "bboxDelta": 0.07 },
+    { "slug": "ciudad-real", "name": "Ciudad Real", "ccaa": "Castilla-La Mancha", "pisosSlug": "ciudad-real", "pisosSkip": true, "kelifySlug": "ciudad-real", "center": [-3.93, 38.98], "bboxDelta": 0.1 },
+    { "slug": "cordoba", "name": "Córdoba", "ccaa": "Andalucía", "pisosSlug": "cordoba", "center": [-4.78, 37.88], "bboxDelta": 0.08 },
+    { "slug": "cuenca", "name": "Cuenca", "ccaa": "Castilla-La Mancha", "pisosSlug": "cuenca", "center": [-2.13, 40.07], "bboxDelta": 0.06 },
+    { "slug": "girona", "name": "Girona", "ccaa": "Cataluña", "pisosSlug": "girona", "center": [2.82, 41.98], "bboxDelta": 0.07 },
+    { "slug": "granada", "name": "Granada", "ccaa": "Andalucía", "pisosSlug": "granada", "center": [-3.6, 37.18], "bboxDelta": 0.08 },
+    { "slug": "guadalajara", "name": "Guadalajara", "ccaa": "Castilla-La Mancha", "pisosSlug": "guadalajara", "center": [-3.16, 40.63], "bboxDelta": 0.07 },
+    { "slug": "huelva", "name": "Huelva", "ccaa": "Andalucía", "pisosSlug": "huelva", "center": [-6.95, 37.26], "bboxDelta": 0.07 },
+    { "slug": "huesca", "name": "Huesca", "ccaa": "Aragón", "pisosSlug": "huesca", "center": [-0.41, 42.14], "bboxDelta": 0.06 },
+    { "slug": "jaen", "name": "Jaén", "ccaa": "Andalucía", "pisosSlug": "jaen", "center": [-3.79, 37.77], "bboxDelta": 0.07 },
+    { "slug": "las-palmas", "name": "Las Palmas", "ccaa": "Canarias", "pisosSlug": "islas-canarias", "bbox": [-15.55, 27.95, -15.25, 28.25] },
+    { "slug": "leon", "name": "León", "ccaa": "Castilla y León", "pisosSlug": "leon", "center": [-5.57, 42.6], "bboxDelta": 0.07 },
+    { "slug": "lleida", "name": "Lleida", "ccaa": "Cataluña", "pisosSlug": "lleida", "center": [0.62, 41.62], "bboxDelta": 0.07 },
+    { "slug": "logrono", "name": "Logroño", "ccaa": "La Rioja", "pisosSlug": "logrono", "center": [-2.45, 42.47], "bboxDelta": 0.06 },
+    { "slug": "lugo", "name": "Lugo", "ccaa": "Galicia", "pisosSlug": "lugo", "center": [-7.56, 43.01], "bboxDelta": 0.07 },
+    { "slug": "ourense", "name": "Ourense", "ccaa": "Galicia", "pisosSlug": "ourense", "center": [-7.86, 42.34], "bboxDelta": 0.07 },
+    { "slug": "oviedo", "name": "Oviedo", "ccaa": "Asturias", "pisosSlug": "oviedo", "center": [-5.84, 43.36], "bboxDelta": 0.07 },
+    { "slug": "palencia", "name": "Palencia", "ccaa": "Castilla y León", "pisosSlug": "palencia", "center": [-4.53, 42.01], "bboxDelta": 0.06 },
+    { "slug": "palma", "name": "Palma", "ccaa": "Baleares", "pisosSlug": "palma", "center": [2.65, 39.57], "bboxDelta": 0.1 },
+    { "slug": "pamplona", "name": "Pamplona", "ccaa": "Navarra", "pisosSlug": "pamplona", "center": [-1.64, 42.82], "bboxDelta": 0.07 },
+    { "slug": "pontevedra", "name": "Pontevedra", "ccaa": "Galicia", "pisosSlug": "pontevedra", "center": [-8.64, 42.43], "bboxDelta": 0.06 },
+    { "slug": "salamanca", "name": "Salamanca", "ccaa": "Castilla y León", "pisosSlug": "salamanca", "center": [-5.66, 40.97], "bboxDelta": 0.07 },
+    { "slug": "san-sebastian", "name": "San Sebastián", "ccaa": "País Vasco", "pisosSlug": "guipuzcoa", "center": [-1.98, 43.32], "bboxDelta": 0.12 },
+    { "slug": "santander", "name": "Santander", "ccaa": "Cantabria", "pisosSlug": "santander", "center": [-3.8, 43.46], "bboxDelta": 0.07 },
+    { "slug": "santa-cruz-tenerife", "name": "Santa Cruz de Tenerife", "ccaa": "Canarias", "pisosSlug": "santa-cruz-de-tenerife", "center": [-16.25, 28.46], "bboxDelta": 0.09 },
+    { "slug": "segovia", "name": "Segovia", "ccaa": "Castilla y León", "pisosSlug": "segovia", "center": [-4.12, 40.94], "bboxDelta": 0.06 },
+    { "slug": "soria", "name": "Soria", "ccaa": "Castilla y León", "pisosSlug": "soria", "center": [-2.47, 41.76], "bboxDelta": 0.06 },
+    { "slug": "tarragona", "name": "Tarragona", "ccaa": "Cataluña", "pisosSlug": "tarragona", "center": [1.24, 41.12], "bboxDelta": 0.07 },
+    { "slug": "teruel", "name": "Teruel", "ccaa": "Aragón", "pisosSlug": "teruel", "center": [-1.11, 40.34], "bboxDelta": 0.06 },
+    { "slug": "toledo", "name": "Toledo", "ccaa": "Castilla-La Mancha", "pisosSlug": "toledo", "center": [-4.02, 39.86], "bboxDelta": 0.07 },
+    { "slug": "valladolid", "name": "Valladolid", "ccaa": "Castilla y León", "pisosSlug": "valladolid", "center": [-4.72, 41.65], "bboxDelta": 0.08 },
+    { "slug": "vitoria-gasteiz", "name": "Vitoria-Gasteiz", "ccaa": "País Vasco", "pisosSlug": "vitoria", "pisosSkip": true, "kelifySlug": "vitoria-gasteiz", "center": [-2.67, 42.85], "bboxDelta": 0.08 },
+    { "slug": "zamora", "name": "Zamora", "ccaa": "Castilla y León", "pisosSlug": "zamora", "center": [-5.75, 41.5], "bboxDelta": 0.06 }
+  ]
+}

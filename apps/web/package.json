@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 3000",
-    "build": "pnpm --filter @pi/roi-engine build && next build",
+    "build": "pnpm --filter @pi/roi-engine build && pnpm --filter @pi/catastro-client build && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@pi/catastro-client": "workspace:*",
     "@pi/db-types": "workspace:*",
     "@pi/roi-engine": "workspace:*",
     "@supabase/ssr": "^0.6.1",

@@ -29,7 +29,8 @@
 
 ## GitHub
 
-- Repo remoto: https://github.com/danielhdz-ai/plataformadeinversion (privado; CLI `gh` en esta máquina).
+- Repo remoto (canónico): https://github.com/danielhdz4-ai/plataformadeinversion (privado).
+- Vercel: **`danielhdz4-ais-projects/plataformadeinversion`** — prod https://plataformadeinversion-three.vercel.app (Git conectado a repo canónico).
 - Secrets Actions (fase scrapers/enrich): `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`, etc.
 
 ## CLI en máquina de desarrollo
@@ -40,4 +41,6 @@
 | `vercel` | Alinear con **`danielhdz4-ai`** (`vercel login` / switch team) antes de deploy. |
 | `supabase` | `supabase link --project-ref bwxyskymbgyaidhubhnt` tras login CLI. |
 
-Repo Git objetivo: **`https://github.com/danielhdz4-ai/plataformadeinversion`** (privado). Commit local existe aunque el remote falte hasta auth correcta.
+Repo Git objetivo: **`https://github.com/danielhdz4-ai/plataformadeinversion`** (privado).
+
+**Checklist de conexiones (Supabase schema, Vercel env, GitHub secrets):** ver **`docs/CONEXIONES.md`**.

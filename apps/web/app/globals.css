@@ -1,14 +1,68 @@
 @import "tailwindcss";
 @import "maplibre-gl/dist/maplibre-gl.css";
 
+/* Gestorhogar-style: hueso + negro */
 :root {
-  --background: #0a0f1a;
-  --foreground: #f1f5f9;
-  --accent: #22c55e;
+  --bone: #f7f6f3;
+  --paper: #ffffff;
+  --ink: #0a0a0a;
+  --ink-muted: #525252;
+  --line: #e5e5e5;
+  --background: var(--bone);
+  --foreground: var(--ink);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: system-ui, sans-serif;
+  background: var(--bone);
+  color: var(--ink);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+.glass-panel {
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+.roi-pin {
+  background: #fff;
+  border: 2px solid #0a0a0a;
+  color: #0a0a0a;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.roi-pin.selected {
+  background: #0a0a0a;
+  color: #fff;
+}
+
+.roi-pin.compact {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-width: 1px;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 10%);
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #roi-calculator-print,
+  #roi-calculator-print * {
+    visibility: visible;
+  }
+  #roi-calculator-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    display: block !important;
+    overflow: visible !important;
+  }
 }

@@ -6,7 +6,26 @@
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm --filter @pi/roi-engine test"
+    "test": "pnpm --filter @pi/roi-engine test",
+    "db:apply": "node scripts/db-apply.mjs",
+    "scrape:barcelona": "node --env-file=.env.local scripts/scrapers/scrape-all-barcelona.mjs",
+    "thumbnails:backfill": "node --env-file=.env.local scripts/jobs/backfill-thumbnails.mjs",
+    "geocode:kelify": "node --env-file=.env.local scripts/jobs/geocode-kelify-listings.mjs",
+    "notary:sync": "node --env-file=.env.local scripts/jobs/sync-notary-barcelona-cp.mjs",
+    "notary:import": "node --env-file=.env.local scripts/jobs/import-notary-json.mjs",
+    "precompute:roi": "node --env-file=.env.local scripts/jobs/precompute-roi.mjs",
+    "scrape:tier1": "node --env-file=.env.local scripts/scrapers/pisos-sale-city.mjs",
+    "scrape:spain-batch": "node --env-file=.env.local scripts/jobs/scrape-spain-batch.mjs",
+    "scrape:spain-tier2": "node --env-file=.env.local scripts/jobs/scrape-spain-batch.mjs",
+    "scrape:kelify-tier1": "node --env-file=.env.local scripts/jobs/scrape-kelify-batch.mjs",
+    "git:push": "node scripts/ops/git-push-main.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.1",
+    "postgres": "^3.4.5"
   },
   "packageManager": "pnpm@10.33.2"
 }

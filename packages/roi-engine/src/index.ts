@@ -102,3 +102,70 @@ export function grossRoiPct(purchasePrice: number, monthlyRent: number): number 
   if (purchasePrice <= 0) return 0;
   return ((monthlyRent * 12) / purchasePrice) * 100;
 }
+
+import { monthlyMortgagePayment } from "./mortgage.js";
+
+export { monthlyMortgagePayment, mortgageSplit } from "./mortgage.js";
+export type { MortgageSplit } from "./mortgage.js";
+export {
+  calculateAirbnbPro,
+  calculateBuyToLetPro,
+  calculateFlip,
+} from "./calculator.js";
+export type {
+  AirbnbCalculatorInput,
+  AirbnbCalculatorResult,
+  BuyToLetCalculatorInput,
+  BuyToLetCalculatorResult,
+  CalculatorMode,
+  FlipCalculatorInput,
+  FlipCalculatorResult,
+} from "./calculator.js";
+
+/**
+ * Precio máximo de compra si el efectivo inicial cubre entrada + impuestos (ITP/AJD…).
+ * Ej.: 50 000 € efectivo, 20 % entrada + 7,7 % impuestos → ~180 505 €.
+ */
+export function maxPurchasePriceFromCash(params: {
+  cashBudget: number;
+  downPaymentPct: number;
+  transferTaxPct: number;
+}): number {
+  const cashPct = params.downPaymentPct + params.transferTaxPct;
+  if (cashPct <= 0 || params.cashBudget <= 0) return 0;
+  return params.cashBudget / (cashPct / 100);
+}
+
+export type AffordabilityBreakdown = {
+  maxPurchasePrice: number;
+  downPayment: number;
+  transferTax: number;
+  totalCashRequired: number;
+  mortgagePrincipal: number;
+  monthlyMortgage: number;
+};
+
+export function affordabilityBreakdown(params: {
+  purchasePrice: number;
+  downPaymentPct: number;
+  transferTaxPct: number;
+  mortgageRatePct: number;
+  mortgageYears: number;
+}): AffordabilityBreakdown {
+  const price = params.purchasePrice;
+  const downPayment = price * (params.downPaymentPct / 100);
+  const transferTax = price * (params.transferTaxPct / 100);
+  const mortgagePrincipal = Math.max(0, price - downPayment);
+  return {
+    maxPurchasePrice: price,
+    downPayment,
+    transferTax,
+    totalCashRequired: downPayment + transferTax,
+    mortgagePrincipal,
+    monthlyMortgage: monthlyMortgagePayment(
+      mortgagePrincipal,
+      params.mortgageRatePct,
+      params.mortgageYears
+    ),
+  };
+}

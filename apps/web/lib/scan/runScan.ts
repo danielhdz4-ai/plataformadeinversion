@@ -24,15 +24,24 @@ export async function runScanForPolygon(
   const minLat = Math.min(...lats);
   const maxLat = Math.max(...lats);
 
-  const { data: inBbox, error: bboxErr } = await admin.rpc("listings_in_bbox", {
-    min_lng: minLng,
-    min_lat: minLat,
-    max_lng: maxLng,
-    max_lat: maxLat,
+  const geojson = JSON.stringify(polygon);
+  const { data: inPoly, error: polyErr } = await admin.rpc("listings_in_polygon", {
+    geojson,
   });
-  if (bboxErr) throw bboxErr;
 
-  const ids = (inBbox as { id: string }[]).map((r) => r.id);
+  let ids: string[];
+  if (!polyErr && inPoly && (inPoly as { id: string }[]).length > 0) {
+    ids = (inPoly as { id: string }[]).map((r) => r.id);
+  } else {
+    const { data: inBbox, error: bboxErr } = await admin.rpc("listings_in_bbox", {
+      min_lng: minLng,
+      min_lat: minLat,
+      max_lng: maxLng,
+      max_lat: maxLat,
+    });
+    if (bboxErr) throw bboxErr;
+    ids = (inBbox as { id: string }[]).map((r) => r.id);
+  }
   if (ids.length === 0) {
     await admin.from("scans").update({ status: "completed", progress_pct: 100 }).eq("id", scanId);
     return 0;
@@ -42,6 +51,8 @@ export async function runScanForPolygon(
     .from("listings")
     .select("id, price, bedrooms")
     .in("id", ids)
+    .eq("status", "active")
+    .eq("operation", "sale")
     .gte("price", filters.priceMin ?? 0)
     .lte("price", filters.priceMax ?? 999_999_999);
 

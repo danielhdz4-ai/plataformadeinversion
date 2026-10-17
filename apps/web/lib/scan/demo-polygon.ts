@@ -12,7 +12,4 @@ export const DEMO_POLYGON = {
   ],
 };
 
-export const DEFAULT_MAP = {
-  center: [2.189, 41.38] as [number, number],
-  zoom: 14,
-};
+export { BARCELONA_VIEW as DEFAULT_MAP } from "@/lib/map/spain-bounds";

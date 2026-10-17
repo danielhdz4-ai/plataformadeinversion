@@ -1,6 +1,1 @@
-{
-  "buildCommand": "pnpm --filter @pi/roi-engine build && pnpm --filter @pi/web build",
-  "installCommand": "pnpm install",
-  "outputDirectory": "apps/web/.next",
-  "framework": "nextjs"
-}
+{}

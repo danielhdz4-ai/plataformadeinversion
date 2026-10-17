@@ -1,6 +1,7 @@
+import { isOpenAccess } from "@/lib/open-access";
 import { runScanForPolygon } from "@/lib/scan/runScan";
 import type { ScanPolygon } from "@/lib/scan/types";
-import { createClient } from "@/lib/supabase/server";
+import { getDbClient, requireAppUser } from "@/lib/supabase/request-client";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
@@ -9,14 +10,12 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   const cronSecret = process.env.CRON_SECRET;
   const isCron = cronSecret && authHeader === `Bearer ${cronSecret}`;
 
-  const supabase = await createClient();
-  if (!isCron) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const supabase = await getDbClient();
+  if (!isCron && !isOpenAccess()) {
+    const auth = await requireAppUser();
+    if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
     const { data: scan } = await supabase.from("scans").select("user_id").eq("id", id).single();
-    if (!scan || scan.user_id !== user.id) {
+    if (!scan || scan.user_id !== auth.user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }

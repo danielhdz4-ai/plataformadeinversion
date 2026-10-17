@@ -42,6 +42,9 @@ export async function POST(req: NextRequest) {
     listing_id: parsed.data.listingId,
   });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ ok: true });
+  if (error) {
+    if (error.code === "23505") return NextResponse.json({ ok: true, saved: true });
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  return NextResponse.json({ ok: true, saved: true });
 }

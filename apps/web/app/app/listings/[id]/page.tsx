@@ -1,51 +1,246 @@
 "use client";
 
+import { ListingAiAnalysisBlock } from "@/components/listings/ListingAiAnalysisBlock";
+import { ListingResumenPanel } from "@/components/listings/ListingResumenPanel";
+import { AppScrollPage } from "@/components/app/AppScrollPage";
+import { Badge } from "@/components/ui/Badge";
+import { decodeListingTitle } from "@/lib/decode-html";
+import type { ListingSummary } from "@/lib/listing/summary-types";
+import { portalBadge } from "@/lib/portals";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+type Tab = "resumen" | "roi" | "barrio";
+
 export default function ListingDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const [tab, setTab] = useState<Tab>("resumen");
   const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [summary, setSummary] = useState<ListingSummary | null>(null);
+  const [enriching, setEnriching] = useState(false);
 
-  useEffect(() => {
+  function reload() {
     fetch(`/api/listings/${id}`)
       .then((r) => r.json())
       .then(setData);
+  }
+
+  useEffect(() => {
+    reload();
   }, [id]);
 
-  if (!data) return <p className="p-8 text-slate-400">Cargando…</p>;
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const res = await fetch("/api/listings/summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [id] }),
+      });
+      if (!res.ok || cancelled) return;
+      const body = (await res.json()) as { summaries: Record<string, ListingSummary> };
+      if (!cancelled) setSummary(body.summaries?.[id] ?? null);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  async function enrichCatastro() {
+    setEnriching(true);
+    await fetch(`/api/listings/${id}/enrich`, { method: "POST" });
+    setEnriching(false);
+    reload();
+  }
+
+  if (!data || (data as { error?: string }).error) {
+    return (
+      <AppScrollPage>
+        <p className="text-neutral-600">Cargando ficha…</p>
+      </AppScrollPage>
+    );
+  }
+
   const listing = data as {
     title: string;
     price: number;
     source_url: string;
+    source_portal: string;
     city: string;
-    investment?: { rent_est: number; roi_gross: number; rent_confidence: string };
+    postal_code: string;
+    sqm: number;
+    bedrooms: number;
+    bathrooms?: number;
+    thumbnail_url?: string | null;
+    investment?: { rent_est: number; roi_gross: number; rent_confidence: string; comparables_count: number };
+    enrichment?: { rc: string | null; catastral_surface: number | null; year_built: number | null };
+    notary?: {
+      price_m2: number;
+      avg_price: number;
+      avg_surface: number;
+      operations_count: number;
+      period: string;
+      es_estimado: boolean;
+    } | null;
+    officialMarket?: { source: string; period: string; metrics: Record<string, unknown> }[];
   };
 
+  const portal = portalBadge(listing.source_portal);
+  const tabs: { id: Tab; label: string }[] = [
+    { id: "resumen", label: "Resumen" },
+    { id: "roi", label: "ROI" },
+    { id: "barrio", label: "Barrio · Oficial" },
+  ];
+
+  const tabBtn = (active: boolean) =>
+    `rounded-md px-3 py-1.5 text-sm font-medium ${
+      active ? "bg-neutral-950 text-white" : "text-neutral-600 hover:bg-white"
+    }`;
+
+  const specs = [
+    listing.bedrooms != null ? `${listing.bedrooms} dorm.` : null,
+    listing.bathrooms != null ? `${listing.bathrooms} baños` : null,
+    listing.sqm != null ? `${listing.sqm} m²` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8">
-      <Link href="/app/scan/nuevo" className="text-sm text-emerald-400">
-        ← Scan
-      </Link>
-      <h1 className="mt-4 text-2xl font-semibold">{listing.title}</h1>
-      <p className="text-slate-300">{listing.city}</p>
-      <p className="mt-2 text-xl">{Number(listing.price).toLocaleString("es-ES")} €</p>
-      {listing.investment && (
-        <div className="mt-6 rounded-lg border border-slate-800 p-4 text-sm">
-          <p>Renta est.: {listing.investment.rent_est} €/mes</p>
-          <p>ROI bruto: {listing.investment.roi_gross?.toFixed(2)} %</p>
-          <p>Confianza: {listing.investment.rent_confidence}</p>
-        </div>
-      )}
-      <a
-        href={listing.source_url}
-        target="_blank"
-        rel="noreferrer"
-        className="mt-6 inline-block rounded-lg bg-emerald-500 px-4 py-2 text-slate-950"
-      >
-        Ver anuncio original
-      </a>
-    </div>
+    <AppScrollPage>
+      <div className="mx-auto max-w-4xl space-y-6">
+        <Link href="/app/explorar" className="text-sm font-medium text-neutral-700 underline">
+          ← Volver a explorar
+        </Link>
+        <header className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+          {listing.thumbnail_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={
+                listing.thumbnail_url.includes("pisos.com") || listing.thumbnail_url.includes("kelify.com")
+                  ? `/api/image-proxy?u=${encodeURIComponent(listing.thumbnail_url)}`
+                  : listing.thumbnail_url
+              }
+              alt=""
+              className="h-56 w-full object-cover sm:h-72"
+            />
+          )}
+          <div className="p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <Badge tone="info">{portal.name}</Badge>
+                <h1 className="mt-2 text-2xl font-semibold text-neutral-950">
+                  {decodeListingTitle(listing.title)}
+                </h1>
+                <p className="text-neutral-600">
+                  {listing.city} · CP {listing.postal_code}
+                </p>
+                {specs && <p className="mt-1 text-sm text-neutral-700">{specs}</p>}
+              </div>
+              <p className="text-2xl font-bold tabular-nums text-neutral-950">
+                {Number(listing.price).toLocaleString("es-ES")} €
+              </p>
+            </div>
+            <a
+              href={listing.source_url}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-4 inline-block rounded-lg bg-neutral-950 px-4 py-2 text-sm font-medium text-white"
+            >
+              Ver anuncio en {portal.name}
+            </a>
+          </div>
+        </header>
+
+        <nav className="flex flex-wrap gap-2 border-b border-neutral-200 pb-2">
+          {tabs.map((t) => (
+            <button key={t.id} type="button" onClick={() => setTab(t.id)} className={tabBtn(tab === t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </nav>
+
+        {tab === "resumen" && (
+          <section className="space-y-4">
+            <ListingAiAnalysisBlock listingId={id} autoLoadCache />
+            {summary ? (
+              <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+                <ListingResumenPanel summary={summary} listingId={id} showAi={false} />
+              </div>
+            ) : (
+              <p className="rounded-xl border border-neutral-200 bg-white p-6 text-sm text-neutral-600">
+                Cargando métricas de mercado…
+              </p>
+            )}
+          </section>
+        )}
+
+        {tab === "roi" && (
+          <section className="space-y-4">
+            {summary ? (
+              <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+                <div className="border-b border-neutral-100 bg-[#faf9f7] px-4 py-3">
+                  <h2 className="text-sm font-semibold text-neutral-950">Modelo buy-to-let</h2>
+                </div>
+                <ListingResumenPanel summary={summary} listingId={id} embedded showAi={false} />
+              </div>
+            ) : listing.investment ? (
+              <div className="space-y-2 rounded-xl border border-neutral-200 bg-white p-6 text-sm">
+                <p>Renta estimada: {listing.investment.rent_est} €/mes</p>
+                <p>ROI bruto: {listing.investment.roi_gross?.toFixed(2)} %</p>
+                <p>
+                  Confianza: {listing.investment.rent_confidence} ({listing.investment.comparables_count}{" "}
+                  comparables)
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-neutral-600">Sin modelo de inversión para este anuncio.</p>
+            )}
+            <Link
+              href="/app/calculator"
+              className="inline-block rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-950"
+            >
+              Abrir calculadora completa (hipoteca, Airbnb, flip) →
+            </Link>
+          </section>
+        )}
+
+        {tab === "barrio" && (
+          <section className="space-y-4">
+            <div className="rounded-xl border border-neutral-200 bg-white p-6">
+              <h2 className="font-semibold text-neutral-950">Catastro</h2>
+              {listing.enrichment?.rc ? (
+                <dl className="mt-2 space-y-1 text-sm text-neutral-700">
+                  <div>Referencia catastral: {listing.enrichment.rc}</div>
+                  {listing.enrichment.catastral_surface != null && (
+                    <div>Superficie catastral: {listing.enrichment.catastral_surface} m²</div>
+                  )}
+                  {listing.enrichment.year_built != null && (
+                    <div>Año construcción: {listing.enrichment.year_built}</div>
+                  )}
+                </dl>
+              ) : (
+                <>
+                  <p className="mt-2 text-sm text-neutral-600">Datos catastrales pendientes.</p>
+                  <button
+                    type="button"
+                    disabled={enriching}
+                    onClick={enrichCatastro}
+                    className="mt-3 rounded-lg border border-neutral-300 bg-[#f7f6f3] px-4 py-2 text-sm font-medium disabled:opacity-50"
+                  >
+                    {enriching ? "Consultando OVC…" : "Enriquecer (Catastro OVC)"}
+                  </button>
+                </>
+              )}
+            </div>
+            {summary && (
+              <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+                <ListingResumenPanel summary={summary} listingId={id} embedded showAi={false} />
+              </div>
+            )}
+          </section>
+        )}
+      </div>
+    </AppScrollPage>
   );
 }

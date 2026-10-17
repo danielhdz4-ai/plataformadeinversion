@@ -1,3 +1,4 @@
+import { isOpenAccess } from "@/lib/open-access";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -26,7 +27,7 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (request.nextUrl.pathname.startsWith("/app") && !user) {
+  if (request.nextUrl.pathname.startsWith("/app") && !user && !isOpenAccess()) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", request.nextUrl.pathname);
