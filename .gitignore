@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Next / Vercel
+.next/
+.vercel/
+out/
+dist/
+build/
+
+# Supabase
+.supabase/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+*.log
+.cursor/plans/
+
+# Test / coverage
+coverage/

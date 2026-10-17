@@ -1,0 +1,33 @@
+---
+description: Cuenta, infra 0€ y autonomía operativa (Plataforma de inversión)
+alwaysApply: true
+---
+
+# Operación — Plataforma de inversión
+
+## Cuenta canónica (usuario)
+
+- **GitHub / Vercel / Supabase:** `danielhdz4-ai` (organización Supabase: `plataformadeinversion`).
+- Detalle URLs y refs: `docs/INFRA-CUENTA.md`.
+- **Nunca** pegar JWT, `service_role` ni API keys en commits, docs o reglas. Solo `.env.local` (gitignore) y secretos remotos (Vercel / GitHub Actions).
+
+## Autonomía del agente
+
+El agente **hace sin preguntar**:
+
+- `git init`, commits, push, branches, PRs cuando encaje el trabajo.
+- Variables de entorno en **Vercel** y **GitHub Secrets** vía CLI.
+- Enlace Supabase (`supabase link`), migraciones, `supabase db push` cuando toque F0+.
+- Workflows Actions, deploy preview/prod en Vercel.
+- Cambiar cuenta CLI activa (`gh auth switch`, `vercel switch`) hacia la cuenta canónica si hay varias sesiones.
+
+**Solo escalar al usuario** para lo que no se puede automatizar:
+
+- Crear buzón / verificar dominio en Resend u otro.
+- Comprar dominio, DNS, certificados fuera de Vercel.
+- 2FA / captcha / login manual en un servicio nuevo sin CLI.
+- Decisiones de producto ambiguas o gasto > 0 € sin autorización explícita.
+
+## Stack fijo
+
+Vercel + Supabase + GitHub Actions — ver `docs/MEGAPROMPT.md` §2.
