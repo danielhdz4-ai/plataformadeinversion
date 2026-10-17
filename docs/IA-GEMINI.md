@@ -5,7 +5,7 @@
 1. Crear API key en [Google AI Studio](https://aistudio.google.com/apikey) (formato habitual `AIzaSy…`, no tokens OAuth `AQ.…`).
 2. Añadir en `.env.local` (raíz y/o `apps/web/.env.local`) y Vercel (solo server):
    - `GEMINI_API_KEY`
-   - Opcional: `GEMINI_MODEL` (default `gemini-2.0-flash`)
+   - Opcional: `GEMINI_MODEL` (default `gemini-2.5-flash`; fallback automático a `gemini-3.8-flash` si Google retira el modelo)
 
 ## Uso en producto
 

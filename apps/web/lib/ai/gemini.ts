@@ -1,4 +1,4 @@
-import { geminiModel } from "@/lib/platform/features";
+import { geminiModelFallbacks } from "@/lib/platform/features";
 
 type GenerateJsonInput = {
   system: string;
@@ -12,37 +12,43 @@ export async function geminiGenerateJson<T>(input: GenerateJsonInput): Promise<T
     throw new Error("GEMINI_API_KEY no configurada");
   }
 
-  const model = geminiModel();
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
-
   const body = {
     systemInstruction: { parts: [{ text: input.system }] },
     contents: [{ role: "user", parts: [{ text: input.user }] }],
     generationConfig: {
-      temperature: 0.35,
       maxOutputTokens: 2048,
       responseMimeType: "application/json",
       responseSchema: input.schema,
     },
   };
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  let lastErr = "";
+  for (const model of geminiModelFallbacks()) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
 
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Gemini ${res.status}: ${errText.slice(0, 400)}`);
+    if (!res.ok) {
+      lastErr = await res.text();
+      if (res.status === 404 || lastErr.includes("no longer available")) continue;
+      throw new Error(`Gemini ${res.status}: ${lastErr.slice(0, 400)}`);
+    }
+
+    const data = (await res.json()) as {
+      candidates?: { content?: { parts?: { text?: string }[] } }[];
+    };
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      lastErr = "respuesta vacía";
+      continue;
+    }
+    return JSON.parse(text) as T;
   }
 
-  const data = (await res.json()) as {
-    candidates?: { content?: { parts?: { text?: string }[] } }[];
-  };
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error("Gemini: respuesta vacía");
-  return JSON.parse(text) as T;
+  throw new Error(`Gemini: ningún modelo disponible (${lastErr.slice(0, 400)})`);
 }
 
 /** JSON Schema para responseSchema de Gemini (subset soportado). */
