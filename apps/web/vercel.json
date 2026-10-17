@@ -1,4 +1,8 @@
 {
   "installCommand": "cd ../.. && pnpm install",
-  "buildCommand": "cd ../.. && pnpm --filter @pi/roi-engine build && pnpm --filter @pi/web build"
+  "buildCommand": "cd ../.. && pnpm --filter @pi/roi-engine build && pnpm --filter @pi/web build",
+  "crons": [
+    { "path": "/api/cron/scrape-bank-portals", "schedule": "0 */4 * * *" },
+    { "path": "/api/cron/scrape-bank-portals", "schedule": "30 */4 * * *" }
+  ]
 }

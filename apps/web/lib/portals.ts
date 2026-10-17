@@ -1,6 +1,8 @@
 const LABELS: Record<string, string> = {
   kelify: "kelify",
   pisos_com: "pisos.com",
+  hipoges: "Hipoges",
+  solvia: "Solvia",
   fotocasa: "Fotocasa",
   idealista: "Idealista",
   demo: "Demo",

@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const ALLOW_SUFFIX = ["pisos.com", "kelify.com", "static.pisos.com", "images.pisos.com"];
+const ALLOW_SUFFIX = [
+  "pisos.com",
+  "kelify.com",
+  "static.pisos.com",
+  "images.pisos.com",
+  "hipoges.azureedge.net",
+  "cdnsolvproep.solvia.es",
+];
 
 function allowed(u: URL) {
   if (u.protocol !== "https:") return false;

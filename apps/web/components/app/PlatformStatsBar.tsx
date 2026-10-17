@@ -45,7 +45,9 @@ export function PlatformStatsBar() {
         {(stats?.listings.saleByPortal?.pisos_com ??
           stats?.listings.saleByPortal?.["pisos.com"] ??
           stats?.listings.saleByPortal?.pisos ??
-          0) as number}
+          0) as number}{" "}
+        · hipoges {stats?.listings.saleByPortal?.hipoges ?? 0} · solvia{" "}
+        {stats?.listings.saleByPortal?.solvia ?? 0}
       </span>
     </div>
   );

@@ -11,7 +11,15 @@ if (!url || !key) process.exit(1);
 const supabase = createClient(url, key);
 const MAX = Number(process.env.DEDUP_BATCH ?? "3000");
 
-const PORTAL_RANK = { kelify: 3, "pisos.com": 2, pisos: 2, idealista: 1 };
+const PORTAL_RANK = {
+  kelify: 3,
+  "pisos.com": 2,
+  pisos: 2,
+  pisos_com: 2,
+  hipoges: 2,
+  solvia: 2,
+  idealista: 1,
+};
 
 function rank(portal) {
   return PORTAL_RANK[portal?.toLowerCase?.()] ?? 0;

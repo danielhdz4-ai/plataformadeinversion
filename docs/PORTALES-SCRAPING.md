@@ -11,6 +11,8 @@
 |-----------|--------|-----|-------|----------|--------|
 | **P0** | kelify.com | https://kelify.com | Sí | Sí | Scraper/ingestión **en este proyecto** (GitHub Actions o job propio). Ideas de extracción continua: `IDEAS-REFERENCIA.md` |
 | **P0** | **pisos.com** | https://www.pisos.com | Sí | Sí | Scraper HTML/API pública; cobertura amplia |
+| **P0** | **Hipoges** | https://realestate.hipoges.com | Sí | — | API `POST /api/assets/listing` + CSRF; España venta residencial |
+| **P0** | **Solvia** | https://www.solvia.es | Sí | — | API `POST /api/inmuebles/v2/buscarInmuebles` por provincia |
 | **P1** | Fotocasa | https://www.fotocasa.es/es/ | Sí | Sí | Secundario |
 | **P1** | habitaclia | https://www.habitaclia.com | Sí | Sí | Secundario |
 
@@ -32,7 +34,7 @@
 
 1. Referencia catastral (post-enrich Catastro).
 2. Heurística: dirección normalizada + precio ±3 % + m² ±5 % + proximidad ≤30 m.
-3. `source_portal`: `kelify` | `pisos_com` | `fotocasa` | `habitaclia`.
+3. `source_portal`: `kelify` | `pisos_com` | `hipoges` | `solvia` | `fotocasa` | `habitaclia`.
 4. Índice único: `(source_portal, source_external_id)`.
 
 En UI: badge de origen (kelify.com / pisos.com / …) + enlace al anuncio original en ese portal.
@@ -45,6 +47,7 @@ En UI: badge de origen (kelify.com / pisos.com / …) + enlace al anuncio origin
 |----------|--------|
 | `scrape-kelify-sale.yml` / `scrape-kelify-rent.yml` | kelify.com |
 | `scrape-pisos-sale.yml` / `scrape-pisos-rent.yml` | pisos.com |
+| `scrape-bank-portals.yml` | Hipoges + Solvia (España venta) |
 | `scrape-fotocasa-*.yml` | P1 |
 | `scrape-habitaclia-*.yml` | P1 |
 

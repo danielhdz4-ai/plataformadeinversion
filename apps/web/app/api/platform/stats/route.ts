@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   const admin = createAdminClient();
   const portalCounts: Record<string, number> = {};
-  for (const portal of ["kelify", "pisos_com", "pisos.com", "pisos", "idealista"]) {
+  for (const portal of ["kelify", "pisos_com", "pisos.com", "pisos", "hipoges", "solvia", "idealista"]) {
     const { count } = await admin
       .from("listings")
       .select("id", { count: "exact", head: true })
