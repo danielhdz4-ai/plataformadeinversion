@@ -64,7 +64,15 @@
     { "slug": "a-coruna", "name": "A Coruña", "ccaa": "Galicia", "pisosSlug": "a-coruna", "pisosSkip": true, "kelifySlug": "a-coruna", "center": [-8.4, 43.37], "bboxDelta": 0.08 },
     { "slug": "albacete", "name": "Albacete", "ccaa": "Castilla-La Mancha", "pisosSlug": "albacete", "center": [-1.86, 38.99], "bboxDelta": 0.07 },
     { "slug": "alicante", "name": "Alicante", "ccaa": "Comunidad Valenciana", "pisosSlug": "alicante", "center": [-0.48, 38.35], "bboxDelta": 0.08 },
-    { "slug": "almeria", "name": "Almería", "ccaa": "Andalucía", "pisosSlug": "almeria", "center": [-2.46, 36.84], "bboxDelta": 0.07 },
+    {
+      "slug": "almeria",
+      "name": "Almería",
+      "ccaa": "Andalucía",
+      "pisosSlug": "almeria",
+      "center": [-2.49, 36.82],
+      "bbox": [-2.68, 36.7, -2.3, 37.05],
+      "bboxDelta": 0.12
+    },
     { "slug": "avila", "name": "Ávila", "ccaa": "Castilla y León", "pisosSlug": "avila", "center": [-4.7, 40.65], "bboxDelta": 0.06 },
     { "slug": "badajoz", "name": "Badajoz", "ccaa": "Extremadura", "pisosSlug": "badajoz", "center": [-6.97, 38.88], "bboxDelta": 0.07 },
     { "slug": "burgos", "name": "Burgos", "ccaa": "Castilla y León", "pisosSlug": "burgos", "center": [-3.7, 42.34], "bboxDelta": 0.07 },

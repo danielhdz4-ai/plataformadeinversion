@@ -14,8 +14,25 @@ export async function kelifyLoginIfConfigured(page) {
   for (const url of loginUrls) {
     try {
       await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60_000 });
-      const emailSel = 'input[type="email"], input[name="email"], input[autocomplete="email"]';
-      const passSel = 'input[type="password"], input[name="password"]';
+      await page.waitForTimeout(1500);
+      const loginBtn = page.getByRole("button", { name: /Iniciar sesión/i }).first();
+      if (await loginBtn.isVisible().catch(() => false)) {
+        await loginBtn.click();
+        await page.waitForTimeout(2000);
+      }
+      const emailSel =
+        'input[type="email"], input[name="email"], input[name*="email"], input[autocomplete="email"]';
+      const passSel = 'input[type="password"], input[name="password"], input[name*="password"]';
+      const hasEmail = await page.locator(emailSel).first().isVisible({ timeout: 8_000 }).catch(() => false);
+      if (!hasEmail) {
+        console.log(
+          JSON.stringify({
+            kelifyAuth: "skipped",
+            reason: "kelify login is OAuth-only (no email/password form); using public listings",
+          })
+        );
+        return false;
+      }
       await page.waitForSelector(emailSel, { timeout: 15_000 });
       await page.fill(emailSel, email);
       await page.fill(passSel, password);

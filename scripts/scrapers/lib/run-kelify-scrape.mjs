@@ -2,7 +2,14 @@ import { chromium } from "playwright";
 import { dryRun, getSupabase, maxListings } from "./env.mjs";
 import { geocodeSpain } from "./geocode-es.mjs";
 import { kelifyLoginIfConfigured } from "./kelify-auth.mjs";
-import { collectKelifyCards, discoverKelifySubListUrls, sleep } from "./kelify-collect.mjs";
+import {
+  collectKelifyCards,
+  discoverKelifySubListUrls,
+  parseKelifyCardsFromHtml,
+  sleep,
+} from "./kelify-collect.mjs";
+import { collectKelifyCardsViaFetch, fetchKelifyListHtml } from "./kelify-fetch-list.mjs";
+import { fetchKelifyDetail } from "./kelify-parse-detail.mjs";
 import { kelifyListingUrls } from "./kelify-urls.mjs";
 import { getCityConfig } from "./spain-city.mjs";
 
@@ -39,13 +46,20 @@ export async function runKelifySale(citySlug) {
   const scrollRounds = Number(process.env.KELIFY_SCROLL_ROUNDS ?? "45");
 
   try {
-    const browser = await chromium.launch({ headless: true });
-    const page = await browser.newPage();
-    await kelifyLoginIfConfigured(page);
-
     const listUrls = new Set(kelifyListingUrls(city));
     const unique = [];
     const seen = new Set();
+
+    const fetched = await collectKelifyCardsViaFetch(city, limit);
+    for (const c of fetched) {
+      if (seen.has(c.propertyId)) continue;
+      seen.add(c.propertyId);
+      unique.push(c);
+    }
+
+    const browser = await chromium.launch({ headless: true });
+    const page = await browser.newPage();
+    await kelifyLoginIfConfigured(page);
 
     for (const startUrl of listUrls) {
       if (unique.length >= limit) break;
@@ -72,6 +86,13 @@ export async function runKelifySale(citySlug) {
     for (const subUrl of listUrls) {
       if (unique.length >= limit) break;
       if (kelifyListingUrls(city).includes(subUrl)) continue;
+      const subHtml = await fetchKelifyListHtml(subUrl);
+      if (subHtml) {
+        for (const c of parseKelifyCardsFromHtml(subHtml, city, limit - unique.length, seen)) {
+          unique.push(c);
+        }
+      }
+      if (unique.length >= limit) break;
       try {
         await page.goto(subUrl, { waitUntil: "domcontentloaded", timeout: 90_000 });
         await page.waitForSelector("[data-property-card]", { timeout: 25_000 });
@@ -106,16 +127,56 @@ export async function runKelifySale(citySlug) {
 
     let inserted = 0;
     let lastUpsertError = null;
+    async function upsertKelifyListing(payload) {
+      let { data, error } = await supabase
+        .from("listings")
+        .upsert(payload, { onConflict: "source_portal,source_external_id" })
+        .select("id")
+        .maybeSingle();
+      if (error?.message?.includes("kelify_hydrated")) {
+        const { kelify_hydrated: _drop, ...rest } = payload;
+        ({ data, error } = await supabase
+          .from("listings")
+          .upsert(rest, { onConflict: "source_portal,source_external_id" })
+          .select("id")
+          .maybeSingle());
+      }
+      return { data, error };
+    }
+
     for (let i = 0; i < unique.length; i++) {
       const card = unique[i];
       const sourceUrl = card.href.startsWith("http") ? card.href : `https://kelify.com${card.href}`;
-      const price = parsePrice(card.text);
+      let price = parsePrice(card.text);
+      let title = titleFromKelifyCard(card);
+      let sqm = null;
+      let bedrooms = null;
+      let bathrooms = null;
+      let postalCode = null;
+      let listingCity = city.name;
+      let thumb = card.thumb;
+
+      if (price == null || price < 5000) {
+        const detail = await fetchKelifyDetail(sourceUrl);
+        if (detail?.price) price = detail.price;
+        if (detail?.title) title = detail.title;
+        if (detail?.sqm) sqm = detail.sqm;
+        if (detail?.bedrooms) bedrooms = detail.bedrooms;
+        if (detail?.bathrooms) bathrooms = detail.bathrooms;
+        if (detail?.postalCode) postalCode = detail.postalCode;
+        if (detail?.city) listingCity = detail.city;
+        if (detail?.thumbnailUrl) thumb = detail.thumbnailUrl;
+        if (i > 0 && i % 3 === 0) await sleep(220);
+      }
       if (price == null || price < 5000) continue;
-      const title = titleFromKelifyCard(card);
       let lon = centerLon + ((i % 7) - 3) * 0.002;
       let lat = centerLat + ((i % 5) - 2) * 0.002;
       let geocodeQuality = 4;
-      const geo = await geocodeSpain(`${title}, ${city.name}, España`);
+      const zoneHint = title.match(/Aguadulce|Roquetas|El Ejido|Níjar|Carboneras/i)?.[0];
+      const geoQuery = zoneHint
+        ? `${zoneHint}, Almería, España`
+        : `${title}, ${city.name}, España`;
+      const geo = await geocodeSpain(geoQuery);
       if (geo) {
         lon = geo.lon;
         lat = geo.lat;
@@ -129,16 +190,17 @@ export async function runKelifySale(citySlug) {
         operation: "sale",
         title: title.slice(0, 200),
         price,
-        sqm: null,
-        bedrooms: null,
-        bathrooms: null,
-        city: city.name,
+        sqm,
+        bedrooms,
+        bathrooms,
+        postal_code: postalCode,
+        city: listingCity,
         ccaa: city.ccaa,
         source_url: sourceUrl,
-        thumbnail_url: card.thumb?.startsWith("http")
-          ? card.thumb
-          : card.thumb
-            ? `https://kelify.com${card.thumb}`
+        thumbnail_url: thumb?.startsWith("http")
+          ? thumb
+          : thumb
+            ? `https://kelify.com${thumb}`
             : null,
         status: "active",
         geocode_quality: geocodeQuality,
@@ -151,11 +213,7 @@ export async function runKelifySale(citySlug) {
         continue;
       }
 
-      const { data: upserted, error } = await supabase
-        .from("listings")
-        .upsert(payload, { onConflict: "source_portal,source_external_id" })
-        .select("id")
-        .maybeSingle();
+      const { data: upserted, error } = await upsertKelifyListing(payload);
       if (error) {
         lastUpsertError = error.message;
         continue;

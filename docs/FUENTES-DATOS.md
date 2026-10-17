@@ -6,7 +6,7 @@
 |-----|------------------|
 | **Plataforma de inversión** (Supabase / `/app`) | Open access o tu usuario Supabase — **no es Kelify** |
 | **pisos.com** | No — JSON-LD público |
-| **kelify.com** | **Opcional** — por defecto scrape **público** (Playwright). Si pones `KELIFY_EMAIL` + `KELIFY_PASSWORD` en `.env.local` (o GitHub Secrets para Actions), el script intenta iniciar sesión antes de listar |
+| **kelify.com** | **Público** — listados vía HTTP + Playwright (scroll). El login web es **OAuth** (Google, etc.); email/contraseña en env **no aplica** salvo que Kelify habilite formulario clásico |
 
 No confundir: **crear usuario en kelify.com** sirve para ver más en *su* web o cumplir sus condiciones de uso; **no sustituye** la cuenta de tu producto. Si Kelify os da API o exportación con contrato, eso iría en un conector aparte (mejor que scrape con login).
 

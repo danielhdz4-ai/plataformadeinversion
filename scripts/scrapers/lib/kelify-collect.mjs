@@ -31,6 +31,44 @@ export async function discoverKelifySubListUrls(page, city) {
   return [...out];
 }
 
+/** Extrae tarjetas del HTML (SSR + DOM tras scroll). */
+export function parseKelifyCardsFromHtml(html, city, limit, seen = new Set()) {
+  const unique = [];
+  const re =
+    /data-property-id="([^"]+)"[\s\S]*?href="(\/venta\/pisos\/[^"]+)"[\s\S]*?(?:data-property-card|class="[^"]*property)/gi;
+  let m;
+  while ((m = re.exec(html)) != null && unique.length < limit) {
+    const propertyId = m[1];
+    const href = m[2];
+    if (!propertyId || !href || seen.has(propertyId)) continue;
+    if (!hrefMatchesCity(href.startsWith("http") ? href : `https://kelify.com${href}`, city)) continue;
+    seen.add(propertyId);
+    unique.push({ propertyId, href, text: "", thumb: "" });
+  }
+  if (unique.length >= limit) return unique;
+  const blocks = [...html.matchAll(/data-property-id="([^"]+)"/g)];
+  for (const b of blocks) {
+    if (unique.length >= limit) break;
+    const propertyId = b[1];
+    if (seen.has(propertyId)) continue;
+    const slice = html.slice(b.index, b.index + 4000);
+    const hrefM = slice.match(/href="(\/venta\/pisos\/[^"]+)"/);
+    if (!hrefM) continue;
+    const href = hrefM[1];
+    if (!hrefMatchesCity(`https://kelify.com${href}`, city)) continue;
+    seen.add(propertyId);
+    const textM = slice.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    const thumbM = slice.match(/src="(https:\/\/img\.kelify\.com[^"]+)"/);
+    unique.push({
+      propertyId,
+      href,
+      text: textM.slice(0, 320),
+      thumb: thumbM?.[1] ?? "",
+    });
+  }
+  return unique;
+}
+
 export async function collectKelifyCards(page, city, limit, { scrollRounds = 45 } = {}) {
   const unique = [];
   const seen = new Set();
@@ -60,6 +98,13 @@ export async function collectKelifyCards(page, city, limit, { scrollRounds = 45 
       added++;
     }
     if (added === 0 && round > 8) break;
+  }
+
+  if (unique.length < limit) {
+    const html = await page.content();
+    for (const c of parseKelifyCardsFromHtml(html, city, limit - unique.length, seen)) {
+      unique.push(c);
+    }
   }
   return unique;
 }
