@@ -1,4 +1,12 @@
 -- B8: mapa y scan solo residencial por defecto
+drop function if exists public.map_listings_in_bbox(
+  double precision,
+  double precision,
+  double precision,
+  double precision,
+  integer
+);
+
 create or replace function public.map_listings_in_bbox(
   min_lng double precision,
   min_lat double precision,

@@ -50,6 +50,14 @@ create policy user_map_requests_read_own on public.user_map_requests
   for select using (auth.uid() = user_id or user_id is null);
 
 -- === 20251017181000_residential_map_filter.sql ===
+drop function if exists public.map_listings_in_bbox(
+  double precision,
+  double precision,
+  double precision,
+  double precision,
+  integer
+);
+
 create or replace function public.map_listings_in_bbox(
   min_lng double precision,
   min_lat double precision,
