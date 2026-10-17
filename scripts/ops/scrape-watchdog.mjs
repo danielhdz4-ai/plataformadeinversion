@@ -4,10 +4,25 @@
  *   node scripts/ops/run-with-web-env.mjs node scripts/ops/scrape-watchdog.mjs
  */
 import { spawnSync } from "node:child_process";
+import { createClient } from "@supabase/supabase-js";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
+
+async function bankScrapeAlreadyRunning() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return false;
+  const supabase = createClient(url, key);
+  const { data } = await supabase
+    .from("scrape_runs")
+    .select("id")
+    .eq("status", "running")
+    .in("source", ["hipoges", "solvia"])
+    .limit(1);
+  return (data?.length ?? 0) > 0;
+}
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -68,6 +83,17 @@ console.log(JSON.stringify({ ok: true, event: "watchdog_boot", cycleMs: CYCLE_MS
 for (;;) {
   for (const step of STEPS) {
     try {
+      if (step.name === "bank-portals" && (await bankScrapeAlreadyRunning())) {
+        console.log(
+          JSON.stringify({
+            at: new Date().toISOString(),
+            event: "skip",
+            step: step.name,
+            reason: "hipoges_or_solvia_run_in_progress",
+          })
+        );
+        continue;
+      }
       runStep(step);
     } catch (e) {
       console.error(step.name, e);
