@@ -1,0 +1,12 @@
+{
+  "name": "plataformadeinversion",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter @pi/web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm --filter @pi/roi-engine test"
+  },
+  "packageManager": "pnpm@10.33.2"
+}
