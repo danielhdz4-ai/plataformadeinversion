@@ -7,6 +7,9 @@ const ALLOW_SUFFIX = [
   "images.pisos.com",
   "hipoges.azureedge.net",
   "cdnsolvproep.solvia.es",
+  "static.fotocasa.es",
+  "frtassets.fotocasa.es",
+  "assets.gw.habitaclia.com",
 ];
 
 function allowed(u: URL) {

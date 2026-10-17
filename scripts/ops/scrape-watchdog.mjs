@@ -42,6 +42,16 @@ const STEPS = [
     },
   },
   {
+    name: "p1-portals",
+    script: "scripts/jobs/scrape-p1-portals-spain.mjs",
+    env: {
+      MAX_LISTINGS: process.env.WATCHDOG_P1_MAX ?? "500",
+      FOTOCASA_MAX_PAGES: "4",
+      HABITACLIA_MAX_PAGES: "2",
+      PAUSE_MS: "900",
+    },
+  },
+  {
     name: "spain-pisos-batch",
     script: "scripts/jobs/scrape-spain-batch.mjs",
     env: {

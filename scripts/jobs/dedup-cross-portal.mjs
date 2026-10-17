@@ -18,6 +18,8 @@ const PORTAL_RANK = {
   pisos_com: 2,
   hipoges: 2,
   solvia: 2,
+  fotocasa: 1,
+  habitaclia: 1,
   idealista: 1,
 };
 

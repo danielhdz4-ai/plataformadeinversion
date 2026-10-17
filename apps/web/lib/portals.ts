@@ -4,6 +4,7 @@ const LABELS: Record<string, string> = {
   hipoges: "Hipoges",
   solvia: "Solvia",
   fotocasa: "Fotocasa",
+  habitaclia: "habitaclia",
   idealista: "Idealista",
   demo: "Demo",
 };

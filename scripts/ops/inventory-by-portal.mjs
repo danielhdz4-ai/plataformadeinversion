@@ -5,7 +5,7 @@ const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url || !key) process.exit(1);
 const s = createClient(url, key);
 
-for (const p of ["kelify", "pisos_com", "pisos.com", "hipoges", "solvia", "demo"]) {
+for (const p of ["kelify", "pisos_com", "pisos.com", "hipoges", "solvia", "fotocasa", "habitaclia", "demo"]) {
   const { count } = await s
     .from("listings")
     .select("id", { count: "exact", head: true })

@@ -47,7 +47,9 @@ export function PlatformStatsBar() {
           stats?.listings.saleByPortal?.pisos ??
           0) as number}{" "}
         · hipoges {stats?.listings.saleByPortal?.hipoges ?? 0} · solvia{" "}
-        {stats?.listings.saleByPortal?.solvia ?? 0}
+        {stats?.listings.saleByPortal?.solvia ?? 0} · fotocasa{" "}
+        {stats?.listings.saleByPortal?.fotocasa ?? 0} · habitaclia{" "}
+        {stats?.listings.saleByPortal?.habitaclia ?? 0}
       </span>
     </div>
   );

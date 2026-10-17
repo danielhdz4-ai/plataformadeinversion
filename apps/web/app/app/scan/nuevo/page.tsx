@@ -191,7 +191,7 @@ export default function NewScanPage() {
                   España · EUR (€)
                 </div>
                 <div className="rounded-lg border border-neutral-200 px-3 py-2 text-xs text-neutral-500">
-                  Fuentes: kelify · pisos.com · Hipoges · Solvia
+                  Fuentes: kelify · pisos.com · Hipoges · Solvia · Fotocasa · habitaclia
                 </div>
               </div>
               <div className="flex rounded-lg border border-neutral-200 p-1">
@@ -520,7 +520,9 @@ export default function NewScanPage() {
                 <Badge tone="success">kelify</Badge>{" "}
                 <Badge tone="success">pisos.com</Badge>{" "}
                 <Badge tone="success">Hipoges</Badge>{" "}
-                <Badge tone="success">Solvia</Badge>
+                <Badge tone="success">Solvia</Badge>{" "}
+                <Badge tone="success">Fotocasa</Badge>{" "}
+                <Badge tone="success">habitaclia</Badge>
               </p>
 
               <div className="flex gap-2">
