@@ -18,5 +18,5 @@ export async function fetchNotaryForListing(
   }
   const national = (data ?? []).find((n) => n.postal_code === NOTARY_NATIONAL_POSTAL);
   if (national) return { row: national, scope: "national" as const };
-  return { row: null, scope: null as const };
+  return { row: null, scope: null };
 }

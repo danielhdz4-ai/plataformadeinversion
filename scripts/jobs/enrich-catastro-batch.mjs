@@ -11,7 +11,11 @@ async function rcFromCoords(lon, lat) {
   const res = await fetch(u);
   if (!res.ok) return null;
   const data = await res.json();
-  const pc = data?.consulta_coordenadas?.coordenadas?.[0]?.coord?.pc;
+  const result = data?.Consulta_RCCOORResult ?? data?.consulta_coordenadas;
+  let coord = result?.coordenadas?.coord;
+  if (!coord) return null;
+  if (!Array.isArray(coord)) coord = [coord];
+  const pc = coord[0]?.pc ?? coord[0]?.coord?.pc;
   if (!pc?.pc1 || !pc?.pc2) return null;
   return `${pc.pc1}${pc.pc2}`.replace(/\s/g, "");
 }

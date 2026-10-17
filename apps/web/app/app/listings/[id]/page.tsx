@@ -20,6 +20,7 @@ export default function ListingDetailPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [summary, setSummary] = useState<ListingSummary | null>(null);
   const [enriching, setEnriching] = useState(false);
+  const [enrichError, setEnrichError] = useState<string | null>(null);
 
   const reload = useCallback(async () => {
     setLoadError(null);
@@ -60,8 +61,19 @@ export default function ListingDetailPage() {
 
   async function enrichCatastro() {
     setEnriching(true);
-    await fetch(`/api/listings/${id}/enrich`, { method: "POST" });
+    setEnrichError(null);
+    const res = await fetch(`/api/listings/${id}/enrich`, { method: "POST" });
+    const body = (await res.json()) as { error?: string; rc?: string };
     setEnriching(false);
+    if (!res.ok) {
+      setEnrichError(
+        body.error ??
+          (res.status === 400
+            ? "Este anuncio no tiene ubicación en mapa (falta geolocalización)."
+            : "No se pudo consultar Catastro. Inténtalo de nuevo.")
+      );
+      return;
+    }
     void reload();
   }
 
@@ -254,6 +266,11 @@ export default function ListingDetailPage() {
               ) : (
                 <>
                   <p className="mt-2 text-sm text-neutral-600">Datos catastrales pendientes.</p>
+                  {enrichError && (
+                    <p className="mt-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+                      {enrichError}
+                    </p>
+                  )}
                   <button
                     type="button"
                     disabled={enriching}

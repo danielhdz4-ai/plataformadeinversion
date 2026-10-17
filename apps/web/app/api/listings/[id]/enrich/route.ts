@@ -1,4 +1,4 @@
-import { fetchRcFromCoords } from "@pi/catastro-client";
+import { fetchBuildingFromRc, fetchRcFromCoords } from "@pi/catastro-client";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getDbClient, requireAppUser } from "@/lib/supabase/request-client";
 import { NextResponse } from "next/server";
@@ -22,8 +22,19 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     return NextResponse.json({ error: "Catastro sin respuesta", code: "CATASTRO" }, { status: 502 });
   }
 
+  const building = await fetchBuildingFromRc(rc);
   await admin.from("listing_enrichment").upsert(
-    { listing_id: id, rc, raw: { source: "ovc-coordenadas", enriched_at: new Date().toISOString() } },
+    {
+      listing_id: id,
+      rc,
+      catastral_surface: building?.surfaceM2 ?? null,
+      year_built: building?.yearBuilt ?? null,
+      raw: {
+        source: "ovc-coordenadas",
+        address: building?.address ?? null,
+        enriched_at: new Date().toISOString(),
+      },
+    },
     { onConflict: "listing_id" }
   );
   await admin.from("catastro_cache").upsert({
