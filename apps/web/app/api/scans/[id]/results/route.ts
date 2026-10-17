@@ -36,7 +36,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       rank,
       roi_gross,
       listing:listings (
-        id, title, price, source_url, city, source_portal, thumbnail_url,
+        id, title, price, source_url, city, postal_code, source_portal, thumbnail_url,
         bedrooms, bathrooms, sqm,
         listing_investment ( rent_est, rent_confidence )
       )
@@ -99,7 +99,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       .from("listings")
       .select(
         `
-        id, title, price, source_url, city, source_portal, thumbnail_url,
+        id, title, price, source_url, city, postal_code, source_portal, thumbnail_url,
         bedrooms, bathrooms, sqm,
         listing_investment ( rent_est, rent_confidence, roi_gross )
       `

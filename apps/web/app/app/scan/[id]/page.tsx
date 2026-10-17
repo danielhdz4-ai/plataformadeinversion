@@ -28,6 +28,7 @@ type ResultRow = {
     price: number;
     source_url: string;
     city?: string | null;
+    postal_code?: string | null;
     source_portal?: string | null;
     thumbnail_url?: string | null;
     bedrooms?: number | null;
@@ -305,6 +306,7 @@ export default function ScanResultsPage() {
                 bathrooms={row.listing.bathrooms}
                 sqm={row.listing.sqm}
                 city={row.listing.city}
+                postalCode={row.listing.postal_code}
                 selected={selected === row.listing.id}
                 onHover={() => selectListing(row.listing.id, false)}
                 onSelect={() => selectListing(row.listing.id, true)}

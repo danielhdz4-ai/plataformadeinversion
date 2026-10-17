@@ -12,6 +12,18 @@ function parsePrice(text) {
   return Number(m[1].replace(/\./g, ""));
 }
 
+/** Prefer visible card text over URL slug (evita barrios falsos tipo "Pedralbes" en el path). */
+function titleFromKelifyCard(card) {
+  const t = (card.text ?? "").replace(/\s+/g, " ").trim();
+  const beforePrice = t.split(/\d[\d.]*\s*€/)[0]?.trim();
+  if (beforePrice && beforePrice.length >= 10 && beforePrice.length <= 140) {
+    const cleaned = beforePrice.replace(/^\d+\s*\/\s*\d+\s*/, "").trim();
+    if (cleaned.length >= 8) return cleaned;
+  }
+  const slug = card.href.split("/").pop()?.replace(/-[A-Za-z0-9]+$/, "").replace(/-/g, " ");
+  return slug && slug.length > 3 ? slug : `Kelify ${card.propertyId}`;
+}
+
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -126,9 +138,7 @@ export async function runKelifySale(citySlug) {
       const card = unique[i];
       const sourceUrl = card.href.startsWith("http") ? card.href : `https://kelify.com${card.href}`;
       const price = parsePrice(card.text) ?? 280_000 + i * 12_000;
-      const title =
-        card.href.split("/").pop()?.replace(/-[A-Za-z0-9]+$/, "").replace(/-/g, " ") ??
-        `Kelify ${card.propertyId}`;
+      const title = titleFromKelifyCard(card);
       let lon = centerLon + ((i % 7) - 3) * 0.002;
       let lat = centerLat + ((i % 5) - 2) * 0.002;
       let geocodeQuality = 2;
