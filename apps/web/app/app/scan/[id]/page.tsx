@@ -50,6 +50,8 @@ export default function ScanResultsPage() {
   const [polygon, setPolygon] = useState<ScanPolygon | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   const [mapCount, setMapCount] = useState(0);
+  const [zoneTotal, setZoneTotal] = useState(0);
+  const [zoneMatchingFilters, setZoneMatchingFilters] = useState(0);
   const [sort, setSort] = useState<"roi_desc" | "price_asc">("roi_desc");
   const [mapFallback, setMapFallback] = useState(false);
   const [flyTo, setFlyTo] = useState<{ center: [number, number]; zoom: number } | null>(null);
@@ -86,6 +88,8 @@ export default function ScanResultsPage() {
         results: ResultRow[];
         pins?: Pin[];
         mapCount?: number;
+        zoneTotal?: number;
+        zoneMatchingFilters?: number;
         usedMapFallback?: boolean;
         polygon?: ScanPolygon;
         filters?: ScanRunFilters;
@@ -94,6 +98,8 @@ export default function ScanResultsPage() {
         setRows(data.results ?? []);
         setPins(data.pins ?? []);
         setMapCount(data.mapCount ?? data.pins?.length ?? 0);
+        setZoneTotal(data.zoneTotal ?? 0);
+        setZoneMatchingFilters(data.zoneMatchingFilters ?? 0);
         setMapFallback(Boolean(data.usedMapFallback));
         if (data.filters) setScanFilters(data.filters);
         const polyFromResults = parseScanPolygon(data.polygon);
@@ -270,12 +276,19 @@ export default function ScanResultsPage() {
           )}
           <AppPanelHeader
             title="Resultados del scan"
-            subtitle={`${sortedRows.length} ranking · ${mapCount} pisos en mapa (kelify + pisos.com)`}
+            subtitle={`${sortedRows.length} ranking · ${mapCount} en mapa · ${zoneMatchingFilters} en zona con filtros (inventario scrapeado)`}
           />
           {scanFilters && (
             <p className="mx-3 -mt-1 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[11px] text-neutral-700">
               Filtros: {(scanFilters.priceMin ?? 0).toLocaleString("es-ES")}–
               {(scanFilters.priceMax ?? 0).toLocaleString("es-ES")} € · dorm. según wizard
+              {zoneTotal > zoneMatchingFilters ? (
+                <>
+                  {" "}
+                  · {zoneTotal} anuncios en el polígono sin filtro de precio (datos en plataforma, no todo el
+                  mercado)
+                </>
+              ) : null}
             </p>
           )}
           <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3">

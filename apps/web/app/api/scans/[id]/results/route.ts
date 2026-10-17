@@ -165,6 +165,29 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     }
   }
 
+  let zoneTotal = 0;
+  let zoneMatchingFilters = 0;
+  if (polygon) {
+    const geojson = JSON.stringify(polygon);
+    const admin = createAdminClient();
+    const { data: inPoly } = await admin.rpc("listings_in_polygon", { geojson });
+    const zoneIds = ((inPoly ?? []) as { id: string }[]).map((r) => r.id);
+    zoneTotal = zoneIds.length;
+    if (zoneIds.length > 0) {
+      let zq = supabase
+        .from("listings")
+        .select("id", { count: "exact", head: true })
+        .in("id", zoneIds)
+        .eq("status", "active")
+        .eq("operation", "sale")
+        .gte("price", priceMin)
+        .lte("price", priceMax);
+      zq = applyBedroomFilter(zq, scanFilters as ScanRunFilters);
+      const { count } = await zq;
+      zoneMatchingFilters = count ?? 0;
+    }
+  }
+
   const pinIds = displayResults.map((r) => r.listing?.id).filter(Boolean) as string[];
   let pins = await mapPinsFromIds(pinIds);
 
@@ -196,6 +219,8 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     results: displayResults,
     pins,
     mapCount: pins.length,
+    zoneTotal,
+    zoneMatchingFilters,
     polygon,
     filters: scanFilters,
     usedMapFallback,

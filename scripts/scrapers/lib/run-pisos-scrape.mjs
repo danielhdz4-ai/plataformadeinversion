@@ -4,6 +4,23 @@ import { getCityConfig } from "./spain-city.mjs";
 
 const PORTAL = "pisos_com";
 
+function pisosMaxPages() {
+  const n = Number(process.env.PISOS_MAX_PAGES ?? "25");
+  return Number.isFinite(n) && n > 0 ? Math.min(n, 60) : 25;
+}
+
+function pisosSaleSearchUrls(pisosSlug, maxPages) {
+  const urls = [];
+  for (let p = 1; p <= maxPages; p++) {
+    urls.push(
+      p === 1
+        ? `https://www.pisos.com/venta/pisos-${pisosSlug}/`
+        : `https://www.pisos.com/venta/pisos-${pisosSlug}/${p}/`
+    );
+  }
+  return urls;
+}
+
 export async function runPisosSale(citySlug) {
   const city = getCityConfig(citySlug);
   const supabase = getSupabase();
@@ -14,19 +31,16 @@ export async function runPisosSale(citySlug) {
     .single();
   if (runErr) throw runErr;
 
-  const SEARCH_URLS = [1, 2, 3, 4, 5].map(
-    (p) =>
-      p === 1
-        ? `https://www.pisos.com/venta/pisos-${city.pisosSlug}/`
-        : `https://www.pisos.com/venta/pisos-${city.pisosSlug}/${p}/`
-  );
+  const searchUrls = pisosSaleSearchUrls(city.pisosSlug, pisosMaxPages());
 
   try {
     const limit = maxListings();
     const parsed = [];
     const seen = new Set();
-    for (const url of SEARCH_URLS) {
+    let emptyPages = 0;
+    for (const url of searchUrls) {
       if (parsed.length >= limit) break;
+      if (emptyPages >= 2) break;
       const res = await fetch(url, {
         headers: {
           "User-Agent": "Mozilla/5.0 (compatible; PlataformaInversion/0.1)",
@@ -34,10 +48,15 @@ export async function runPisosSale(citySlug) {
           "Accept-Language": "es-ES,es;q=0.9",
         },
       });
-      if (!res.ok) continue;
+      if (!res.ok) {
+        emptyPages++;
+        continue;
+      }
       const parseOpts = { max: limit - parsed.length, bbox: city.bbox };
       if (city.regionPattern) parseOpts.regionPattern = city.regionPattern;
       const batch = parsePisosListingsFromHtml(await res.text(), parseOpts);
+      if (batch.length === 0) emptyPages++;
+      else emptyPages = 0;
       for (const row of batch) {
         if (seen.has(row.externalId)) continue;
         seen.add(row.externalId);
@@ -128,16 +147,41 @@ export async function runPisosRent(citySlug) {
     .select("id")
     .single();
 
-  const SEARCH_URL = `https://www.pisos.com/alquiler/pisos-${city.pisosSlug}/`;
-
   try {
-    const res = await fetch(SEARCH_URL, {
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; PlataformaInversion/0.1)", Accept: "text/html" },
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const parseOpts = { operation: "rent", max: maxListings(), bbox: city.bbox };
-    if (city.regionPattern) parseOpts.regionPattern = city.regionPattern;
-    const parsed = parsePisosListingsFromHtml(await res.text(), parseOpts);
+    const limit = maxListings();
+    const parsed = [];
+    const seen = new Set();
+    let emptyPages = 0;
+    for (let p = 1; p <= pisosMaxPages(); p++) {
+      if (parsed.length >= limit) break;
+      if (emptyPages >= 2) break;
+      const url =
+        p === 1
+          ? `https://www.pisos.com/alquiler/pisos-${city.pisosSlug}/`
+          : `https://www.pisos.com/alquiler/pisos-${city.pisosSlug}/${p}/`;
+      const res = await fetch(url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; PlataformaInversion/0.1)",
+          Accept: "text/html",
+          "Accept-Language": "es-ES,es;q=0.9",
+        },
+      });
+      if (!res.ok) {
+        emptyPages++;
+        continue;
+      }
+      const parseOpts = { operation: "rent", max: limit - parsed.length, bbox: city.bbox };
+      if (city.regionPattern) parseOpts.regionPattern = city.regionPattern;
+      const batch = parsePisosListingsFromHtml(await res.text(), parseOpts);
+      if (batch.length === 0) emptyPages++;
+      else emptyPages = 0;
+      for (const row of batch) {
+        if (seen.has(row.externalId)) continue;
+        seen.add(row.externalId);
+        parsed.push(row);
+      }
+    }
+    if (parsed.length === 0) throw new Error(`No rent listings parsed for ${city.slug}`);
     let inserted = 0;
     for (let i = 0; i < parsed.length; i++) {
       const row = parsed[i];
