@@ -4,6 +4,7 @@ import {
   HABITACLIA_SALE_ZONES,
   createHabitacliaBrowser,
   fetchHabitacliaWithBrowser,
+  zoneFallbackGeo,
 } from "./habitaclia-api.mjs";
 
 const PORTAL = "habitaclia";
@@ -36,6 +37,12 @@ export async function runHabitacliaSale() {
   try {
     for (const zone of zones) {
       if (inserted >= limit) break;
+      let zoneGeo =
+        (await geocodeSpain(`${zone.name}, España`)) ??
+        (await geocodeSpain(`${zone.name}, ${zone.ccaa}, España`)) ??
+        zoneFallbackGeo(zone);
+      if (!zoneGeo) continue;
+
       for (let pageNum = 1; pageNum <= maxPages && inserted < limit; pageNum++) {
         const { listings } = await fetchHabitacliaWithBrowser(browser, zone.path, pageNum);
         if (listings.length === 0) break;
@@ -44,9 +51,6 @@ export async function runHabitacliaSale() {
         for (const mapped of listings) {
           if (inserted >= limit) break;
           if (!mapped.externalId || mapped.price == null || mapped.price < 5000) continue;
-
-          const geo = await geocodeSpain(`${zone.name}, España`);
-          if (!geo) continue;
 
           const payload = {
             source_portal: PORTAL,
@@ -78,8 +82,8 @@ export async function runHabitacliaSale() {
           if (!error && upserted?.id) {
             await supabase.rpc("patch_listing_geom", {
               listing_id: upserted.id,
-              lon: geo.lon,
-              lat: geo.lat,
+              lon: zoneGeo.lon,
+              lat: zoneGeo.lat,
             });
             inserted++;
           }
