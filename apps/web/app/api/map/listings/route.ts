@@ -1,4 +1,6 @@
 import { decodeListingTitle } from "@/lib/decode-html";
+import { resolveListingGrossRoiPct } from "@/lib/listing/gross-roi";
+import { resolveRentEstMonthly } from "@/lib/listing/rent-est";
 import { isResidentialPropertyKind } from "@/lib/listing/residential-kind";
 import {
   balanceListingsByPortal,
@@ -123,14 +125,16 @@ export async function GET(req: NextRequest) {
         | { rent_est?: number; rent_confidence?: string | null }[]
         | null;
       const invRow = Array.isArray(inv) ? inv[0] : inv;
-      const rent = invRow?.rent_est;
+      const rentRaw = invRow?.rent_est != null ? Number(invRow.rent_est) : null;
+      const rent = resolveRentEstMonthly(row.price, rentRaw);
       const rentConfidence =
         row.rent_confidence ?? invRow?.rent_confidence ?? null;
+      const roi = resolveListingGrossRoiPct(row.price, rent, row.roi_gross);
       return {
         id: row.id,
         lng: row.lng,
         lat: row.lat,
-        roi: row.roi_gross,
+        roi,
         price: row.price,
         geocodeQuality: row.geocode_quality ?? null,
         rentConfidence,

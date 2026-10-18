@@ -13,19 +13,21 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-export async function runHabitacliaSale() {
+export async function runHabitacliaSale(options = {}) {
   const supabase = getSupabase();
+  const citySlug = options.citySlug ?? "espana";
   const { data: run, error: runErr } = await supabase
     .from("scrape_runs")
-    .insert({ source: PORTAL, city_slug: "espana", status: "running" })
+    .insert({ source: PORTAL, city_slug: citySlug, status: "running" })
     .select("id")
     .single();
   if (runErr) throw runErr;
 
-  const limit = maxListings();
+  const globalLimit = maxListings();
+  const perZoneLimit = Number(process.env.HABITACLIA_PER_ZONE ?? "0");
   const maxPages = Number(process.env.HABITACLIA_MAX_PAGES ?? "3");
   const zoneFilter = process.env.HABITACLIA_ZONES?.split(",").map((s) => s.trim()).filter(Boolean);
-  let zones = HABITACLIA_SALE_ZONES;
+  let zones = options.zones ?? HABITACLIA_SALE_ZONES;
   if (zoneFilter?.length) {
     zones = zones.filter((z) => zoneFilter.some((f) => z.path.includes(f)));
   }
@@ -33,23 +35,27 @@ export async function runHabitacliaSale() {
   let inserted = 0;
   let cards = 0;
 
+  const zoneCapReached = (zoneInserted) =>
+    perZoneLimit > 0 ? zoneInserted >= perZoneLimit : inserted >= globalLimit;
+
   const browser = await createHabitacliaBrowser();
   try {
     for (const zone of zones) {
-      if (inserted >= limit) break;
+      if (perZoneLimit <= 0 && inserted >= globalLimit) break;
+      let zoneInserted = 0;
       let zoneGeo =
         (await geocodeSpain(`${zone.name}, España`)) ??
         (await geocodeSpain(`${zone.name}, ${zone.ccaa}, España`)) ??
         zoneFallbackGeo(zone);
       if (!zoneGeo) continue;
 
-      for (let pageNum = 1; pageNum <= maxPages && inserted < limit; pageNum++) {
+      for (let pageNum = 1; pageNum <= maxPages && !zoneCapReached(zoneInserted); pageNum++) {
         const { listings } = await fetchHabitacliaWithBrowser(browser, zone.path, pageNum);
         if (listings.length === 0) break;
         cards += listings.length;
 
         for (const mapped of listings) {
-          if (inserted >= limit) break;
+          if (zoneCapReached(zoneInserted)) break;
           if (!mapped.externalId || mapped.price == null || mapped.price < 5000) continue;
 
           const payload = {
@@ -86,6 +92,7 @@ export async function runHabitacliaSale() {
               lat: zoneGeo.lat,
             });
             inserted++;
+            zoneInserted++;
           }
         }
         await sleep(Number(process.env.PAUSE_MS ?? "2000"));

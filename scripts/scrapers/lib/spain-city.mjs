@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { getBcnPisosCity, listBcnPisosCities } from "./bcn-metro.mjs";
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const catalog = JSON.parse(
@@ -39,8 +40,11 @@ export function listCities({ tier } = {}) {
 
 export function getCityConfig(slug) {
   const city = listCities().find((c) => c.slug === slug);
-  if (!city) throw new Error(`Unknown CITY_SLUG: ${slug}`);
-  return city;
+  if (city) return city;
+  const bcn = listBcnPisosCities().find((c) => c.slug === slug);
+  if (bcn) return bcn;
+  if (slug === "barcelona-metro") return getBcnPisosCity("barcelona-metro");
+  throw new Error(`Unknown CITY_SLUG: ${slug}`);
 }
 
 /** Lote rotativo para no saturar Actions (p. ej. 10 ciudades/día). */

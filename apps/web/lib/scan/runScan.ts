@@ -1,14 +1,17 @@
+import { resolveListingGrossRoiPct } from "@/lib/listing/gross-roi";
+import { resolveRentEstMonthly } from "@/lib/listing/rent-est";
 import { isResidentialPropertyKind } from "@/lib/listing/residential-kind";
-import { applyBedroomFilter, type ScanRunFilters } from "@/lib/scan/bedroom-filter";
+import { scanOperationUsesRoi } from "@/lib/investment/operations";
+import { applyBathroomFilter, applyBedroomFilter, type ScanRunFilters } from "@/lib/scan/bedroom-filter";
 import { listingMatchesScanFilters, normalizeScanFilters } from "@/lib/scan/apply-scan-filters";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { ScanPolygon } from "@/lib/scan/types";
-import { grossRoiPct } from "@pi/roi-engine";
 
 export async function runScanForPolygon(
   scanId: string,
   polygon: ScanPolygon,
-  filters: ScanRunFilters
+  filters: ScanRunFilters,
+  operation: string = "buy_to_rent"
 ) {
   const admin = createAdminClient();
   await admin.from("scans").update({ status: "running", progress_pct: 10 }).eq("id", scanId);
@@ -37,14 +40,19 @@ export async function runScanForPolygon(
 
   let q = admin
     .from("listings")
-    .select("id, price, bedrooms, property_kind")
+    .select("id, price, bedrooms, bathrooms, sqm, property_kind, source_portal")
     .in("id", ids)
     .eq("status", "active")
     .eq("operation", "sale")
     .gte("price", priceMin)
     .lte("price", priceMax);
 
+  if (norm.sourcePortals?.length) {
+    q = q.in("source_portal", norm.sourcePortals);
+  }
+
   q = applyBedroomFilter(q, norm);
+  q = applyBathroomFilter(q, norm);
 
   const { data: listings, error } = await q;
   if (error) throw error;
@@ -59,23 +67,49 @@ export async function runScanForPolygon(
     (investments ?? []).map((i) => [i.listing_id as string, i as { rent_est: number | null; roi_gross: number | null }])
   );
 
-  const filteredListings = (listings ?? []).filter((l) =>
-    isResidentialPropertyKind(l.property_kind as string | null) &&
-    listingMatchesScanFilters(
-      { price: Number(l.price), bedrooms: l.bedrooms as number | null },
-      norm
-    )
-  );
+  const useRoi = scanOperationUsesRoi(operation);
+  const minRoi = norm.minRoiGross ?? 0;
+
+  const filteredListings = (listings ?? []).filter((l) => {
+    if (!isResidentialPropertyKind(l.property_kind as string | null)) return false;
+    if (
+      !listingMatchesScanFilters(
+        {
+          price: Number(l.price),
+          bedrooms: l.bedrooms as number | null,
+          bathrooms: l.bathrooms as number | null,
+          sqm: l.sqm as number | null,
+          source_portal: l.source_portal as string | null,
+        },
+        norm
+      )
+    ) {
+      return false;
+    }
+    if (!useRoi) return true;
+    const inv = invMap.get(l.id as string);
+    const price = Number(l.price);
+    const rent = resolveRentEstMonthly(price, inv?.rent_est ?? null);
+    const roi = resolveListingGrossRoiPct(price, rent, inv?.roi_gross ?? null);
+    if (norm.onlyWithRoi && (roi == null || roi <= 0)) return false;
+    if (minRoi > 0 && (roi == null || roi < minRoi)) return false;
+    return true;
+  });
 
   const ranked = filteredListings
     .map((l) => {
+      const price = Number(l.price);
       const inv = invMap.get(l.id as string);
-      const roi =
-        inv?.roi_gross ??
-        (inv?.rent_est ? grossRoiPct(Number(l.price), Number(inv.rent_est)) : 0);
-      return { listing_id: l.id as string, roi_gross: Number(roi) };
+      if (!useRoi) {
+        return { listing_id: l.id as string, roi_gross: 0, price };
+      }
+      const rent = resolveRentEstMonthly(price, inv?.rent_est ?? null);
+      const roi = resolveListingGrossRoiPct(price, rent, inv?.roi_gross ?? null) ?? 0;
+      return { listing_id: l.id as string, roi_gross: roi, price };
     })
-    .sort((a, b) => b.roi_gross - a.roi_gross);
+    .sort((a, b) =>
+      useRoi ? b.roi_gross - a.roi_gross : a.price - b.price
+    );
 
   await admin.from("scan_results").delete().eq("scan_id", scanId);
   if (ranked.length > 0) {

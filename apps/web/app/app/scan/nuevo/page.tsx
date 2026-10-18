@@ -7,8 +7,20 @@ import { Badge } from "@/components/ui/Badge";
 import { RangeField } from "@/components/ui/RangeField";
 import { circleAreaKm2, circlePolygon } from "@/lib/map/circle-polygon";
 import { SPAIN_VIEW } from "@/lib/map/spain-bounds";
-import { SCAN_OPERATIONS, type ScanOperation } from "@/lib/investment/operations";
-import { bedroomFilterFromRooms } from "@/lib/scan/bedroom-filter";
+import {
+  SCAN_OPERATIONS,
+  scanOperationUsesRoi,
+  type ScanOperation,
+} from "@/lib/investment/operations";
+import {
+  bathroomFilterFromToggles,
+  bedroomFilterFromRooms,
+} from "@/lib/scan/bedroom-filter";
+import {
+  defaultPortalToggles,
+  SCAN_PORTALS,
+  selectedPortals,
+} from "@/lib/scan/portal-options";
 import { DEMO_POLYGON } from "@/lib/scan/demo-polygon";
 import type { ScanPolygon } from "@/lib/scan/types";
 import { maxPurchasePriceFromCash } from "@pi/roi-engine";
@@ -52,9 +64,21 @@ export default function NewScanPage() {
     taxPct: 7.7,
     ratePct: 2,
     years: 20,
-    priceMin: 0,
+    priceMin: 100_000,
     priceMax: 350_000,
   });
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(true);
+  const [bathrooms, setBathrooms] = useState({
+    b1: true,
+    b2: true,
+    b3: true,
+    b4: true,
+  });
+  const [sqmMin, setSqmMin] = useState(20);
+  const [sqmMax, setSqmMax] = useState(200);
+  const [portalToggles, setPortalToggles] = useState(defaultPortalToggles);
+  const [minRoiGross, setMinRoiGross] = useState(0);
+  const [onlyWithRoi, setOnlyWithRoi] = useState(false);
 
   const visibleBboxRef = useRef<[number, number, number, number] | null>(null);
 
@@ -80,7 +104,9 @@ export default function NewScanPage() {
     filterMode === "entry_budget" ? Math.max(0, finance.priceMin) : finance.priceMin;
 
   const bedroomFilter = useMemo(() => bedroomFilterFromRooms(rooms), [rooms]);
+  const bathroomFilter = useMemo(() => bathroomFilterFromToggles(bathrooms), [bathrooms]);
   const bedroomsMin = bedroomFilter.bedroomsMin;
+  const usesRoi = scanOperationUsesRoi(operation);
 
   useEffect(() => {
     if (locationMode !== "search" || !center) return;
@@ -142,7 +168,15 @@ export default function NewScanPage() {
           bedroomsMin,
           allowedBedrooms: bedroomFilter.allowedBedrooms,
           bedroomsMinPlus: bedroomFilter.bedroomsMinPlus,
+          allowedBathrooms: bathroomFilter.allowedBathrooms,
+          bathroomsMinPlus: bathroomFilter.bathroomsMinPlus,
+          sqmMin,
+          sqmMax,
+          sourcePortals: selectedPortals(portalToggles),
+          minRoiGross: usesRoi ? minRoiGross : undefined,
+          onlyWithRoi: usesRoi ? onlyWithRoi : false,
           rooms,
+          bathrooms,
           filterMode,
           leverage,
           notifyEmail,
@@ -339,9 +373,35 @@ export default function NewScanPage() {
           {step === 2 && (
             <div className="mt-6 space-y-5">
               <p className="text-sm text-neutral-600">
-                Define precio, tamaño y financiación. ROI bruto sobre alquiler estimado; con
-                apalancamiento, también cash-on-cash.
+                {usesRoi
+                  ? "Precio, tamaño y financiación. ROI bruto sobre alquiler estimado; con apalancamiento, también cash-on-cash."
+                  : "Precio y características del inmueble. Listado por precio — sin estimación de alquiler."}
               </p>
+
+              <RangeField
+                label="Precio de compra (máx.)"
+                value={filterMode === "price_range" ? finance.priceMax : effectivePriceMax}
+                min={50_000}
+                max={1_500_000}
+                step={5_000}
+                suffix=" €"
+                onChange={(v) => {
+                  setFilterMode("price_range");
+                  setFinance((f) => ({ ...f, priceMax: v }));
+                }}
+              />
+              <RangeField
+                label="Precio de compra (mín.)"
+                value={effectivePriceMin}
+                min={0}
+                max={Math.max(50_000, finance.priceMax)}
+                step={5_000}
+                suffix=" €"
+                onChange={(v) => {
+                  setFilterMode("price_range");
+                  setFinance((f) => ({ ...f, priceMin: v }));
+                }}
+              />
 
               <div>
                 <p className="mb-2 text-sm font-medium">Habitaciones</p>
@@ -371,6 +431,111 @@ export default function NewScanPage() {
                 </div>
               </div>
 
+              <button
+                type="button"
+                onClick={() => setMoreFiltersOpen((o) => !o)}
+                className="flex w-full items-center justify-between rounded-lg border border-neutral-200 px-3 py-2 text-sm font-medium text-neutral-800"
+              >
+                Más filtros
+                <span className="text-neutral-400">{moreFiltersOpen ? "▾" : "▸"}</span>
+              </button>
+
+              {moreFiltersOpen && (
+                <div className="space-y-4 rounded-lg border border-neutral-200 bg-[#fafaf9] p-3">
+                  <div>
+                    <p className="mb-2 text-sm font-medium">Baños</p>
+                    <div className="flex flex-wrap gap-2">
+                      {(
+                        [
+                          ["b1", "1 baño"],
+                          ["b2", "2 baños"],
+                          ["b3", "3 baños"],
+                          ["b4", "4+ baños"],
+                        ] as const
+                      ).map(([key, label]) => (
+                        <label
+                          key={key}
+                          className="flex cursor-pointer items-center gap-1.5 rounded-full border border-neutral-300 px-3 py-1 text-xs has-[:checked]:border-neutral-950 has-[:checked]:bg-neutral-950 has-[:checked]:text-white"
+                        >
+                          <input
+                            type="checkbox"
+                            className="sr-only"
+                            checked={bathrooms[key]}
+                            onChange={(e) =>
+                              setBathrooms((b) => ({ ...b, [key]: e.target.checked }))
+                            }
+                          />
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <RangeField
+                    label="Tamaño mínimo"
+                    value={sqmMin}
+                    min={15}
+                    max={400}
+                    step={5}
+                    suffix=" m²"
+                    onChange={setSqmMin}
+                  />
+                  <RangeField
+                    label="Tamaño máximo"
+                    value={sqmMax}
+                    min={sqmMin}
+                    max={800}
+                    step={5}
+                    suffix=" m²"
+                    onChange={setSqmMax}
+                  />
+                  <div>
+                    <p className="mb-2 text-sm font-medium">Portales</p>
+                    <div className="flex flex-wrap gap-2">
+                      {SCAN_PORTALS.map((p) => (
+                        <label
+                          key={p.id}
+                          className="flex cursor-pointer items-center gap-1.5 rounded-full border border-neutral-300 px-3 py-1 text-xs has-[:checked]:border-neutral-950 has-[:checked]:bg-neutral-950 has-[:checked]:text-white"
+                        >
+                          <input
+                            type="checkbox"
+                            className="sr-only"
+                            checked={portalToggles[p.id]}
+                            onChange={(e) =>
+                              setPortalToggles((t) => ({ ...t, [p.id]: e.target.checked }))
+                            }
+                          />
+                          {p.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  {usesRoi && (
+                    <>
+                      <RangeField
+                        label="ROI bruto mínimo"
+                        value={minRoiGross}
+                        min={0}
+                        max={15}
+                        step={0.5}
+                        suffix=" %"
+                        onChange={setMinRoiGross}
+                      />
+                      <label className="flex items-center gap-2 text-xs text-neutral-700">
+                        <input
+                          type="checkbox"
+                          checked={onlyWithRoi}
+                          onChange={(e) => setOnlyWithRoi(e.target.checked)}
+                          className="h-4 w-4 accent-neutral-950"
+                        />
+                        Solo inmuebles con alquiler estimado
+                      </label>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {usesRoi && (
+                <>
               <label className="flex items-center justify-between gap-3 rounded-lg border border-neutral-200 p-3">
                 <span className="text-sm font-medium">Usar apalancamiento (hipoteca)</span>
                 <input
@@ -502,6 +667,8 @@ export default function NewScanPage() {
                 </div>
                 </div>
               )}
+                </>
+              )}
 
               <label className="flex items-center gap-2 text-xs text-neutral-600">
                 <input
@@ -513,8 +680,10 @@ export default function NewScanPage() {
               </label>
 
               <p className="text-xs text-neutral-500">
-                Scan: precio {effectivePriceMin.toLocaleString("es-ES")}–
-                {effectivePriceMax.toLocaleString("es-ES")} € · dorm. mín. {bedroomsMin}+
+                Scan: {effectivePriceMin.toLocaleString("es-ES")}–
+                {effectivePriceMax.toLocaleString("es-ES")} € · {sqmMin}–{sqmMax} m² · dorm.{" "}
+                {bedroomsMin}+
+                {usesRoi && minRoiGross > 0 ? ` · ROI ≥ ${minRoiGross}%` : ""}
               </p>
               <p className="text-xs">
                 <Badge tone="success">kelify</Badge>{" "}

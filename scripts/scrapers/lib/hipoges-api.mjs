@@ -96,7 +96,16 @@ export function mapHipogesAsset(row) {
     [town, row?._address?.streetName].filter(Boolean).join(" · ") ||
     (desc ? desc.replace(/<[^>]+>/g, " ").slice(0, 120) : `Hipoges ${ref}`);
   const code = row?._assetInfo?.propertyCode ?? ref;
-  const sourceUrl = `${BASE}/es/asset/${encodeURIComponent(String(code))}`;
+  const sourceUrl = `${BASE}/es/detail/${encodeURIComponent(String(code))}`;
+
+  const f = row?._features ?? {};
+  const sqm =
+    Number(f.featuresAreaConstructed) ||
+    Number(f.featuresAreaUsable) ||
+    Number(f.featuresAreaPlot) ||
+    Number(f.featuresArea) ||
+    Number(f.featuresBuiltArea) ||
+    null;
 
   return {
     externalId: String(ref),
@@ -108,8 +117,8 @@ export function mapHipogesAsset(row) {
     ccaa: region,
     thumbnail: thumb,
     sourceUrl,
-    sqm: row?._features?.featuresArea ?? row?._features?.featuresBuiltArea ?? null,
-    bedrooms: row?._features?.featuresBedroom ?? null,
-    bathrooms: row?._features?.featuresBathroom ?? null,
+    sqm: Number.isFinite(sqm) && sqm >= 10 && sqm <= 5000 ? Math.round(sqm) : null,
+    bedrooms: f.featuresBedroomNumber ?? f.featuresBedroom ?? null,
+    bathrooms: f.featuresBathroomNumber ?? f.featuresBathroom ?? null,
   };
 }

@@ -53,7 +53,7 @@ export async function runHipogesSale() {
       for (const raw of rows) {
         if (inserted >= limit) break;
         const mapped = mapHipogesAsset(raw);
-        if (!mapped?.externalId || mapped.price == null || mapped.price < 5000) continue;
+        if (!mapped?.externalId || mapped.price == null || mapped.price < 25_000) continue;
 
         let lon = mapped.lon;
         let lat = mapped.lat;

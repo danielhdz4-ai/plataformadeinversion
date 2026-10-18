@@ -10,6 +10,13 @@ const filtersSchema = z
     bedroomsMin: z.coerce.number().min(0).optional(),
     allowedBedrooms: z.array(z.coerce.number().int().min(0).max(20)).optional(),
     bedroomsMinPlus: z.coerce.number().int().min(1).nullable().optional(),
+    sqmMin: z.coerce.number().min(0).optional(),
+    sqmMax: z.coerce.number().min(0).optional(),
+    allowedBathrooms: z.array(z.coerce.number().int().min(0).max(20)).optional(),
+    bathroomsMinPlus: z.coerce.number().int().min(1).nullable().optional(),
+    sourcePortals: z.array(z.string()).optional(),
+    minRoiGross: z.coerce.number().min(0).max(100).optional(),
+    onlyWithRoi: z.boolean().optional(),
   })
   .passthrough();
 
@@ -19,7 +26,9 @@ const bodySchema = z.object({
     coordinates: z.array(z.array(z.tuple([z.number(), z.number()]))),
   }),
   filters: filtersSchema.optional(),
-  operation: z.string().default("buy_to_rent"),
+  operation: z
+    .enum(["buy", "buy_to_rent", "buy_to_rent_rooms", "buy_to_rent_airbnb", "sublease", "sublease_rooms", "flip"])
+    .default("buy_to_rent"),
 });
 
 export async function POST(req: NextRequest) {

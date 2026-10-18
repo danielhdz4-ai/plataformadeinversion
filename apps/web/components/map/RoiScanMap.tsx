@@ -5,6 +5,7 @@ import { MapViewControls } from "@/components/map/MapViewControls";
 import { polygonBounds } from "@/lib/map/polygon-bounds";
 import { BARCELONA_VIEW, SPAIN_BBOX, SPAIN_MAX_BOUNDS, SPAIN_VIEW, type SpainMapView } from "@/lib/map/spain-bounds";
 import { layoutMapPins } from "@/lib/map/layout-map-pins";
+import { applyOscuroContrast } from "@/lib/map/apply-oscuro-contrast";
 import { mapStyleFor, type MapTheme, type MapVisualMode } from "@/lib/map/map-styles";
 import maplibregl from "maplibre-gl";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -90,7 +91,8 @@ export function RoiScanMap({
   const [zoom, setZoom] = useState(BARCELONA_VIEW.zoom);
   const [theme, setTheme] = useState<MapTheme>("claro");
   const [visual, setVisual] = useState<MapVisualMode>("2d");
-  const themeAppliedOnce = useRef(false);
+  const themeRef = useRef<MapTheme>("claro");
+  const appliedThemeRef = useRef<MapTheme | null>(null);
   const wasDrawModeRef = useRef(false);
   const lastFitPolygonKeyRef = useRef<string | null>(null);
   const lastFitPinsKeyRef = useRef<string | null>(null);
@@ -140,6 +142,10 @@ export function RoiScanMap({
   }, [onBboxChange, onPolygonChange, onSelectPin]);
 
   useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
+
+  useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = new maplibregl.Map({
       container: containerRef.current,
@@ -177,6 +183,9 @@ export function RoiScanMap({
     map.on("zoomend", () => emitBbox(false));
     map.once("load", () => {
       map.resize();
+      if (themeRef.current === "claro") {
+        appliedThemeRef.current = "claro";
+      }
       setMapReady(true);
       emitBbox(true);
     });
@@ -228,24 +237,31 @@ export function RoiScanMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
-    if (!themeAppliedOnce.current) {
-      themeAppliedOnce.current = true;
-      return;
-    }
+    if (appliedThemeRef.current === theme) return;
+
+    appliedThemeRef.current = theme;
     setMapReady(false);
-    map.setStyle(mapStyleFor(theme));
-    map.once("idle", () => {
+
+    const onStyleReady = () => {
       map.resize();
+      if (themeRef.current === "oscuro") {
+        applyOscuroContrast(map);
+      }
       const poly = polygonRef.current;
       if (poly) {
         const ring = poly.coordinates[0]!.slice(0, -1) as [number, number][];
         drawRingRef.current = ring;
         updateDrawLayer(map, ring, true);
+      } else if (drawRingRef.current.length > 0) {
+        updateDrawLayer(map, drawRingRef.current, drawRingRef.current.length >= 3);
       }
       setZoom(map.getZoom());
       setMapReady(true);
-    });
-  }, [theme]);
+    };
+
+    map.setStyle(mapStyleFor(theme));
+    map.once("idle", onStyleReady);
+  }, [theme, mapReady]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -411,14 +427,20 @@ export function RoiScanMap({
       const approx =
         p.geocodeQuality != null && p.geocodeQuality >= 5 && zoom >= 14 ? " approx-geo" : "";
       el.className = `roi-pin${compact ? " compact" : ""}${confClass}${approx}${selectedId === p.id ? " selected" : ""}`;
-      const roi = p.roi != null ? `${p.roi.toFixed(1)}%` : "—";
+      const priceShort =
+        p.price >= 1_000_000
+          ? `€${(p.price / 1_000_000).toFixed(1)}M`
+          : p.price >= 1000
+            ? `€${Math.round(p.price / 1000)}K`
+            : `€${p.price}`;
+      const hasRoi = p.roi != null && p.roi > 0 && p.roi <= 50;
+      const roi = hasRoi ? `${p.roi!.toFixed(1)}%` : priceShort;
       const rent =
         !compact && p.rentEst ? ` · ${Math.round(p.rentEst)}€` : "";
-      el.textContent = compact ? roi : `${roi} ROI${rent}`;
-      el.title =
-        p.roi != null
-          ? `${p.roi.toFixed(1)}% ROI${p.rentEst ? ` · ${Math.round(p.rentEst)}€/mes` : ""}`
-          : "Sin ROI";
+      el.textContent = compact || !hasRoi ? roi : `${roi} ROI${rent}`;
+      el.title = hasRoi
+        ? `${p.roi!.toFixed(1)}% ROI · ${priceShort}${p.rentEst ? ` · ${Math.round(p.rentEst)}€/mes` : ""}`
+        : `${priceShort}${p.rentEst ? ` · ${Math.round(p.rentEst)}€/mes est.` : ""}`;
       el.addEventListener("click", (ev) => {
         ev.stopPropagation();
         ev.preventDefault();
@@ -470,8 +492,13 @@ export function RoiScanMap({
   }
 
   return (
-    <div className={`relative h-full min-h-0 ${className}`}>
-      <div ref={containerRef} className="absolute inset-0 h-full w-full bg-neutral-200" />
+    <div className={`map-surface relative h-full min-h-0 ${className}`} data-map-theme={theme}>
+      <div
+        ref={containerRef}
+        className={`absolute inset-0 h-full w-full ${
+          theme === "oscuro" ? "bg-[#1e2128]" : theme === "satelite" ? "bg-neutral-900" : "bg-neutral-200"
+        }`}
+      />
       {showViewControls && (
         <MapViewControls theme={theme} visual={visual} onTheme={setTheme} onVisual={setVisual} />
       )}

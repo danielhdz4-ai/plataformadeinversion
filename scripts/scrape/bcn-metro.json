@@ -1,0 +1,247 @@
+{
+  "description": "Área metropolitana Barcelona — slugs Fotocasa/pisos verificados",
+  "fotocasaZones": [
+    {
+      "slug": "barcelona-capital",
+      "name": "Barcelona",
+      "ccaa": "Cataluña",
+      "lat": 41.39023880583235,
+      "lng": 2.1739078534668006
+    },
+    {
+      "slug": "l-hospitalet-de-llobregat",
+      "name": "L'Hospitalet de Llobregat",
+      "ccaa": "Cataluña",
+      "lat": 41.36820884635649,
+      "lng": 2.1093272646669488
+    },
+    {
+      "slug": "esplugues-de-llobregat",
+      "name": "Esplugues de Llobregat",
+      "ccaa": "Cataluña",
+      "lat": 41.37691586356499,
+      "lng": 2.0914802350467907
+    },
+    {
+      "slug": "cornella-de-llobregat",
+      "name": "Cornellà de Llobregat",
+      "ccaa": "Cataluña",
+      "lat": 41.357748637394444,
+      "lng": 2.077814702524077
+    },
+    {
+      "slug": "sant-joan-despi",
+      "name": "Sant Joan Despí",
+      "ccaa": "Cataluña",
+      "lat": 41.36844377958318,
+      "lng": 2.0605915616057624
+    },
+    {
+      "slug": "sant-boi-de-llobregat",
+      "name": "Sant Boi de Llobregat",
+      "ccaa": "Cataluña",
+      "lat": 41.34509272853282,
+      "lng": 2.0333578047425354
+    },
+    {
+      "slug": "sant-adria-de-besos",
+      "name": "Sant Adrià de Besòs",
+      "ccaa": "Cataluña",
+      "lat": 41.425620308393825,
+      "lng": 2.2197874895296517
+    },
+    {
+      "slug": "badalona",
+      "name": "Badalona",
+      "ccaa": "Cataluña",
+      "lat": 41.44518924158859,
+      "lng": 2.23153234989855
+    },
+    {
+      "slug": "santa-coloma-de-gramenet",
+      "name": "Santa Coloma de Gramenet",
+      "ccaa": "Cataluña",
+      "lat": 41.4519669759248,
+      "lng": 2.209261279940435
+    },
+    {
+      "slug": "castelldefels",
+      "name": "Castelldefels",
+      "ccaa": "Cataluña",
+      "lat": 41.275120530057464,
+      "lng": 1.9694159345810285
+    },
+    {
+      "slug": "mataro",
+      "name": "Mataró",
+      "ccaa": "Cataluña",
+      "lat": 41.54327861653221,
+      "lng": 2.4377693706790082
+    },
+    {
+      "slug": "sabadell",
+      "name": "Sabadell",
+      "ccaa": "Cataluña",
+      "lat": 41.549113150467925,
+      "lng": 2.102656610728127
+    },
+    {
+      "slug": "terrassa",
+      "name": "Terrassa",
+      "ccaa": "Cataluña",
+      "lat": 41.56314499336006,
+      "lng": 2.011800548717856
+    },
+    {
+      "slug": "rubi",
+      "name": "Rubí",
+      "ccaa": "Cataluña",
+      "lat": 41.49733576246899,
+      "lng": 2.027514336695775
+    },
+    {
+      "slug": "cerdanyola-del-valles",
+      "name": "Cerdanyola del Vallès",
+      "ccaa": "Cataluña",
+      "lat": 41.49403890510953,
+      "lng": 2.1278075317422203
+    },
+    {
+      "slug": "molins-de-rei",
+      "name": "Molins de Rei",
+      "ccaa": "Cataluña",
+      "lat": 41.41218904375858,
+      "lng": 2.022782835092511
+    },
+    {
+      "slug": "gava",
+      "name": "Gavà",
+      "ccaa": "Cataluña",
+      "lat": 41.29083229921911,
+      "lng": 2.0071061974292816
+    },
+    {
+      "slug": "viladecans",
+      "name": "Viladecans",
+      "ccaa": "Cataluña",
+      "lat": 41.318026932702566,
+      "lng": 2.016873531526919
+    }
+  ],
+  "pisosCities": [
+    {
+      "slug": "barcelona-metro",
+      "name": "Barcelona (área metropolitana)",
+      "ccaa": "Cataluña",
+      "pisosSlug": "barcelona",
+      "bbox": [
+        1.92,
+        41.22,
+        2.35,
+        41.58
+      ],
+      "regionPattern": null,
+      "tier": 1
+    },
+    {
+      "slug": "badalona",
+      "name": "Badalona",
+      "ccaa": "Cataluña",
+      "pisosSlug": "badalona",
+      "bbox": [
+        2.22,
+        41.42,
+        2.28,
+        41.48
+      ],
+      "regionPattern": null,
+      "tier": 2
+    },
+    {
+      "slug": "sant-boi-de-llobregat",
+      "name": "Sant Boi de Llobregat",
+      "ccaa": "Cataluña",
+      "pisosSlug": "sant-boi",
+      "bbox": [
+        1.98,
+        41.28,
+        2.12,
+        41.42
+      ],
+      "regionPattern": null,
+      "tier": 2
+    },
+    {
+      "slug": "santa-coloma-de-gramenet",
+      "name": "Santa Coloma de Gramenet",
+      "ccaa": "Cataluña",
+      "pisosSlug": "santa-coloma",
+      "bbox": [
+        2.18,
+        41.44,
+        2.24,
+        41.48
+      ],
+      "regionPattern": null,
+      "tier": 2
+    },
+    {
+      "slug": "castelldefels",
+      "name": "Castelldefels",
+      "ccaa": "Cataluña",
+      "pisosSlug": "castelldefels",
+      "bbox": [
+        1.95,
+        41.25,
+        2.02,
+        41.32
+      ],
+      "regionPattern": null,
+      "tier": 2
+    }
+  ],
+  "habitacliaZones": [
+    {
+      "path": "/comprar/viviendas/barcelona-provincia/barcelona-capital/s",
+      "name": "Barcelona",
+      "ccaa": "Cataluña",
+      "lat": 41.3874,
+      "lon": 2.1686
+    },
+    {
+      "path": "/comprar/viviendas/barcelona-provincia/l-hospitalet-de-llobregat/s",
+      "name": "L'Hospitalet de Llobregat",
+      "ccaa": "Cataluña",
+      "lat": 41.359,
+      "lon": 2.099
+    },
+    {
+      "path": "/comprar/viviendas/barcelona-provincia/esplugues-de-llobregat/s",
+      "name": "Esplugues de Llobregat",
+      "ccaa": "Cataluña",
+      "lat": 41.377,
+      "lon": 2.086
+    },
+    {
+      "path": "/comprar/viviendas/barcelona-provincia/cornella-de-llobregat/s",
+      "name": "Cornellà de Llobregat",
+      "ccaa": "Cataluña",
+      "lat": 41.357,
+      "lon": 2.07
+    },
+    {
+      "path": "/comprar/viviendas/barcelona-provincia/sant-joan-despi/s",
+      "name": "Sant Joan Despí",
+      "ccaa": "Cataluña",
+      "lat": 41.368,
+      "lon": 2.058
+    },
+    {
+      "path": "/comprar/viviendas/barcelona-provincia/badalona/s",
+      "name": "Badalona",
+      "ccaa": "Cataluña",
+      "lat": 41.45,
+      "lon": 2.245
+    }
+  ]
+}

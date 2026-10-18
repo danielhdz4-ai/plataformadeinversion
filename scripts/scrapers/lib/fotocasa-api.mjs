@@ -23,8 +23,14 @@ export const FOTOCASA_SALE_ZONES = [
   { slug: "a-coruna", name: "A Coruña", ccaa: "Galicia" },
 ];
 
+/** zoneSlug: `madrid-capital` o `madrid-capital/chamberi` (barrio). */
 export function fotocasaSaleListUrl(zoneSlug, page = 1) {
-  const base = `${BASE}/es/comprar/viviendas/${zoneSlug}/todas-las-zonas/l`;
+  const parts = String(zoneSlug).split("/").filter(Boolean);
+  const basePath =
+    parts.length >= 2
+      ? `/es/comprar/viviendas/${parts.join("/")}/l`
+      : `/es/comprar/viviendas/${parts[0]}/todas-las-zonas/l`;
+  const base = `${BASE}${basePath}`;
   return page <= 1 ? base : `${base}/${page}`;
 }
 

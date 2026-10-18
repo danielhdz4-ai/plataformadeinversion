@@ -7,14 +7,22 @@ import { Badge } from "@/components/ui/Badge";
 import { decodeListingTitle } from "@/lib/decode-html";
 import type { ListingSummary } from "@/lib/listing/summary-types";
 import { portalBadge } from "@/lib/portals";
+import {
+  defaultReturnPath,
+  returnNavLabel,
+  sanitizeReturnPath,
+} from "@/lib/listing/return-navigation";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
 type Tab = "resumen" | "roi" | "barrio";
 
-export default function ListingDetailPage() {
+function ListingDetailPageContent() {
   const { id } = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
+  const backHref = sanitizeReturnPath(searchParams.get("from")) ?? defaultReturnPath();
+  const backLabel = returnNavLabel(backHref);
   const [tab, setTab] = useState<Tab>("resumen");
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -82,8 +90,8 @@ export default function ListingDetailPage() {
       <AppScrollPage>
         <div className="mx-auto max-w-lg space-y-4 rounded-xl border border-neutral-200 bg-white p-6">
           <p className="text-neutral-800">{loadError}</p>
-          <Link href="/app/explorar" className="text-sm font-medium text-neutral-950 underline">
-            Volver a explorar
+          <Link href={backHref} className="text-sm font-medium text-neutral-950 underline">
+            ← {backLabel}
           </Link>
         </div>
       </AppScrollPage>
@@ -146,8 +154,8 @@ export default function ListingDetailPage() {
   return (
     <AppScrollPage>
       <div className="mx-auto max-w-4xl space-y-6">
-        <Link href="/app/explorar" className="text-sm font-medium text-neutral-700 underline">
-          ← Volver a explorar
+        <Link href={backHref} className="text-sm font-medium text-neutral-700 underline">
+          ← {backLabel}
         </Link>
         <header className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
           {listing.thumbnail_url && (
@@ -291,5 +299,13 @@ export default function ListingDetailPage() {
         )}
       </div>
     </AppScrollPage>
+  );
+}
+
+export default function ListingDetailPage() {
+  return (
+    <Suspense fallback={<AppScrollPage><p className="p-8 text-sm text-neutral-600">Cargando ficha…</p></AppScrollPage>}>
+      <ListingDetailPageContent />
+    </Suspense>
   );
 }

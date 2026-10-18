@@ -1,0 +1,688 @@
+{
+  "description": "Barrios sevilla-capital — Fotocasa + pisos.com",
+  "fotocasaCapital": "sevilla-capital",
+  "citySlug": "sevilla",
+  "pisosCitySlug": "sevilla",
+  "fotocasaZones": [
+    {
+      "slug": "sevilla-capital/alfalfa-santa-cruz",
+      "name": "alfalfa santa cruz",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "alfalfa-santa-cruz",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.38935618582347,
+      "lng": -5.992292023181561
+    },
+    {
+      "slug": "sevilla-capital/amate",
+      "name": "amate",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "amate",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.378455218320155,
+      "lng": -5.957261573296103
+    },
+    {
+      "slug": "sevilla-capital/arenal-museo",
+      "name": "arenal museo",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "arenal-museo",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.38958239966295,
+      "lng": -5.9998960764817175
+    },
+    {
+      "slug": "sevilla-capital/bami-la-estrella",
+      "name": "bami la estrella",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "bami-la-estrella",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.36473466033778,
+      "lng": -5.9805507451647655
+    },
+    {
+      "slug": "sevilla-capital/barriada-de-pineda",
+      "name": "barriada de pineda",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "barriada-de-pineda",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.34867385116174,
+      "lng": -5.973234237248718
+    },
+    {
+      "slug": "sevilla-capital/barrio-de-los-remedios",
+      "name": "barrio de los remedios",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "barrio-de-los-remedios",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.37448832600074,
+      "lng": -5.999380913392995
+    },
+    {
+      "slug": "sevilla-capital/barrio-del-nervion",
+      "name": "barrio del nervion",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "barrio-del-nervion",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.383923194206226,
+      "lng": -5.964998163377321
+    },
+    {
+      "slug": "sevilla-capital/barrio-leon",
+      "name": "barrio leon",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "barrio-leon",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.37842066677513,
+      "lng": -6.013326203863096
+    },
+    {
+      "slug": "sevilla-capital/bellavista",
+      "name": "bellavista",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "bellavista",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.32423463267594,
+      "lng": -5.9650622913451965
+    },
+    {
+      "slug": "sevilla-capital/bellavista-la-palmera",
+      "name": "bellavista la palmera",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "bellavista-la-palmera",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.33103991314237,
+      "lng": -5.970487748581365
+    },
+    {
+      "slug": "sevilla-capital/casco-antiguo",
+      "name": "casco antiguo",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "casco-antiguo",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.39413110612022,
+      "lng": -5.994555928510507
+    },
+    {
+      "slug": "sevilla-capital/cerro-amate",
+      "name": "cerro amate",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "cerro-amate",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.37740605002202,
+      "lng": -5.9469446059534565
+    },
+    {
+      "slug": "sevilla-capital/ciudad-jardin",
+      "name": "ciudad jardin",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "ciudad-jardin",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.37794108038679,
+      "lng": -5.965475352725682
+    },
+    {
+      "slug": "sevilla-capital/colores-entreparques",
+      "name": "colores entreparques",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "colores-entreparques",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.398110367316335,
+      "lng": -5.920823242499433
+    },
+    {
+      "slug": "sevilla-capital/cruz-roja",
+      "name": "cruz roja",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "cruz-roja",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.40503686420575,
+      "lng": -5.978697954402502
+    },
+    {
+      "slug": "sevilla-capital/doctor-barraquer-g-renfe-policlinico",
+      "name": "doctor barraquer g renfe policlinico",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "doctor-barraquer-g-renfe-policlinico",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.405418262834935,
+      "lng": -5.990548749960293
+    },
+    {
+      "slug": "sevilla-capital/el-cano-los-bermejales",
+      "name": "el cano los bermejales",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "el-cano-los-bermejales",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.34807603139852,
+      "lng": -5.979981178353078
+    },
+    {
+      "slug": "sevilla-capital/el-cerro",
+      "name": "el cerro",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "el-cerro",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.372658244520906,
+      "lng": -5.957721908860736
+    },
+    {
+      "slug": "sevilla-capital/el-plantinar-avda-la-paz-el-juncal",
+      "name": "el plantinar avda la paz el juncal",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "el-plantinar-avda-la-paz-el-juncal",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.3714087043617,
+      "lng": -5.968320363291159
+    },
+    {
+      "slug": "sevilla-capital/el-porvenir",
+      "name": "el porvenir",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "el-porvenir",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.37165248000903,
+      "lng": -5.981596716432849
+    },
+    {
+      "slug": "sevilla-capital/el-tardon-el-carmen",
+      "name": "el tardon el carmen",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "el-tardon-el-carmen",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.37627708299315,
+      "lng": -6.011363776588118
+    },
+    {
+      "slug": "sevilla-capital/el-torrejon-el-cerezo",
+      "name": "el torrejon el cerezo",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "el-torrejon-el-cerezo",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.41055098837199,
+      "lng": -5.98440512924145
+    },
+    {
+      "slug": "sevilla-capital/encarnacion-regina",
+      "name": "encarnacion regina",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "encarnacion-regina",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.39419824313874,
+      "lng": -5.9942444126072605
+    },
+    {
+      "slug": "sevilla-capital/este-alcosa-torreblanca",
+      "name": "este alcosa torreblanca",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "este-alcosa-torreblanca",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.39541441335861,
+      "lng": -5.919885496590956
+    },
+    {
+      "slug": "sevilla-capital/feria",
+      "name": "feria",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "feria",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.39810341464004,
+      "lng": -5.990690396142262
+    },
+    {
+      "slug": "sevilla-capital/heliopolis",
+      "name": "heliopolis",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "heliopolis",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.35503067293497,
+      "lng": -5.983758529740837
+    },
+    {
+      "slug": "sevilla-capital/juan-xxiii-rochelambert",
+      "name": "juan xxiii rochelambert",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "juan-xxiii-rochelambert",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.37570896899053,
+      "lng": -5.95046429391886
+    },
+    {
+      "slug": "sevilla-capital/la-buhaira",
+      "name": "la buhaira",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "la-buhaira",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.38218254659406,
+      "lng": -5.97361353109875
+    },
+    {
+      "slug": "sevilla-capital/la-calzada-la-florida",
+      "name": "la calzada la florida",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "la-calzada-la-florida",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.38717167381945,
+      "lng": -5.979521634831956
+    },
+    {
+      "slug": "sevilla-capital/la-oliva",
+      "name": "la oliva",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "la-oliva",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.36239901283691,
+      "lng": -5.962600314259416
+    },
+    {
+      "slug": "sevilla-capital/la-plata",
+      "name": "la plata",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "la-plata",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.37155037120829,
+      "lng": -5.948650134808654
+    },
+    {
+      "slug": "sevilla-capital/los-pajaros",
+      "name": "los pajaros",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "los-pajaros",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.3826090716794,
+      "lng": -5.957247719292082
+    },
+    {
+      "slug": "sevilla-capital/los-remedios",
+      "name": "los remedios",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "los-remedios",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.37427665315991,
+      "lng": -5.999696019756784
+    },
+    {
+      "slug": "sevilla-capital/macarena",
+      "name": "macarena",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "macarena",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.40590393389604,
+      "lng": -5.978769738544908
+    },
+    {
+      "slug": "sevilla-capital/nervion",
+      "name": "nervion",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "nervion",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.38425637979322,
+      "lng": -5.970531253946736
+    },
+    {
+      "slug": "sevilla-capital/norte",
+      "name": "norte",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "norte",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.420316557059095,
+      "lng": -5.9730915402435345
+    },
+    {
+      "slug": "sevilla-capital/palmas-altas",
+      "name": "palmas altas",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "palmas-altas",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.33458835045556,
+      "lng": -5.98142326904416
+    },
+    {
+      "slug": "sevilla-capital/palmete",
+      "name": "palmete",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "palmete",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.37675043562726,
+      "lng": -5.93208220831366
+    },
+    {
+      "slug": "sevilla-capital/parque-alcosa",
+      "name": "parque alcosa",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "parque-alcosa",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.409788879449394,
+      "lng": -5.9288104706629685
+    },
+    {
+      "slug": "sevilla-capital/parque-atlantico-san-matias",
+      "name": "parque atlantico san matias",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "parque-atlantico-san-matias",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.406174316982536,
+      "lng": -5.965926509763953
+    },
+    {
+      "slug": "sevilla-capital/parque-maria-luisa-giralda-sur",
+      "name": "parque maria luisa giralda sur",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "parque-maria-luisa-giralda-sur",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.37610286414838,
+      "lng": -5.980053217637001
+    },
+    {
+      "slug": "sevilla-capital/pedro-salvador-las-palmeritas",
+      "name": "pedro salvador las palmeritas",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "pedro-salvador-las-palmeritas",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.35563120955158,
+      "lng": -5.976760270474024
+    },
+    {
+      "slug": "sevilla-capital/pino-montano-consolacion",
+      "name": "pino montano consolacion",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "pino-montano-consolacion",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.418934051692155,
+      "lng": -5.96728293812527
+    },
+    {
+      "slug": "sevilla-capital/san-bartolome",
+      "name": "san bartolome",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "san-bartolome",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.38892709323765,
+      "lng": -5.987740307906928
+    },
+    {
+      "slug": "sevilla-capital/san-bernardo",
+      "name": "san bernardo",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "san-bernardo",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.38295264589803,
+      "lng": -5.984416395037041
+    },
+    {
+      "slug": "sevilla-capital/san-carlos-san-jose",
+      "name": "san carlos san jose",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "san-carlos-san-jose",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.39693614024249,
+      "lng": -5.977100820981546
+    },
+    {
+      "slug": "sevilla-capital/san-gil",
+      "name": "san gil",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "san-gil",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.40187286944936,
+      "lng": -5.992437190536183
+    },
+    {
+      "slug": "sevilla-capital/san-jeronimo-la-bachillera",
+      "name": "san jeronimo la bachillera",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "san-jeronimo-la-bachillera",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.42537430034654,
+      "lng": -5.982755350155341
+    },
+    {
+      "slug": "sevilla-capital/san-julian",
+      "name": "san julian",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "san-julian",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.3974107032963,
+      "lng": -5.986318632441884
+    },
+    {
+      "slug": "sevilla-capital/san-lorenzo",
+      "name": "san lorenzo",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "san-lorenzo",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.39940303190793,
+      "lng": -5.996582734776837
+    },
+    {
+      "slug": "sevilla-capital/san-pablo",
+      "name": "san pablo",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "san-pablo",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.39204171517731,
+      "lng": -5.9651743191714
+    },
+    {
+      "slug": "sevilla-capital/san-pablo-santa-justa",
+      "name": "san pablo santa justa",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "san-pablo-santa-justa",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.395043163169504,
+      "lng": -5.970585202364212
+    },
+    {
+      "slug": "sevilla-capital/san-vicente",
+      "name": "san vicente",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "san-vicente",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.39543064180274,
+      "lng": -5.9984997003091864
+    },
+    {
+      "slug": "sevilla-capital/santa-catalina",
+      "name": "santa catalina",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "santa-catalina",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.39385094906246,
+      "lng": -5.985480916863705
+    },
+    {
+      "slug": "sevilla-capital/santa-clara",
+      "name": "santa clara",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "santa-clara",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.390902017489786,
+      "lng": -5.960835557626085
+    },
+    {
+      "slug": "sevilla-capital/sector-sur-la-palmera-reina-mercedes",
+      "name": "sector sur la palmera reina mercedes",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "sector-sur-la-palmera-reina-mercedes",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.360695806404216,
+      "lng": -5.986467125894163
+    },
+    {
+      "slug": "sevilla-capital/sta-aurelia-cantabrico-atlantico-la-romeria",
+      "name": "sta aurelia cantabrico atlantico la romeria",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "sta-aurelia-cantabrico-atlantico-la-romeria",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.38376064304464,
+      "lng": -5.94997536911699
+    },
+    {
+      "slug": "sevilla-capital/sur",
+      "name": "sur",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "sur",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.366611643208756,
+      "lng": -5.972317776831513
+    },
+    {
+      "slug": "sevilla-capital/tablada",
+      "name": "tablada",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "tablada",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.367404025863564,
+      "lng": -6.008038533031343
+    },
+    {
+      "slug": "sevilla-capital/tiro-de-linea",
+      "name": "tiro de linea",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "tiro-de-linea",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.36957816227782,
+      "lng": -5.974251090563598
+    },
+    {
+      "slug": "sevilla-capital/torreblanca",
+      "name": "torreblanca",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "torreblanca",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.38309191470198,
+      "lng": -5.909474335311813
+    },
+    {
+      "slug": "sevilla-capital/triana",
+      "name": "triana",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "triana",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.381418445217875,
+      "lng": -6.007328712380025
+    },
+    {
+      "slug": "sevilla-capital/triana-casco-antiguo",
+      "name": "triana casco antiguo",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "triana-casco-antiguo",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.385864204856446,
+      "lng": -6.005495077362773
+    },
+    {
+      "slug": "sevilla-capital/triana-este",
+      "name": "triana este",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "triana-este",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.37955215428584,
+      "lng": -6.003919754778444
+    },
+    {
+      "slug": "sevilla-capital/triana-oeste",
+      "name": "triana oeste",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "triana-oeste",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.38634373637282,
+      "lng": -6.009715870971316
+    },
+    {
+      "slug": "sevilla-capital/urbadiez-entrepuentes",
+      "name": "urbadiez entrepuentes",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "urbadiez-entrepuentes",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.395617721181345,
+      "lng": -5.932169515285839
+    },
+    {
+      "slug": "sevilla-capital/valdezorras-el-gordillo",
+      "name": "valdezorras el gordillo",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "valdezorras-el-gordillo",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.430826629687374,
+      "lng": -5.9270526478337295
+    },
+    {
+      "slug": "sevilla-capital/villegas",
+      "name": "villegas",
+      "ccaa": "Andalucía",
+      "pisosDistrict": "villegas",
+      "pisosCitySlug": "sevilla",
+      "citySlug": "sevilla",
+      "lat": 37.41092138455463,
+      "lng": -5.977806204006544
+    }
+  ]
+}

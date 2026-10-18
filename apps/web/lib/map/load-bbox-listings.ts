@@ -15,6 +15,7 @@ export const MAP_LISTINGS_FETCH = 1000;
 
 export const MAP_PORTALS = [
   "kelify",
+  "idealista",
   "pisos_com",
   "hipoges",
   "solvia",

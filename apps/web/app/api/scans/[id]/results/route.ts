@@ -1,6 +1,10 @@
 import { isOpenAccess } from "@/lib/open-access";
 import { parseScanPolygon } from "@/lib/map/parse-scan-polygon";
-import { applyBedroomFilter, type ScanRunFilters } from "@/lib/scan/bedroom-filter";
+import {
+  applyBathroomFilter,
+  applyBedroomFilter,
+  type ScanRunFilters,
+} from "@/lib/scan/bedroom-filter";
 import {
   listingMatchesScanFilters,
   normalizeScanFilters,
@@ -61,7 +65,13 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 
   const rankedResults: ScanResultPayload[] = rawResults
     .filter((r) => {
-      const l = r.listing as { price?: number; bedrooms?: number | null } | null;
+      const l = r.listing as {
+        price?: number;
+        bedrooms?: number | null;
+        bathrooms?: number | null;
+        sqm?: number | null;
+        source_portal?: string | null;
+      } | null;
       if (!l) return false;
       return listingMatchesScanFilters(l, scanFilters);
     })
@@ -110,8 +120,20 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
       .gte("price", priceMin)
       .lte("price", priceMax);
     q = applyBedroomFilter(q, scanFilters as ScanRunFilters);
+    q = applyBathroomFilter(q, scanFilters as ScanRunFilters);
     const { data: rows } = await q;
-    return rows ?? [];
+    return (rows ?? []).filter((l) =>
+      listingMatchesScanFilters(
+        {
+          price: Number(l.price),
+          bedrooms: l.bedrooms as number | null,
+          bathrooms: l.bathrooms as number | null,
+          sqm: l.sqm as number | null,
+          source_portal: l.source_portal as string | null,
+        },
+        scanFilters
+      )
+    );
   }
 
   let displayResults = rankedResults;
@@ -176,15 +198,27 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     if (zoneIds.length > 0) {
       let zq = supabase
         .from("listings")
-        .select("id", { count: "exact", head: true })
+        .select("id, price, bedrooms, bathrooms, sqm, source_portal")
         .in("id", zoneIds)
         .eq("status", "active")
         .eq("operation", "sale")
         .gte("price", priceMin)
         .lte("price", priceMax);
       zq = applyBedroomFilter(zq, scanFilters as ScanRunFilters);
-      const { count } = await zq;
-      zoneMatchingFilters = count ?? 0;
+      zq = applyBathroomFilter(zq, scanFilters as ScanRunFilters);
+      const { data: zoneRows } = await zq;
+      zoneMatchingFilters = (zoneRows ?? []).filter((l) =>
+        listingMatchesScanFilters(
+          {
+            price: Number(l.price),
+            bedrooms: l.bedrooms as number | null,
+            bathrooms: l.bathrooms as number | null,
+            sqm: l.sqm as number | null,
+            source_portal: l.source_portal as string | null,
+          },
+          scanFilters
+        )
+      ).length;
     }
   }
 
@@ -219,6 +253,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     results: displayResults,
     pins,
     mapCount: pins.length,
+    resultTotal: displayResults.length,
     zoneTotal,
     zoneMatchingFilters,
     polygon,

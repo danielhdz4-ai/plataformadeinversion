@@ -1,5 +1,6 @@
 import { dryRun, getSupabase, maxListings } from "./env.mjs";
-import { parsePisosListingsFromHtml } from "./parse-pisos-ld.mjs";
+import { fetchPisosDetailFields, parsePisosListingsFromHtml } from "./parse-pisos-ld.mjs";
+import { isPlausibleMonthlyRent } from "./rent-plausible.mjs";
 import { getCityConfig } from "./spain-city.mjs";
 
 const PORTAL = "pisos_com";
@@ -9,32 +10,35 @@ function pisosMaxPages() {
   return Number.isFinite(n) && n > 0 ? Math.min(n, 60) : 25;
 }
 
-function pisosSaleSearchUrls(pisosSlug, maxPages) {
+function pisosSaleSearchUrls(pisosSlug, maxPages, district = null) {
   const urls = [];
+  const base =
+    district != null && district !== ""
+      ? `https://www.pisos.com/venta/pisos-${pisosSlug}/${district}/`
+      : `https://www.pisos.com/venta/pisos-${pisosSlug}/`;
   for (let p = 1; p <= maxPages; p++) {
-    urls.push(
-      p === 1
-        ? `https://www.pisos.com/venta/pisos-${pisosSlug}/`
-        : `https://www.pisos.com/venta/pisos-${pisosSlug}/${p}/`
-    );
+    urls.push(p === 1 ? base : `${base}${p}/`);
   }
   return urls;
 }
 
-export async function runPisosSale(citySlug) {
+export async function runPisosSale(citySlug, options = {}) {
   const city = getCityConfig(citySlug);
+  const district = options.district ?? null;
+  const pageCap = options.maxPages ?? pisosMaxPages();
   const supabase = getSupabase();
+  const runCitySlug = district ? `${city.slug}/${district}` : city.slug;
   const { data: run, error: runErr } = await supabase
     .from("scrape_runs")
-    .insert({ source: PORTAL, city_slug: city.slug, status: "running" })
+    .insert({ source: PORTAL, city_slug: runCitySlug, status: "running" })
     .select("id")
     .single();
   if (runErr) throw runErr;
 
-  const searchUrls = pisosSaleSearchUrls(city.pisosSlug, pisosMaxPages());
+  const searchUrls = pisosSaleSearchUrls(city.pisosSlug, pageCap, district);
 
   try {
-    const limit = maxListings();
+    const limit = options.maxListings ?? maxListings();
     const parsed = [];
     const seen = new Set();
     let emptyPages = 0;
@@ -68,16 +72,24 @@ export async function runPisosSale(citySlug) {
     let inserted = 0;
     for (let i = 0; i < parsed.length; i++) {
       const row = parsed[i];
-      const price = row.price ?? 200_000 + (i % 8) * 25_000;
+      let price = row.price;
+      let sqm = row.sqm;
+      if (price == null && row.sourceUrl) {
+        const detail = await fetchPisosDetailFields(row.sourceUrl);
+        if (detail?.price) price = detail.price;
+        if (detail?.sqm && sqm == null) sqm = detail.sqm;
+        if (i > 0 && i % 4 === 0) await new Promise((r) => setTimeout(r, 280));
+      }
+      if (price == null || price < 5000) continue;
       const payload = {
         source_portal: PORTAL,
         source_external_id: String(row.externalId),
         operation: "sale",
         title: row.title,
         price,
-        sqm: 55 + (i % 40),
-        bedrooms: row.bedrooms ?? 1 + (i % 3),
-        bathrooms: row.bathrooms ?? 1,
+        sqm: sqm ?? null,
+        bedrooms: row.bedrooms ?? null,
+        bathrooms: row.bathrooms ?? null,
         thumbnail_url: row.thumbnail ?? null,
         postal_code: row.postalCode ?? null,
         city: row.city ?? city.name,
@@ -124,7 +136,15 @@ export async function runPisosSale(citySlug) {
       { onConflict: "slug" }
     );
 
-    return { ok: true, city: city.slug, parsed: parsed.length, inserted, dryRun: dryRun() };
+    return {
+      ok: true,
+      city: city.slug,
+      district: district ?? null,
+      parsed: parsed.length,
+      inserted,
+      externalIds: [...seen],
+      dryRun: dryRun(),
+    };
   } catch (e) {
     await supabase
       .from("scrape_runs")
@@ -185,15 +205,22 @@ export async function runPisosRent(citySlug) {
     let inserted = 0;
     for (let i = 0; i < parsed.length; i++) {
       const row = parsed[i];
-      const rent = row.price ?? 1100 + (i % 10) * 80;
+      let rent = row.price;
+      let sqm = row.sqm;
+      if (rent == null && row.sourceUrl) {
+        const detail = await fetchPisosDetailFields(row.sourceUrl);
+        if (detail?.price) rent = detail.price;
+        if (detail?.sqm && sqm == null) sqm = detail.sqm;
+      }
+      if (rent == null || !isPlausibleMonthlyRent(rent)) continue;
       const payload = {
         source_portal: PORTAL,
         source_external_id: `rent-${row.externalId}`,
         operation: "rent",
         title: row.title,
         price: rent,
-        sqm: 48 + (i % 35),
-        bedrooms: 1 + (i % 3),
+        sqm: sqm ?? null,
+        bedrooms: row.bedrooms ?? null,
         postal_code: row.postalCode ?? null,
         city: row.city ?? city.name,
         ccaa: city.ccaa,

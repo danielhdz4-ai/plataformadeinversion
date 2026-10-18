@@ -1,3 +1,5 @@
+import { resolveListingGrossRoiPct } from "@/lib/listing/gross-roi";
+import { resolveRentEstMonthly } from "@/lib/listing/rent-est";
 import type { ListingSummary, RentComparable } from "@/lib/listing/summary-types";
 import { portalFromNotaryRaw } from "@/lib/notariado/normalize-portal";
 
@@ -66,13 +68,11 @@ export function buildListingSummary(
   itpPct: number = DEFAULT_ITP_PCT
 ): ListingSummary {
   const inv = row.listing_investment;
-  const rent = inv?.rent_est ?? null;
   const price = Number(row.price);
+  const rent = resolveRentEstMonthly(price, inv?.rent_est ?? null);
   const purchaseTaxAmount = price * (itpPct / 100);
   const totalCashInvested = price + purchaseTaxAmount;
-  const grossRoiPct =
-    inv?.roi_gross ??
-    (rent && totalCashInvested > 0 ? ((rent * 12) / totalCashInvested) * 100 : null);
+  const grossRoiPct = resolveListingGrossRoiPct(price, rent, inv?.roi_gross ?? null);
 
   const listingPriceM2 = row.sqm && row.sqm > 0 ? price / row.sqm : null;
   const cpAvg = notary?.price_m2 != null ? Number(notary.price_m2) : null;

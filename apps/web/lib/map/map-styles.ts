@@ -3,7 +3,7 @@ import type { StyleSpecification } from "maplibre-gl";
 export type MapVisualMode = "2d" | "3d";
 export type MapTheme = "claro" | "oscuro" | "satelite";
 
-/** Estilos sin API key (CARTO exige clave desde 2024). */
+/** Estilos sin API key (MapLibre). */
 const OPENFREEMAP = "https://tiles.openfreemap.org/styles";
 
 export function mapStyleFor(theme: MapTheme): StyleSpecification | string {

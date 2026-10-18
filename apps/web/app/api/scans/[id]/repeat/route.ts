@@ -52,7 +52,12 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
   after(async () => {
     const admin = createAdminClient();
     try {
-      await runScanForPolygon(created.id, polygon, filters);
+      await runScanForPolygon(
+        created.id,
+        polygon,
+        filters,
+        source.operation ?? "buy_to_rent"
+      );
     } catch (e) {
       await admin.from("scans").update({ status: "failed", progress_pct: 0 }).eq("id", created.id);
       console.error("scan repeat failed", created.id, e);

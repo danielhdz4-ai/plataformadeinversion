@@ -1,4 +1,5 @@
 import { buildListingSummary } from "@/lib/listing/build-summary";
+import { resolveListingGrossRoiPct } from "@/lib/listing/gross-roi";
 import { NOTARY_NATIONAL_POSTAL } from "@/lib/notariado/resolve-notary";
 import { fetchOfficialMarketForPostals } from "@/lib/listing/official-market-query";
 import { fetchItpPctForCcaa } from "@/lib/listing/tax-itp";
@@ -9,6 +10,7 @@ import { z } from "zod";
 
 const bodySchema = z.object({
   ids: z.array(z.string().uuid()).min(1).max(60),
+  mode: z.enum(["whole", "rooms"]).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -19,12 +21,13 @@ export async function POST(req: NextRequest) {
 
   const supabase = await getDbClient();
   const ids = parsed.data.ids;
+  const roomMode = parsed.data.mode === "rooms";
 
   const { data: listings, error } = await supabase
     .from("listings")
     .select(
       `
-      id, price, sqm, postal_code, city, ccaa,
+      id, price, sqm, bedrooms, postal_code, city, ccaa,
       listing_investment ( rent_est, roi_gross, rent_confidence, comparables_count )
     `
     )
@@ -64,8 +67,8 @@ export async function POST(req: NextRequest) {
     ids.map(async (id) => {
       const { data: comps, error: compErr } = await supabase.rpc("rent_comparables_near", {
         p_listing_id: id,
-        max_m: 500,
-        lim: 5,
+        max_m: roomMode ? 2500 : 500,
+        lim: roomMode ? 24 : 8,
       });
       if (compErr || !comps) {
         comparablesById.set(id, []);
@@ -86,13 +89,17 @@ export async function POST(req: NextRequest) {
   );
 
   const summaries: Record<string, ReturnType<typeof buildListingSummary>> = {};
+  const { isRoomRentComparable, estimateRoomRentMonthly } = await import(
+    "@/lib/listing/room-rent"
+  );
 
   for (const row of listings ?? []) {
     const inv = Array.isArray(row.listing_investment)
       ? row.listing_investment[0]
       : row.listing_investment;
     const itpPct = await fetchItpPctForCcaa(supabase, row.ccaa as string | null);
-    summaries[row.id] = buildListingSummary(
+    const allComps = comparablesById.get(row.id) ?? [];
+    const summary = buildListingSummary(
       {
         id: row.id,
         price: Number(row.price),
@@ -108,11 +115,49 @@ export async function POST(req: NextRequest) {
             }
           : null,
       },
-      comparablesById.get(row.id) ?? [],
+      roomMode ? allComps.filter((c) => !isRoomRentComparable(c)).slice(0, 5) : allComps.slice(0, 5),
       notaryForListing(row.postal_code as string | null),
       row.postal_code ? officialByPostal.get(row.postal_code) ?? [] : [],
       itpPct
     );
+
+    if (roomMode) {
+      const roomComps = allComps.filter(isRoomRentComparable).slice(0, 16);
+      const compIds = roomComps.map((c) => c.id);
+      const meta = new Map<string, { thumbnail_url?: string; source_url?: string }>();
+      if (compIds.length > 0) {
+        const { data: metaRows } = await supabase
+          .from("listings")
+          .select("id, thumbnail_url, source_url")
+          .in("id", compIds);
+        for (const m of metaRows ?? []) {
+          meta.set(m.id as string, m as { thumbnail_url?: string; source_url?: string });
+        }
+      }
+      const beds = row.bedrooms != null ? Number(row.bedrooms) : 2;
+      const est = estimateRoomRentMonthly(roomComps, beds);
+      summary.roomRent = {
+        comparables: roomComps.map((c) => ({
+          ...c,
+          thumbnailUrl: meta.get(c.id)?.thumbnail_url ?? null,
+          sourceUrl: meta.get(c.id)?.source_url ?? null,
+        })),
+        estimatePerRoom: est.perRoom,
+        conservativePerRoom: est.conservativePerRoom,
+        totalEstimateMonthly: est.total,
+        bedrooms: beds,
+      };
+      if (est.total != null && est.total > 0) {
+        const price = Number(row.price);
+        summary.roi.rentEstMonthly = est.total;
+        summary.roi.grossRoiPct = resolveListingGrossRoiPct(price, est.total, null);
+        summary.roi.comparablesCount = roomComps.length;
+        summary.roi.rentConfidence =
+          roomComps.length >= 8 ? "alta" : roomComps.length >= 3 ? "media" : "baja";
+      }
+    }
+
+    summaries[row.id] = summary;
   }
 
   return NextResponse.json({ summaries });

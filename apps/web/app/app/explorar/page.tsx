@@ -14,7 +14,8 @@ import { decodeListingTitle } from "@/lib/decode-html";
 import { AppPanelHeader } from "@/components/app/AppPanelHeader";
 import Link from "next/link";
 import { portalBadge } from "@/lib/portals";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type ListingPin = {
   id: string;
@@ -35,11 +36,23 @@ type ListingPin = {
   geocodeQuality?: number | null;
 };
 
-export default function ExplorarPage() {
+function ExplorarPageContent() {
+  const searchParams = useSearchParams();
   const [listings, setListings] = useState<ListingPin[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const lastBboxRef = useRef<[number, number, number, number] | null>(null);
   const [requestSent, setRequestSent] = useState(false);
+  const [summaryMode, setSummaryMode] = useState<"whole" | "rooms">("whole");
+
+  useEffect(() => {
+    const lid = searchParams.get("listing");
+    if (lid) setSelected(lid);
+  }, [searchParams]);
+
+  const explorarReturnTo = useMemo(
+    () => (selected ? `/app/explorar?listing=${selected}` : "/app/explorar"),
+    [selected]
+  );
 
   const loadMap = useCallback(async (bbox: [number, number, number, number], meta?: { zoom: number }) => {
     lastBboxRef.current = bbox;
@@ -82,7 +95,9 @@ export default function ExplorarPage() {
     if (selected && !ids.includes(selected)) ids.push(selected);
     return ids;
   }, [listings, selected]);
-  const { summaries, loading: summariesLoading } = useListingSummaries(listingIds);
+  const { summaries, loading: summariesLoading } = useListingSummaries(listingIds, {
+    mode: summaryMode,
+  });
 
   const roiPins = useMemo(
     () =>
@@ -180,6 +195,7 @@ export default function ExplorarPage() {
               compact
               summary={summaries[l.id] ?? null}
               summaryLoading={summariesLoading}
+              returnTo={explorarReturnTo}
             />
           ))}
         </div>
@@ -205,11 +221,21 @@ export default function ExplorarPage() {
         />
       )}
       <ListingDetailSidePanel
+        summaryMode={summaryMode}
+        onSummaryModeChange={setSummaryMode}
         listing={selectedListing}
         summary={selected ? (summaries[selected] ?? null) : null}
         summaryLoading={summariesLoading}
         onClose={() => setSelected(null)}
       />
     </div>
+  );
+}
+
+export default function ExplorarPage() {
+  return (
+    <Suspense fallback={<div className="flex h-full items-center justify-center p-8 text-sm text-neutral-600">Cargando explorar…</div>}>
+      <ExplorarPageContent />
+    </Suspense>
   );
 }

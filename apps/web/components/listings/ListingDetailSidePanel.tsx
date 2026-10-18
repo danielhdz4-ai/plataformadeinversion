@@ -2,13 +2,18 @@
 
 import { ListingAiAnalysisBlock } from "@/components/listings/ListingAiAnalysisBlock";
 import { ListingResumenPanel } from "@/components/listings/ListingResumenPanel";
+import { PriceTrendChart } from "@/components/listings/PriceTrendChart";
+import { NeighborhoodGauge } from "@/components/listings/NeighborhoodGauge";
+import { RoomRentComparablesPanel } from "@/components/listings/RoomRentComparablesPanel";
 import { NotariadoPortalPanel } from "@/components/notariado/NotariadoPortalPanel";
 import { decodeListingTitle } from "@/lib/decode-html";
 import type { ListingSummary } from "@/lib/listing/summary-types";
 import { portalBadge } from "@/lib/portals";
 import { SaveListingButton } from "@/components/listings/SaveListingButton";
+import { listingDetailHref } from "@/lib/listing/return-navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 export type SidePanelListing = {
   id: string;
@@ -26,7 +31,7 @@ export type SidePanelListing = {
   rank?: number | null;
 };
 
-type Tab = "resumen" | "notariado" | "ia" | "roi";
+type Tab = "resumen" | "habitaciones" | "notariado" | "ia" | "roi";
 
 function proxiedThumb(url: string | null | undefined) {
   if (!url) return null;
@@ -41,19 +46,33 @@ export function ListingDetailSidePanel({
   summary,
   summaryLoading,
   onClose,
+  onSummaryModeChange,
+  summaryMode = "whole",
+  preferRoomsTab = false,
 }: {
   listing: SidePanelListing | null;
   summary: ListingSummary | null;
   summaryLoading?: boolean;
   onClose?: () => void;
+  /** Al abrir «Habitaciones», pedir resumen con comparables de habitación. */
+  onSummaryModeChange?: (mode: "whole" | "rooms") => void;
+  summaryMode?: "whole" | "rooms";
+  preferRoomsTab?: boolean;
 }) {
   const [tab, setTab] = useState<Tab>("resumen");
   const [fetched, setFetched] = useState<SidePanelListing | null>(null);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const returnTo = useMemo(() => {
+    const q = searchParams.toString();
+    return q ? `${pathname}?${q}` : pathname;
+  }, [pathname, searchParams]);
 
   useEffect(() => {
-    setTab("resumen");
+    setTab(preferRoomsTab ? "habitaciones" : "resumen");
     setFetched(null);
-  }, [listing?.id]);
+    if (preferRoomsTab) onSummaryModeChange?.("rooms");
+  }, [listing?.id, preferRoomsTab, onSummaryModeChange]);
 
   useEffect(() => {
     if (!listing?.id) return;
@@ -197,6 +216,16 @@ export function ListingDetailSidePanel({
           <button type="button" className={tabClass(tab === "resumen")} onClick={() => setTab("resumen")}>
             Resumen
           </button>
+          <button
+            type="button"
+            className={tabClass(tab === "habitaciones")}
+            onClick={() => {
+              onSummaryModeChange?.("rooms");
+              setTab("habitaciones");
+            }}
+          >
+            Habitaciones
+          </button>
           <button type="button" className={tabClass(tab === "notariado")} onClick={() => setTab("notariado")}>
             Notariado
           </button>
@@ -207,7 +236,7 @@ export function ListingDetailSidePanel({
             ROI
           </button>
           <Link
-            href={`/app/listings/${resolved.id}`}
+            href={listingDetailHref(resolved.id, returnTo)}
             className="shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium text-neutral-600 hover:bg-neutral-200/80"
           >
             Ficha →
@@ -232,6 +261,87 @@ export function ListingDetailSidePanel({
               <p className="p-4 text-xs text-neutral-500">No hay métricas de mercado para este anuncio.</p>
             )}
           </>
+        )}
+        {tab === "habitaciones" && (
+          <div className="space-y-3 bg-[#faf9f7] p-3">
+            {(summaryLoading || summaryMode !== "rooms") && !summary?.roomRent && (
+              <div className="animate-pulse space-y-3">
+                <div className="h-24 rounded-lg bg-neutral-200" />
+                <div className="h-48 rounded-xl bg-neutral-800" />
+              </div>
+            )}
+            {summary?.roomRent && summaryMode === "rooms" ? (
+              <>
+                {summary.priceEvolution && (
+                  <section className="rounded-lg border border-neutral-200 bg-white p-2.5">
+                    <h4 className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                      Evolución de precios — mercado local
+                    </h4>
+                    <div className="mt-2 grid gap-3">
+                      <div>
+                        <div className="mb-1 flex items-baseline justify-between gap-1">
+                          <span className="text-[11px] font-medium text-neutral-800">Venta €/m²</span>
+                          <span className="text-[11px] tabular-nums text-neutral-950">
+                            {summary.priceEvolution.saleM2.at(-1)?.y != null
+                              ? `${Math.round(summary.priceEvolution.saleM2.at(-1)!.y).toLocaleString("es-ES")} €`
+                              : "—"}
+                            <span className="ml-1 text-emerald-700">
+                              +{summary.priceEvolution.saleChangePct.toFixed(1)}%
+                            </span>
+                          </span>
+                        </div>
+                        <PriceTrendChart points={summary.priceEvolution.saleM2} />
+                      </div>
+                      <div>
+                        <div className="mb-1 flex items-baseline justify-between gap-1">
+                          <span className="text-[11px] font-medium text-neutral-800">Alquiler €/m²/mes</span>
+                          <span className="text-[11px] tabular-nums text-neutral-950">
+                            {summary.priceEvolution.rentM2.at(-1)?.y != null
+                              ? `${summary.priceEvolution.rentM2.at(-1)!.y.toFixed(1)} €`
+                              : "—"}
+                            <span className="ml-1 text-emerald-700">
+                              +{summary.priceEvolution.rentChangePct.toFixed(1)}%
+                            </span>
+                          </span>
+                        </div>
+                        <PriceTrendChart
+                          points={summary.priceEvolution.rentM2}
+                          stroke="#525252"
+                          fill="rgba(82,82,82,0.12)"
+                        />
+                      </div>
+                    </div>
+                  </section>
+                )}
+                {summary.neighborhood.listingPriceM2 != null &&
+                  summary.neighborhood.cpAvgPriceM2 != null && (
+                    <section className="rounded-lg border border-neutral-200 bg-white p-2.5">
+                      <h4 className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                        Resumen del barrio (€/m²)
+                      </h4>
+                      <div className="mt-2">
+                        <NeighborhoodGauge
+                          listingM2={summary.neighborhood.listingPriceM2}
+                          cpAvgM2={summary.neighborhood.cpAvgPriceM2}
+                          vsPct={summary.neighborhood.vsCpPct}
+                        />
+                      </div>
+                    </section>
+                  )}
+                <RoomRentComparablesPanel
+                  comparables={summary.roomRent.comparables}
+                  estimatePerRoom={summary.roomRent.estimatePerRoom}
+                  conservativePerRoom={summary.roomRent.conservativePerRoom}
+                  bedrooms={summary.roomRent.bedrooms}
+                />
+              </>
+            ) : summaryMode === "rooms" && !summaryLoading ? (
+              <p className="text-xs text-neutral-600">
+                No hay habitaciones en alquiler cerca de este inmueble. Prueba otra zona o espera al scrape de
+                alquileres.
+              </p>
+            ) : null}
+          </div>
         )}
         {tab === "notariado" && (
           <div className="p-3">

@@ -14,10 +14,11 @@ import type { ScanPolygon } from "@/lib/scan/types";
 import { boundsFromPins, polygonBounds } from "@/lib/map/polygon-bounds";
 import { parseScanPolygon } from "@/lib/map/parse-scan-polygon";
 import { SPAIN_VIEW } from "@/lib/map/spain-bounds";
+import { scanOperationUsesRoi } from "@/lib/investment/operations";
 import type { ScanRunFilters } from "@/lib/scan/bedroom-filter";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useListingSummaries } from "@/lib/listing/use-listing-summaries";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 
 type ResultRow = {
   rank: number;
@@ -40,9 +41,10 @@ type ResultRow = {
 
 type Pin = { id: string; lng: number; lat: number; roi: number | null; price: number };
 
-export default function ScanResultsPage() {
+function ScanResultsPageContent() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [repeating, setRepeating] = useState(false);
   const [rows, setRows] = useState<ResultRow[]>([]);
   const [pins, setPins] = useState<Pin[]>([]);
@@ -52,11 +54,16 @@ export default function ScanResultsPage() {
   const [mapCount, setMapCount] = useState(0);
   const [zoneTotal, setZoneTotal] = useState(0);
   const [zoneMatchingFilters, setZoneMatchingFilters] = useState(0);
-  const [sort, setSort] = useState<"roi_desc" | "price_asc">("roi_desc");
+  const [sort, setSort] = useState<"roi_desc" | "price_asc" | "price_desc">("roi_desc");
+  const [viewPriceMin, setViewPriceMin] = useState(0);
+  const [viewPriceMax, setViewPriceMax] = useState(2_000_000);
+  const [priceFilterReady, setPriceFilterReady] = useState(false);
   const [mapFallback, setMapFallback] = useState(false);
   const [flyTo, setFlyTo] = useState<{ center: [number, number]; zoom: number } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [scanFilters, setScanFilters] = useState<ScanRunFilters | null>(null);
+  const [scanOperation, setScanOperation] = useState<string>("buy_to_rent");
+  const usesRoi = scanOperationUsesRoi(scanOperation);
 
   useEffect(() => {
     let cancelled = false;
@@ -69,10 +76,12 @@ export default function ScanResultsPage() {
         }
         return;
       }
-      const scan = (await s.json()) as { status: string; polygon?: unknown };
+      const scan = (await s.json()) as { status: string; polygon?: unknown; operation?: string };
       if (!cancelled) {
         setLoadError(null);
         setStatus(scan.status ?? "failed");
+        setScanOperation(scan.operation ?? "buy_to_rent");
+        if (scan.operation === "buy") setSort("price_asc");
         const parsedPoly = parseScanPolygon(scan.polygon);
         if (parsedPoly) setPolygon(parsedPoly);
       }
@@ -101,7 +110,14 @@ export default function ScanResultsPage() {
         setZoneTotal(data.zoneTotal ?? 0);
         setZoneMatchingFilters(data.zoneMatchingFilters ?? 0);
         setMapFallback(Boolean(data.usedMapFallback));
-        if (data.filters) setScanFilters(data.filters);
+        if (data.filters) {
+          setScanFilters(data.filters);
+          if (!priceFilterReady) {
+            setViewPriceMin(Number(data.filters.priceMin ?? 0));
+            setViewPriceMax(Number(data.filters.priceMax ?? 2_000_000));
+            setPriceFilterReady(true);
+          }
+        }
         const polyFromResults = parseScanPolygon(data.polygon);
         if (polyFromResults) setPolygon(polyFromResults);
       }
@@ -115,19 +131,58 @@ export default function ScanResultsPage() {
     };
   }, [id, status]);
 
+  const priceBounds = useMemo(() => {
+    if (rows.length === 0) return { min: 0, max: 500_000 };
+    let min = Infinity;
+    let max = 0;
+    for (const r of rows) {
+      const p = r.listing.price;
+      if (p < min) min = p;
+      if (p > max) max = p;
+    }
+    return { min: Number.isFinite(min) ? min : 0, max: max || 500_000 };
+  }, [rows]);
+
+  const priceFilteredRows = useMemo(() => {
+    return rows.filter((r) => {
+      const p = r.listing.price;
+      return p >= viewPriceMin && p <= viewPriceMax;
+    });
+  }, [rows, viewPriceMin, viewPriceMax]);
+
   const sortedRows = useMemo(() => {
-    const copy = [...rows];
+    const copy = [...priceFilteredRows];
     if (sort === "price_asc") copy.sort((a, b) => a.listing.price - b.listing.price);
+    else if (sort === "price_desc") copy.sort((a, b) => b.listing.price - a.listing.price);
     else copy.sort((a, b) => b.roi_gross - a.roi_gross);
     return copy;
-  }, [rows, sort]);
+  }, [priceFilteredRows, sort]);
+
+  const visiblePinIds = useMemo(() => new Set(sortedRows.map((r) => r.listing.id)), [sortedRows]);
+
+  const filteredPins = useMemo(
+    () =>
+      pins.filter(
+        (p) =>
+          visiblePinIds.has(p.id) &&
+          p.price >= viewPriceMin &&
+          p.price <= viewPriceMax
+      ),
+    [pins, visiblePinIds, viewPriceMin, viewPriceMax]
+  );
 
   const listingIds = useMemo(() => {
     const ids = sortedRows.map((r) => r.listing.id);
     if (selected && !ids.includes(selected)) ids.push(selected);
     return ids;
   }, [sortedRows, selected]);
-  const { summaries, loading: summariesLoading } = useListingSummaries(listingIds);
+  const [summaryMode, setSummaryMode] = useState<"whole" | "rooms">("whole");
+  useEffect(() => {
+    setSummaryMode(scanOperation === "buy_to_rent_rooms" ? "rooms" : "whole");
+  }, [scanOperation, id]);
+  const { summaries, loading: summariesLoading } = useListingSummaries(listingIds, {
+    mode: summaryMode,
+  });
 
   const didInitialSelect = useRef(false);
   const rentById = useMemo(() => {
@@ -140,30 +195,45 @@ export default function ScanResultsPage() {
 
   const roiPins = useMemo(
     () =>
-      pins.map((p) => ({
+      filteredPins.map((p) => ({
         ...p,
         rentEst: rentById.get(p.id) ?? null,
       })),
-    [pins, rentById]
+    [filteredPins, rentById]
   );
+
+  const listingReturnTo = useMemo(() => {
+    const base = `/app/scan/${id}`;
+    const sel = selected ?? searchParams.get("listing");
+    return sel ? `${base}?listing=${sel}` : base;
+  }, [id, selected, searchParams]);
 
   const selectListing = (listingId: string, panMap = false) => {
     setSelected(listingId);
+    router.replace(`/app/scan/${id}?listing=${listingId}`, { scroll: false });
     if (!panMap) return;
     const pin = roiPins.find((p) => p.id === listingId);
     if (pin) setFlyTo({ center: [pin.lng, pin.lat], zoom: 15 });
   };
 
   useEffect(() => {
+    const fromUrl = searchParams.get("listing");
+    if (fromUrl) {
+      setSelected(fromUrl);
+      didInitialSelect.current = true;
+      return;
+    }
     if (didInitialSelect.current || sortedRows.length === 0) return;
     didInitialSelect.current = true;
-    setSelected(sortedRows[0]!.listing.id);
-  }, [sortedRows]);
+    const first = sortedRows[0]!.listing.id;
+    setSelected(first);
+    router.replace(`/app/scan/${id}?listing=${first}`, { scroll: false });
+  }, [sortedRows, searchParams, id, router]);
 
   const mapFitBounds = useMemo(() => {
     if (polygon) return polygonBounds(polygon);
-    return boundsFromPins(pins);
-  }, [polygon, pins]);
+    return boundsFromPins(filteredPins.length ? filteredPins : pins);
+  }, [polygon, pins, filteredPins]);
 
   const selectedListing = useMemo((): SidePanelListing | null => {
     if (!selected) return null;
@@ -261,6 +331,14 @@ export default function ScanResultsPage() {
         onExportJson={exportJson}
         onRepeat={() => void repeatScan()}
         repeating={repeating}
+        showRoiSort={usesRoi}
+        totalCount={rows.length}
+        filteredCount={sortedRows.length}
+        priceMin={viewPriceMin}
+        priceMax={viewPriceMax}
+        priceCeiling={Math.max(priceBounds.max, scanFilters?.priceMax ?? priceBounds.max)}
+        onPriceMinChange={(v) => setViewPriceMin(Math.max(0, v))}
+        onPriceMaxChange={(v) => setViewPriceMax(Math.max(viewPriceMin, v))}
       />
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
         <aside className="flex min-h-0 w-full shrink-0 flex-col border-r border-neutral-200 bg-[#f7f6f3] lg:w-[min(380px,34vw)]">
@@ -276,7 +354,11 @@ export default function ScanResultsPage() {
           )}
           <AppPanelHeader
             title="Resultados del scan"
-            subtitle={`${sortedRows.length} ranking · ${mapCount} en mapa · ${zoneMatchingFilters} en zona con filtros (inventario scrapeado)`}
+            subtitle={
+              usesRoi
+                ? `${sortedRows.length} mostrados · ${rows.length} en ranking · ${zoneMatchingFilters} en zona (inventario)`
+                : `${sortedRows.length} mostrados · ${rows.length} en scan · ${zoneMatchingFilters} en zona`
+            }
           />
           {scanFilters && (
             <p className="mx-3 -mt-1 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[11px] text-neutral-700">
@@ -309,8 +391,8 @@ export default function ScanResultsPage() {
                 key={row.listing.id}
                 title={row.listing.title ?? "Inmueble"}
                 price={row.listing.price}
-                roi={row.roi_gross}
-                rentEst={row.listing.listing_investment?.rent_est}
+                roi={usesRoi ? row.roi_gross : null}
+                rentEst={usesRoi ? row.listing.listing_investment?.rent_est : null}
                 sourceUrl={row.listing.source_url}
                 listingId={row.listing.id}
                 sourcePortal={row.listing.source_portal}
@@ -326,6 +408,7 @@ export default function ScanResultsPage() {
                 compact
                 summary={summaries[row.listing.id] ?? null}
                 summaryLoading={summariesLoading}
+                returnTo={listingReturnTo}
               />
             ))}
           </div>
@@ -343,7 +426,7 @@ export default function ScanResultsPage() {
             mapFitBounds={mapFitBounds}
             fitKey={`${id}-${pins.length}-${polygon ? "p" : "n"}`}
             flyTo={flyTo}
-            maxPins={72}
+            maxPins={200}
             className="absolute inset-0 h-full w-full"
           />
         </div>
@@ -360,8 +443,19 @@ export default function ScanResultsPage() {
           summary={selected ? (summaries[selected] ?? null) : null}
           summaryLoading={summariesLoading}
           onClose={() => setSelected(null)}
+          preferRoomsTab={scanOperation === "buy_to_rent_rooms"}
+          summaryMode={summaryMode}
+          onSummaryModeChange={setSummaryMode}
         />
       </div>
     </div>
+  );
+}
+
+export default function ScanResultsPage() {
+  return (
+    <Suspense fallback={<div className="flex h-full items-center justify-center p-8 text-sm text-neutral-600">Cargando scan…</div>}>
+      <ScanResultsPageContent />
+    </Suspense>
   );
 }

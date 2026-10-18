@@ -1,0 +1,1078 @@
+{
+  "description": "Barrios valencia-capital — Fotocasa + pisos.com",
+  "fotocasaCapital": "valencia-capital",
+  "citySlug": "valencia",
+  "pisosCitySlug": "valencia",
+  "fotocasaZones": [
+    {
+      "slug": "valencia-capital/aiora",
+      "name": "aiora",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "aiora",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46610280140238,
+      "lng": -0.3449596649796237
+    },
+    {
+      "slug": "valencia-capital/albors",
+      "name": "albors",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "albors",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46883640257929,
+      "lng": -0.35254788319294494
+    },
+    {
+      "slug": "valencia-capital/algiros",
+      "name": "algiros",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "algiros",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.47242364398567,
+      "lng": -0.34388092372200096
+    },
+    {
+      "slug": "valencia-capital/arrancapins",
+      "name": "arrancapins",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "arrancapins",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46529714233274,
+      "lng": -0.38572513166744965
+    },
+    {
+      "slug": "valencia-capital/barrio-de-benicalap",
+      "name": "barrio de benicalap",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "barrio-de-benicalap",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.491775272555216,
+      "lng": -0.3923500209605564
+    },
+    {
+      "slug": "valencia-capital/barrio-de-benimaclet",
+      "name": "barrio de benimaclet",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "barrio-de-benimaclet",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.48575787437905,
+      "lng": -0.3623798632785051
+    },
+    {
+      "slug": "valencia-capital/barrio-de-campanar",
+      "name": "barrio de campanar",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "barrio-de-campanar",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.48109987524637,
+      "lng": -0.395649057146774
+    },
+    {
+      "slug": "valencia-capital/barrio-de-patraix",
+      "name": "barrio de patraix",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "barrio-de-patraix",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46331176636383,
+      "lng": -0.3924922172715145
+    },
+    {
+      "slug": "valencia-capital/benicalap",
+      "name": "benicalap",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "benicalap",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.49354894074198,
+      "lng": -0.3917910500837049
+    },
+    {
+      "slug": "valencia-capital/benifaraig",
+      "name": "benifaraig",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "benifaraig",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.528854936840304,
+      "lng": -0.38633142160021927
+    },
+    {
+      "slug": "valencia-capital/beniferri",
+      "name": "beniferri",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "beniferri",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.49538789297203,
+      "lng": -0.40740921472854263
+    },
+    {
+      "slug": "valencia-capital/benimaclet",
+      "name": "benimaclet",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "benimaclet",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.486180135519135,
+      "lng": -0.36160542504318666
+    },
+    {
+      "slug": "valencia-capital/benimamet",
+      "name": "benimamet",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "benimamet",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.50190068820597,
+      "lng": -0.4200992228088761
+    },
+    {
+      "slug": "valencia-capital/betero",
+      "name": "betero",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "betero",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.471609718039176,
+      "lng": -0.3362543150554231
+    },
+    {
+      "slug": "valencia-capital/borboto",
+      "name": "borboto",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "borboto",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.51535093179105,
+      "lng": -0.3895498045135241
+    },
+    {
+      "slug": "valencia-capital/cami-de-vera",
+      "name": "cami de vera",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "cami-de-vera",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.48909993139805,
+      "lng": -0.35812286242466473
+    },
+    {
+      "slug": "valencia-capital/cami-fondo",
+      "name": "cami fondo",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "cami-fondo",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46532336419593,
+      "lng": -0.3533802091758037
+    },
+    {
+      "slug": "valencia-capital/cami-reial",
+      "name": "cami reial",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "cami-reial",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.439715275733825,
+      "lng": -0.38879607707915803
+    },
+    {
+      "slug": "valencia-capital/camins-al-grau",
+      "name": "camins al grau",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "camins-al-grau",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.463284939834104,
+      "lng": -0.34701702293925796
+    },
+    {
+      "slug": "valencia-capital/campanar",
+      "name": "campanar",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "campanar",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.48504199392063,
+      "lng": -0.39748091573124417
+    },
+    {
+      "slug": "valencia-capital/carpesa",
+      "name": "carpesa",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "carpesa",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.51422947197223,
+      "lng": -0.37822967627163506
+    },
+    {
+      "slug": "valencia-capital/cases-de-barcena",
+      "name": "cases de barcena",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "cases-de-barcena",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.52125204832915,
+      "lng": -0.358126973655902
+    },
+    {
+      "slug": "valencia-capital/ciutat-de-les-ciencies-i-de-les-arts-justicia",
+      "name": "ciutat de les ciencies i de les arts justicia",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "ciutat-de-les-ciencies-i-de-les-arts-justicia",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.45429882753096,
+      "lng": -0.3591130055125281
+    },
+    {
+      "slug": "valencia-capital/ciutat-fallera",
+      "name": "ciutat fallera",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "ciutat-fallera",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.49936868711263,
+      "lng": -0.3939401362587635
+    },
+    {
+      "slug": "valencia-capital/ciutat-jardi",
+      "name": "ciutat jardi",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "ciutat-jardi",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.471685257448605,
+      "lng": -0.344964728142559
+    },
+    {
+      "slug": "valencia-capital/ciutat-universitaria",
+      "name": "ciutat universitaria",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "ciutat-universitaria",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.477595452024,
+      "lng": -0.3560159260843367
+    },
+    {
+      "slug": "valencia-capital/ciutat-vella",
+      "name": "ciutat vella",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "ciutat-vella",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.472749640066404,
+      "lng": -0.37790749975362603
+    },
+    {
+      "slug": "valencia-capital/el-botanic",
+      "name": "el botanic",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "el-botanic",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.473755028134704,
+      "lng": -0.3846772874398671
+    },
+    {
+      "slug": "valencia-capital/el-cabanyal-el-canyamelar",
+      "name": "el cabanyal el canyamelar",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "el-cabanyal-el-canyamelar",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46863988077187,
+      "lng": -0.3300569143933964
+    },
+    {
+      "slug": "valencia-capital/el-calvari",
+      "name": "el calvari",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "el-calvari",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.48710946863869,
+      "lng": -0.3906382695694651
+    },
+    {
+      "slug": "valencia-capital/el-carme",
+      "name": "el carme",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "el-carme",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.47835585148362,
+      "lng": -0.37988412025108836
+    },
+    {
+      "slug": "valencia-capital/el-castellar-i-l-oliverar",
+      "name": "el castellar i l oliverar",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "el-castellar-i-l-oliverar",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.42939275052533,
+      "lng": -0.36307441976309096
+    },
+    {
+      "slug": "valencia-capital/el-forn-d-alcedo",
+      "name": "el forn d alcedo",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "el-forn-d-alcedo",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.43158441821064,
+      "lng": -0.37577780895288804
+    },
+    {
+      "slug": "valencia-capital/el-grau",
+      "name": "el grau",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "el-grau",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46159227505536,
+      "lng": -0.3349082575305448
+    },
+    {
+      "slug": "valencia-capital/el-mercat",
+      "name": "el mercat",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "el-mercat",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.47361590205622,
+      "lng": -0.3787952665705573
+    },
+    {
+      "slug": "valencia-capital/el-palmar",
+      "name": "el palmar",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "el-palmar",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.318266548598665,
+      "lng": -0.31750861312894985
+    },
+    {
+      "slug": "valencia-capital/el-perellonet",
+      "name": "el perellonet",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "el-perellonet",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.29266658791044,
+      "lng": -0.2859624362823684
+    },
+    {
+      "slug": "valencia-capital/el-pilar",
+      "name": "el pilar",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "el-pilar",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.47273555636704,
+      "lng": -0.3819937316034797
+    },
+    {
+      "slug": "valencia-capital/el-pla-del-real",
+      "name": "el pla del real",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "el-pla-del-real",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.4749222275045,
+      "lng": -0.35872165554207813
+    },
+    {
+      "slug": "valencia-capital/el-pla-del-remei",
+      "name": "el pla del remei",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "el-pla-del-remei",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46841934539855,
+      "lng": -0.3703682785725931
+    },
+    {
+      "slug": "valencia-capital/el-saler",
+      "name": "el saler",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "el-saler",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.357717386207995,
+      "lng": -0.3205686692736216
+    },
+    {
+      "slug": "valencia-capital/els-orriols",
+      "name": "els orriols",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "els-orriols",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.494552419290585,
+      "lng": -0.3698418622636062
+    },
+    {
+      "slug": "valencia-capital/en-corts-doctor-waksman",
+      "name": "en corts doctor waksman",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "en-corts-doctor-waksman",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.45609981046353,
+      "lng": -0.3716300419004807
+    },
+    {
+      "slug": "valencia-capital/exposicio",
+      "name": "exposicio",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "exposicio",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.47666749103478,
+      "lng": -0.3628139762740527
+    },
+    {
+      "slug": "valencia-capital/extramurs",
+      "name": "extramurs",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "extramurs",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.470251565147926,
+      "lng": -0.38620420679619705
+    },
+    {
+      "slug": "valencia-capital/faitanar",
+      "name": "faitanar",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "faitanar",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.4372545496241,
+      "lng": -0.4013975642190382
+    },
+    {
+      "slug": "valencia-capital/favara",
+      "name": "favara",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "favara",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.45436632771116,
+      "lng": -0.39267816742490086
+    },
+    {
+      "slug": "valencia-capital/fonteta-de-sant-lluis",
+      "name": "fonteta de sant lluis",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "fonteta-de-sant-lluis",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.44465215116601,
+      "lng": -0.3675137125681947
+    },
+    {
+      "slug": "valencia-capital/gran-via",
+      "name": "gran via",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "gran-via",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46596586780636,
+      "lng": -0.36541108854841126
+    },
+    {
+      "slug": "valencia-capital/jaume-roig",
+      "name": "jaume roig",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "jaume-roig",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.48289302124178,
+      "lng": -0.36326993353312304
+    },
+    {
+      "slug": "valencia-capital/jesus",
+      "name": "jesus",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "jesus",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.45169110845945,
+      "lng": -0.3882880211194046
+    },
+    {
+      "slug": "valencia-capital/l-amistat",
+      "name": "l amistat",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "l-amistat",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.473111637831636,
+      "lng": -0.35079643035794666
+    },
+    {
+      "slug": "valencia-capital/l-eixample",
+      "name": "l eixample",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "l-eixample",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.463895183717085,
+      "lng": -0.37072732724742996
+    },
+    {
+      "slug": "valencia-capital/l-hort-de-senabre",
+      "name": "l hort de senabre",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "l-hort-de-senabre",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.452501895306355,
+      "lng": -0.3900717386294264
+    },
+    {
+      "slug": "valencia-capital/l-illa-perduda",
+      "name": "l illa perduda",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "l-illa-perduda",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46925438346329,
+      "lng": -0.3401096536229391
+    },
+    {
+      "slug": "valencia-capital/l-olivereta",
+      "name": "l olivereta",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "l-olivereta",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.469476659845505,
+      "lng": -0.40187007882958936
+    },
+    {
+      "slug": "valencia-capital/la-bega-baixa-plaza-xuquer",
+      "name": "la bega baixa plaza xuquer",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "la-bega-baixa-plaza-xuquer",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.476340257787584,
+      "lng": -0.3489607455172368
+    },
+    {
+      "slug": "valencia-capital/la-carrasca",
+      "name": "la carrasca",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "la-carrasca",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.47805145711183,
+      "lng": -0.3508273697918715
+    },
+    {
+      "slug": "valencia-capital/la-creu-coberta",
+      "name": "la creu coberta",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "la-creu-coberta",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.449886299764955,
+      "lng": -0.38695490217301404
+    },
+    {
+      "slug": "valencia-capital/la-creu-del-grau",
+      "name": "la creu del grau",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "la-creu-del-grau",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46200283788729,
+      "lng": -0.34508226532054936
+    },
+    {
+      "slug": "valencia-capital/la-fontsanta",
+      "name": "la fontsanta",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "la-fontsanta",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.465087923998894,
+      "lng": -0.4076572617401249
+    },
+    {
+      "slug": "valencia-capital/la-llum",
+      "name": "la llum",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "la-llum",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.4686658471667,
+      "lng": -0.4149896365556944
+    },
+    {
+      "slug": "valencia-capital/la-malva-rosa",
+      "name": "la malva rosa",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "la-malva-rosa",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.48001686848609,
+      "lng": -0.3284469310220409
+    },
+    {
+      "slug": "valencia-capital/la-petxina",
+      "name": "la petxina",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "la-petxina",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.47385062288837,
+      "lng": -0.39117276125856637
+    },
+    {
+      "slug": "valencia-capital/la-punta",
+      "name": "la punta",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "la-punta",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.44396403683722,
+      "lng": -0.34127226673314415
+    },
+    {
+      "slug": "valencia-capital/la-raiosa",
+      "name": "la raiosa",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "la-raiosa",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.456814634573554,
+      "lng": -0.3846760823099499
+    },
+    {
+      "slug": "valencia-capital/la-roqueta",
+      "name": "la roqueta",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "la-roqueta",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.4670012430134,
+      "lng": -0.3809879369732711
+    },
+    {
+      "slug": "valencia-capital/la-saidia",
+      "name": "la saidia",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "la-saidia",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.486782716823164,
+      "lng": -0.37503369186464375
+    },
+    {
+      "slug": "valencia-capital/la-seu",
+      "name": "la seu",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "la-seu",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.47586394047393,
+      "lng": -0.37642137102460443
+    },
+    {
+      "slug": "valencia-capital/la-torre",
+      "name": "la torre",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "la-torre",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.432838462567354,
+      "lng": -0.3915142141626633
+    },
+    {
+      "slug": "valencia-capital/la-xerea",
+      "name": "la xerea",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "la-xerea",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.474266168956056,
+      "lng": -0.3711751470857268
+    },
+    {
+      "slug": "valencia-capital/les-tendetes-avenida-burjassot",
+      "name": "les tendetes avenida burjassot",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "les-tendetes-avenida-burjassot",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.48298907096859,
+      "lng": -0.3850994754864516
+    },
+    {
+      "slug": "valencia-capital/malilla",
+      "name": "malilla",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "malilla",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.44970343192685,
+      "lng": -0.3752373543545962
+    },
+    {
+      "slug": "valencia-capital/marxalenes",
+      "name": "marxalenes",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "marxalenes",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.48638934131021,
+      "lng": -0.38461349761751523
+    },
+    {
+      "slug": "valencia-capital/massarrojos",
+      "name": "massarrojos",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "massarrojos",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.54455418800035,
+      "lng": -0.41083494027492967
+    },
+    {
+      "slug": "valencia-capital/mestalla",
+      "name": "mestalla",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "mestalla",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.470295962367906,
+      "lng": -0.35631674443059846
+    },
+    {
+      "slug": "valencia-capital/mont-olivet",
+      "name": "mont olivet",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "mont-olivet",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.458895867686934,
+      "lng": -0.36344913483644364
+    },
+    {
+      "slug": "valencia-capital/morvedre",
+      "name": "morvedre",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "morvedre",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.48451940114733,
+      "lng": -0.3755811743451198
+    },
+    {
+      "slug": "valencia-capital/na-rovella-hermanos-maristas",
+      "name": "na rovella hermanos maristas",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "na-rovella-hermanos-maristas",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.452335587660194,
+      "lng": -0.3666315111896894
+    },
+    {
+      "slug": "valencia-capital/natzaret",
+      "name": "natzaret",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "natzaret",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.44890552189199,
+      "lng": -0.3337068251125062
+    },
+    {
+      "slug": "valencia-capital/nou-benicalap",
+      "name": "nou benicalap",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "nou-benicalap",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.4970436009121,
+      "lng": -0.3881578444056476
+    },
+    {
+      "slug": "valencia-capital/nou-campanar",
+      "name": "nou campanar",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "nou-campanar",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.48024971772445,
+      "lng": -0.4022748233184394
+    },
+    {
+      "slug": "valencia-capital/nou-moles",
+      "name": "nou moles",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "nou-moles",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.47066898814966,
+      "lng": -0.39820055336552324
+    },
+    {
+      "slug": "valencia-capital/patraix",
+      "name": "patraix",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "patraix",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.459836066957806,
+      "lng": -0.3972141571737687
+    },
+    {
+      "slug": "valencia-capital/penya-roja-avda-francia",
+      "name": "penya roja avda francia",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "penya-roja-avda-francia",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46046396203834,
+      "lng": -0.3508544548581543
+    },
+    {
+      "slug": "valencia-capital/pinedo",
+      "name": "pinedo",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "pinedo",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.42125233240658,
+      "lng": -0.3380524045778959
+    },
+    {
+      "slug": "valencia-capital/poblats-maritims",
+      "name": "poblats maritims",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "poblats-maritims",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46714368639699,
+      "lng": -0.33132420246977434
+    },
+    {
+      "slug": "valencia-capital/poble-nou",
+      "name": "poble nou",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "poble-nou",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.50378376713996,
+      "lng": -0.3832506028401895
+    },
+    {
+      "slug": "valencia-capital/pobles-de-l-oest",
+      "name": "pobles de l oest",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "pobles-de-l-oest",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.50101619417161,
+      "lng": -0.41818888609500277
+    },
+    {
+      "slug": "valencia-capital/pobles-del-nord",
+      "name": "pobles del nord",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "pobles-del-nord",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.5196317755681,
+      "lng": -0.3883854496904984
+    },
+    {
+      "slug": "valencia-capital/pobles-del-sud",
+      "name": "pobles del sud",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "pobles-del-sud",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.36156075694323,
+      "lng": -0.32753843703569524
+    },
+    {
+      "slug": "valencia-capital/quatre-carreres",
+      "name": "quatre carreres",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "quatre-carreres",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.45049222326147,
+      "lng": -0.36437322814348616
+    },
+    {
+      "slug": "valencia-capital/rascanya",
+      "name": "rascanya",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "rascanya",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.49420332384066,
+      "lng": -0.371045451411791
+    },
+    {
+      "slug": "valencia-capital/russafa",
+      "name": "russafa",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "russafa",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46122145083205,
+      "lng": -0.37248768664462345
+    },
+    {
+      "slug": "valencia-capital/safranar",
+      "name": "safranar",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "safranar",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.4591212192709,
+      "lng": -0.39646437195111955
+    },
+    {
+      "slug": "valencia-capital/sant-antoni",
+      "name": "sant antoni",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "sant-antoni",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.48834107864029,
+      "lng": -0.3748395238937626
+    },
+    {
+      "slug": "valencia-capital/sant-francesc",
+      "name": "sant francesc",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "sant-francesc",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46988255723928,
+      "lng": -0.3772385628882351
+    },
+    {
+      "slug": "valencia-capital/sant-isidre",
+      "name": "sant isidre",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "sant-isidre",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.45324638833276,
+      "lng": -0.40383862573911583
+    },
+    {
+      "slug": "valencia-capital/sant-llorenc-zona-alfahuir",
+      "name": "sant llorenc zona alfahuir",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "sant-llorenc-zona-alfahuir",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.49233131458802,
+      "lng": -0.3635027657687846
+    },
+    {
+      "slug": "valencia-capital/sant-marcelli",
+      "name": "sant marcelli",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "sant-marcelli",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.44563601661306,
+      "lng": -0.39022702796359515
+    },
+    {
+      "slug": "valencia-capital/sant-pau",
+      "name": "sant pau",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "sant-pau",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.48813703632179,
+      "lng": -0.4034918244012368
+    },
+    {
+      "slug": "valencia-capital/soternes",
+      "name": "soternes",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "soternes",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.47072733852337,
+      "lng": -0.4105296599048775
+    },
+    {
+      "slug": "valencia-capital/tormos",
+      "name": "tormos",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "tormos",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.49014825423004,
+      "lng": -0.3773643243446493
+    },
+    {
+      "slug": "valencia-capital/torrefiel",
+      "name": "torrefiel",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "torrefiel",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.494545995870816,
+      "lng": -0.37666631681222373
+    },
+    {
+      "slug": "valencia-capital/tres-forques",
+      "name": "tres forques",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "tres-forques",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46703605227506,
+      "lng": -0.4016997034804098
+    },
+    {
+      "slug": "valencia-capital/trinitat",
+      "name": "trinitat",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "trinitat",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.48486154293883,
+      "lng": -0.36619436240047254
+    },
+    {
+      "slug": "valencia-capital/vara-de-quart",
+      "name": "vara de quart",
+      "ccaa": "Comunitat Valenciana",
+      "pisosDistrict": "vara-de-quart",
+      "pisosCitySlug": "valencia",
+      "citySlug": "valencia",
+      "lat": 39.46134792805826,
+      "lng": -0.4052237243810845
+    }
+  ]
+}

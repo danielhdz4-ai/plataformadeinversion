@@ -1,8 +1,8 @@
 import { ListingAiAnalysisBlock } from "@/components/listings/ListingAiAnalysisBlock";
 
-import { NeighborhoodPriceBar } from "@/components/listings/NeighborhoodPriceBar";
-
-import { PriceTrendSparkline } from "@/components/listings/PriceTrendSparkline";
+import { PriceTrendChart } from "@/components/listings/PriceTrendChart";
+import { NeighborhoodGauge } from "@/components/listings/NeighborhoodGauge";
+import { RoomRentComparablesPanel } from "@/components/listings/RoomRentComparablesPanel";
 
 import { NotariadoPortalPanel } from "@/components/notariado/NotariadoPortalPanel";
 
@@ -44,7 +44,7 @@ export function ListingResumenPanel({
 
 }) {
 
-  const { roi, comparables, notary, neighborhood, officialMarket, priceEvolution, postalCode } =
+  const { roi, comparables, roomRent, notary, neighborhood, officialMarket, priceEvolution, postalCode } =
     summary;
 
   const saleLast = priceEvolution.saleM2[priceEvolution.saleM2.length - 1]?.y;
@@ -109,7 +109,16 @@ export function ListingResumenPanel({
 
         <dl className="mt-1.5 space-y-1">
 
-          <Row label="Alquiler estimado" value={roi.rentEstMonthly != null ? `${fmt(roi.rentEstMonthly)} €/mes` : "—"} />
+          <Row
+            label={roomRent ? "Alquiler estimado (habitaciones)" : "Alquiler estimado"}
+            value={
+              roomRent?.totalEstimateMonthly != null
+                ? `${fmt(roomRent.totalEstimateMonthly)} €/mes`
+                : roi.rentEstMonthly != null
+                  ? `${fmt(roi.rentEstMonthly)} €/mes`
+                  : "—"
+            }
+          />
 
           <Row label="Precio de compra" value={`${fmt(roi.purchasePrice)} €`} />
 
@@ -175,7 +184,7 @@ export function ListingResumenPanel({
 
             </div>
 
-            <PriceTrendSparkline points={priceEvolution.saleM2} />
+            <PriceTrendChart points={priceEvolution.saleM2} />
 
             <p className="mt-0.5 text-[9px] text-neutral-500">
 
@@ -201,7 +210,7 @@ export function ListingResumenPanel({
 
             </div>
 
-            <PriceTrendSparkline points={priceEvolution.rentM2} stroke="#525252" />
+            <PriceTrendChart points={priceEvolution.rentM2} stroke="#525252" fill="rgba(82,82,82,0.12)" />
 
           </div>
 
@@ -223,14 +232,10 @@ export function ListingResumenPanel({
 
           <div className="mt-2">
 
-            <NeighborhoodPriceBar
-
+            <NeighborhoodGauge
               listingM2={neighborhood.listingPriceM2}
-
               cpAvgM2={neighborhood.cpAvgPriceM2}
-
               vsPct={neighborhood.vsCpPct}
-
             />
 
           </div>
@@ -241,11 +246,20 @@ export function ListingResumenPanel({
 
 
 
+      {roomRent && (
+        <RoomRentComparablesPanel
+          comparables={roomRent.comparables}
+          estimatePerRoom={roomRent.estimatePerRoom}
+          conservativePerRoom={roomRent.conservativePerRoom}
+          bedrooms={roomRent.bedrooms}
+        />
+      )}
+
       <section className="rounded-lg border border-neutral-200 bg-white p-2.5">
 
         <h4 className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
 
-          Comparables de alquiler (500 m)
+          {roomRent ? "Alquiler piso entero (referencia, 500 m)" : "Comparables de alquiler (500 m)"}
 
         </h4>
 

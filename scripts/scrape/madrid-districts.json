@@ -1,0 +1,1285 @@
+{
+  "description": "Distritos/barrios Madrid capital — Fotocasa + pisos.com",
+  "fotocasaZones": [
+    {
+      "slug": "madrid-capital/abrantes",
+      "name": "abrantes",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "abrantes",
+      "lat": 40.37890932199907,
+      "lng": -3.7290654202978586
+    },
+    {
+      "slug": "madrid-capital/acacias",
+      "name": "acacias",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "acacias",
+      "lat": 40.40072110968085,
+      "lng": -3.704794029710801
+    },
+    {
+      "slug": "madrid-capital/adelfas",
+      "name": "adelfas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "adelfas",
+      "lat": 40.40111358421107,
+      "lng": -3.671104071821983
+    },
+    {
+      "slug": "madrid-capital/aeropuerto",
+      "name": "aeropuerto",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "aeropuerto",
+      "lat": 40.45587825811659,
+      "lng": -3.583381927361802
+    },
+    {
+      "slug": "madrid-capital/alameda-de-osuna",
+      "name": "alameda de osuna",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "alameda-de-osuna",
+      "lat": 40.45573087974196,
+      "lng": -3.5897715330443916
+    },
+    {
+      "slug": "madrid-capital/almagro",
+      "name": "almagro",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "almagro",
+      "lat": 40.43375772342499,
+      "lng": -3.6956706187119255
+    },
+    {
+      "slug": "madrid-capital/almenara-ventilla",
+      "name": "almenara ventilla",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "almenara-ventilla",
+      "lat": 40.46829984181568,
+      "lng": -3.6936259217106975
+    },
+    {
+      "slug": "madrid-capital/almendrales",
+      "name": "almendrales",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "almendrales",
+      "lat": 40.38335553106791,
+      "lng": -3.7012352400101727
+    },
+    {
+      "slug": "madrid-capital/aluche",
+      "name": "aluche",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "aluche",
+      "lat": 40.391572574816564,
+      "lng": -3.7590084023629573
+    },
+    {
+      "slug": "madrid-capital/ambroz",
+      "name": "ambroz",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "ambroz",
+      "lat": 40.40585862919638,
+      "lng": -3.605508392459353
+    },
+    {
+      "slug": "madrid-capital/amposta",
+      "name": "amposta",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "amposta",
+      "lat": 40.426208626500184,
+      "lng": -3.622143495619634
+    },
+    {
+      "slug": "madrid-capital/apostol-santiago",
+      "name": "apostol santiago",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "apostol-santiago",
+      "lat": 40.47658013251882,
+      "lng": -3.660622611652644
+    },
+    {
+      "slug": "madrid-capital/arapiles",
+      "name": "arapiles",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "arapiles",
+      "lat": 40.43432172687499,
+      "lng": -3.7081500585114253
+    },
+    {
+      "slug": "madrid-capital/aravaca",
+      "name": "aravaca",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "aravaca",
+      "lat": 40.45456569597,
+      "lng": -3.7823340520750826
+    },
+    {
+      "slug": "madrid-capital/arcos",
+      "name": "arcos",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "arcos",
+      "lat": 40.42290599376979,
+      "lng": -3.618336233859961
+    },
+    {
+      "slug": "madrid-capital/arganzuela",
+      "name": "arganzuela",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "arganzuela",
+      "lat": 40.39895140812375,
+      "lng": -3.69937700045939
+    },
+    {
+      "slug": "madrid-capital/arguelles",
+      "name": "arguelles",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "arguelles",
+      "lat": 40.426841085252036,
+      "lng": -3.7172296854153606
+    },
+    {
+      "slug": "madrid-capital/arroyo-del-fresno",
+      "name": "arroyo del fresno",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "arroyo-del-fresno",
+      "lat": 40.488028345074106,
+      "lng": -3.7220718077920476
+    },
+    {
+      "slug": "madrid-capital/atalaya",
+      "name": "atalaya",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "atalaya",
+      "lat": 40.4628832930254,
+      "lng": -3.662780346128863
+    },
+    {
+      "slug": "madrid-capital/barajas",
+      "name": "barajas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "barajas",
+      "lat": 40.46206461177465,
+      "lng": -3.587000866807579
+    },
+    {
+      "slug": "madrid-capital/barrio-de-salamanca",
+      "name": "barrio de salamanca",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "barrio-de-salamanca",
+      "lat": 40.42926822018499,
+      "lng": -3.673654439405071
+    },
+    {
+      "slug": "madrid-capital/bellas-vistas",
+      "name": "bellas vistas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "bellas-vistas",
+      "lat": 40.4520153852305,
+      "lng": -3.7067200172329695
+    },
+    {
+      "slug": "madrid-capital/berruguete",
+      "name": "berruguete",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "berruguete",
+      "lat": 40.45948689009118,
+      "lng": -3.7046348424338933
+    },
+    {
+      "slug": "madrid-capital/buena-vista",
+      "name": "buena vista",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "buena-vista",
+      "lat": 40.369729234013555,
+      "lng": -3.7553544062559743
+    },
+    {
+      "slug": "madrid-capital/butarque",
+      "name": "butarque",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "butarque",
+      "lat": 40.350028628173,
+      "lng": -3.6797719166771263
+    },
+    {
+      "slug": "madrid-capital/campamento",
+      "name": "campamento",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "campamento",
+      "lat": 40.392598449870064,
+      "lng": -3.777642160906716
+    },
+    {
+      "slug": "madrid-capital/canillas",
+      "name": "canillas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "canillas",
+      "lat": 40.462460199910836,
+      "lng": -3.6444587180733916
+    },
+    {
+      "slug": "madrid-capital/canillejas",
+      "name": "canillejas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "canillejas",
+      "lat": 40.44213710764281,
+      "lng": -3.610713972390611
+    },
+    {
+      "slug": "madrid-capital/carabanchel",
+      "name": "carabanchel",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "carabanchel",
+      "lat": 40.379363556853164,
+      "lng": -3.7409955587945616
+    },
+    {
+      "slug": "madrid-capital/casa-de-campo",
+      "name": "casa de campo",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "casa-de-campo",
+      "lat": 40.42519950436215,
+      "lng": -3.7343486901843455
+    },
+    {
+      "slug": "madrid-capital/casco-historico-de-barajas",
+      "name": "casco historico de barajas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "casco-historico-de-barajas",
+      "lat": 40.47306360873594,
+      "lng": -3.5793646238313035
+    },
+    {
+      "slug": "madrid-capital/casco-historico-de-vallecas",
+      "name": "casco historico de vallecas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "casco-historico-de-vallecas",
+      "lat": 40.377233503391835,
+      "lng": -3.6215745293279986
+    },
+    {
+      "slug": "madrid-capital/casco-historico-de-vicalvaro",
+      "name": "casco historico de vicalvaro",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "casco-historico-de-vicalvaro",
+      "lat": 40.40248741590339,
+      "lng": -3.6056989047906636
+    },
+    {
+      "slug": "madrid-capital/castellana",
+      "name": "castellana",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "castellana",
+      "lat": 40.43386360475201,
+      "lng": -3.6825953937519196
+    },
+    {
+      "slug": "madrid-capital/castilla",
+      "name": "castilla",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "castilla",
+      "lat": 40.472794471549186,
+      "lng": -3.681686575463476
+    },
+    {
+      "slug": "madrid-capital/castillejos-cuzco",
+      "name": "castillejos cuzco",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "castillejos-cuzco",
+      "lat": 40.46066935859218,
+      "lng": -3.694348578571822
+    },
+    {
+      "slug": "madrid-capital/centro",
+      "name": "centro",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "centro",
+      "lat": 40.41827058484011,
+      "lng": -3.7039892898127533
+    },
+    {
+      "slug": "madrid-capital/chamartin",
+      "name": "chamartin",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "chamartin",
+      "lat": 40.45352177506689,
+      "lng": -3.6797690915167927
+    },
+    {
+      "slug": "madrid-capital/chamberi",
+      "name": "chamberi",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "chamberi",
+      "lat": 40.43673934409167,
+      "lng": -3.7025550917912566
+    },
+    {
+      "slug": "madrid-capital/chopera",
+      "name": "chopera",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "chopera",
+      "lat": 40.395771448050525,
+      "lng": -3.6986330742574913
+    },
+    {
+      "slug": "madrid-capital/ciudad-jardin",
+      "name": "ciudad jardin",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "ciudad-jardin",
+      "lat": 40.44639078316857,
+      "lng": -3.674331654362765
+    },
+    {
+      "slug": "madrid-capital/ciudad-lineal",
+      "name": "ciudad lineal",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "ciudad-lineal",
+      "lat": 40.43947194323854,
+      "lng": -3.6520338656831086
+    },
+    {
+      "slug": "madrid-capital/ciudad-universitaria",
+      "name": "ciudad universitaria",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "ciudad-universitaria",
+      "lat": 40.46339246352336,
+      "lng": -3.7283268293185055
+    },
+    {
+      "slug": "madrid-capital/colina",
+      "name": "colina",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "colina",
+      "lat": 40.45652407099991,
+      "lng": -3.660096639292119
+    },
+    {
+      "slug": "madrid-capital/comillas",
+      "name": "comillas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "comillas",
+      "lat": 40.39260958406086,
+      "lng": -3.712355056386345
+    },
+    {
+      "slug": "madrid-capital/concepcion",
+      "name": "concepcion",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "concepcion",
+      "lat": 40.43765328140473,
+      "lng": -3.651903295483522
+    },
+    {
+      "slug": "madrid-capital/conde-orgaz-piovera",
+      "name": "conde orgaz piovera",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "conde-orgaz-piovera",
+      "lat": 40.45665377997718,
+      "lng": -3.6386289728196206
+    },
+    {
+      "slug": "madrid-capital/corralejos-campo-de-las-naciones",
+      "name": "corralejos campo de las naciones",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "corralejos-campo-de-las-naciones",
+      "lat": 40.46505354199103,
+      "lng": -3.5913940666412763
+    },
+    {
+      "slug": "madrid-capital/cortes-huertas",
+      "name": "cortes huertas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "cortes-huertas",
+      "lat": 40.41436603005958,
+      "lng": -3.697557187518492
+    },
+    {
+      "slug": "madrid-capital/costillares",
+      "name": "costillares",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "costillares",
+      "lat": 40.476172366709534,
+      "lng": -3.6681785625770877
+    },
+    {
+      "slug": "madrid-capital/cuatro-caminos-azca",
+      "name": "cuatro caminos azca",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "cuatro-caminos-azca",
+      "lat": 40.451648289234704,
+      "lng": -3.6981346365855505
+    },
+    {
+      "slug": "madrid-capital/cuatro-vientos",
+      "name": "cuatro vientos",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "cuatro-vientos",
+      "lat": 40.37046544739353,
+      "lng": -3.7664479648527003
+    },
+    {
+      "slug": "madrid-capital/delicias",
+      "name": "delicias",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "delicias",
+      "lat": 40.396905333341856,
+      "lng": -3.6926783677109163
+    },
+    {
+      "slug": "madrid-capital/el-canaveral",
+      "name": "el canaveral",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "el-canaveral",
+      "lat": 40.400869158121516,
+      "lng": -3.5536986271805393
+    },
+    {
+      "slug": "madrid-capital/el-pardo",
+      "name": "el pardo",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "el-pardo",
+      "lat": 40.53024382433205,
+      "lng": -3.775179477646001
+    },
+    {
+      "slug": "madrid-capital/el-viso",
+      "name": "el viso",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "el-viso",
+      "lat": 40.44490794839394,
+      "lng": -3.686871528319091
+    },
+    {
+      "slug": "madrid-capital/embajadores-lavapies",
+      "name": "embajadores lavapies",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "embajadores-lavapies",
+      "lat": 40.40993703811495,
+      "lng": -3.702745995458879
+    },
+    {
+      "slug": "madrid-capital/ensanche-de-vallecas-la-gavia",
+      "name": "ensanche de vallecas la gavia",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "ensanche-de-vallecas-la-gavia",
+      "lat": 40.36549327079684,
+      "lng": -3.6035842032720216
+    },
+    {
+      "slug": "madrid-capital/entrevias",
+      "name": "entrevias",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "entrevias",
+      "lat": 40.378588093062284,
+      "lng": -3.6688820134328193
+    },
+    {
+      "slug": "madrid-capital/estrella",
+      "name": "estrella",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "estrella",
+      "lat": 40.41392200417618,
+      "lng": -3.666442653940145
+    },
+    {
+      "slug": "madrid-capital/fontarron",
+      "name": "fontarron",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "fontarron",
+      "lat": 40.40064124506988,
+      "lng": -3.6447751737521785
+    },
+    {
+      "slug": "madrid-capital/fuencarral-el-pardo",
+      "name": "fuencarral el pardo",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "fuencarral-el-pardo",
+      "lat": 40.48731289790858,
+      "lng": -3.7075097057684374
+    },
+    {
+      "slug": "madrid-capital/fuente-del-berro",
+      "name": "fuente del berro",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "fuente-del-berro",
+      "lat": 40.42534533141957,
+      "lng": -3.665084133169793
+    },
+    {
+      "slug": "madrid-capital/fuentelarreina",
+      "name": "fuentelarreina",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "fuentelarreina",
+      "lat": 40.47680068995256,
+      "lng": -3.7426803074217543
+    },
+    {
+      "slug": "madrid-capital/gaztambide",
+      "name": "gaztambide",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "gaztambide",
+      "lat": 40.43434521097228,
+      "lng": -3.7148534878802844
+    },
+    {
+      "slug": "madrid-capital/goya",
+      "name": "goya",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "goya",
+      "lat": 40.425931145949754,
+      "lng": -3.674471183021017
+    },
+    {
+      "slug": "madrid-capital/guindalera",
+      "name": "guindalera",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "guindalera",
+      "lat": 40.43579984926424,
+      "lng": -3.6682728420967914
+    },
+    {
+      "slug": "madrid-capital/hellin",
+      "name": "hellin",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "hellin",
+      "lat": 40.43091828476051,
+      "lng": -3.616371489740607
+    },
+    {
+      "slug": "madrid-capital/hispanoamerica-bernabeu",
+      "name": "hispanoamerica bernabeu",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "hispanoamerica-bernabeu",
+      "lat": 40.45544816182242,
+      "lng": -3.6799133273908726
+    },
+    {
+      "slug": "madrid-capital/horcajo",
+      "name": "horcajo",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "horcajo",
+      "lat": 40.4061539490677,
+      "lng": -3.627870388047939
+    },
+    {
+      "slug": "madrid-capital/hortaleza",
+      "name": "hortaleza",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "hortaleza",
+      "lat": 40.47528784988412,
+      "lng": -3.641762204987545
+    },
+    {
+      "slug": "madrid-capital/ibiza-de-madrid",
+      "name": "ibiza de madrid",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "ibiza-de-madrid",
+      "lat": 40.41827193412311,
+      "lng": -3.674249729619851
+    },
+    {
+      "slug": "madrid-capital/imperial",
+      "name": "imperial",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "imperial",
+      "lat": 40.408270433520116,
+      "lng": -3.7186903863017498
+    },
+    {
+      "slug": "madrid-capital/jeronimos",
+      "name": "jeronimos",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "jeronimos",
+      "lat": 40.41195507755372,
+      "lng": -3.686556914791544
+    },
+    {
+      "slug": "madrid-capital/justicia-chueca",
+      "name": "justicia chueca",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "justicia-chueca",
+      "lat": 40.4234904724165,
+      "lng": -3.6975115419079567
+    },
+    {
+      "slug": "madrid-capital/la-florida-el-plantio",
+      "name": "la florida el plantio",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "la-florida-el-plantio",
+      "lat": 40.47023184940646,
+      "lng": -3.8190669105633224
+    },
+    {
+      "slug": "madrid-capital/la-paz",
+      "name": "la paz",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "la-paz",
+      "lat": 40.48065095802063,
+      "lng": -3.7005201479353147
+    },
+    {
+      "slug": "madrid-capital/las-aguilas",
+      "name": "las aguilas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "las-aguilas",
+      "lat": 40.38062375436012,
+      "lng": -3.77275531121034
+    },
+    {
+      "slug": "madrid-capital/las-tablas",
+      "name": "las tablas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "las-tablas",
+      "lat": 40.50520532234296,
+      "lng": -3.6734804538481454
+    },
+    {
+      "slug": "madrid-capital/latina",
+      "name": "latina",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "latina",
+      "lat": 40.39655682097557,
+      "lng": -3.7536807999373467
+    },
+    {
+      "slug": "madrid-capital/legazpi",
+      "name": "legazpi",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "legazpi",
+      "lat": 40.38990098962625,
+      "lng": -3.6877769154817472
+    },
+    {
+      "slug": "madrid-capital/lista",
+      "name": "lista",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "lista",
+      "lat": 40.4317423550364,
+      "lng": -3.6754894168213443
+    },
+    {
+      "slug": "madrid-capital/los-ahijones",
+      "name": "los ahijones",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "los-ahijones",
+      "lat": 40.39016126280403,
+      "lng": -3.567242075942484
+    },
+    {
+      "slug": "madrid-capital/los-angeles",
+      "name": "los angeles",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "los-angeles",
+      "lat": 40.35600307851162,
+      "lng": -3.6970975284645315
+    },
+    {
+      "slug": "madrid-capital/los-berrocales",
+      "name": "los berrocales",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "los-berrocales",
+      "lat": 40.37368685123724,
+      "lng": -3.5785088373941494
+    },
+    {
+      "slug": "madrid-capital/los-carmenes",
+      "name": "los carmenes",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "los-carmenes",
+      "lat": 40.40120967512636,
+      "lng": -3.73702321056923
+    },
+    {
+      "slug": "madrid-capital/los-cerros",
+      "name": "los cerros",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "los-cerros",
+      "lat": 40.40386067155163,
+      "lng": -3.5386253521733018
+    },
+    {
+      "slug": "madrid-capital/los-rosales",
+      "name": "los rosales",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "los-rosales",
+      "lat": 40.35238599170877,
+      "lng": -3.6883067872354145
+    },
+    {
+      "slug": "madrid-capital/lucero",
+      "name": "lucero",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "lucero",
+      "lat": 40.402936809422414,
+      "lng": -3.7479063617348958
+    },
+    {
+      "slug": "madrid-capital/marroquina",
+      "name": "marroquina",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "marroquina",
+      "lat": 40.408996370039766,
+      "lng": -3.646892407556127
+    },
+    {
+      "slug": "madrid-capital/media-legua",
+      "name": "media legua",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "media-legua",
+      "lat": 40.40997380020212,
+      "lng": -3.6576241226964843
+    },
+    {
+      "slug": "madrid-capital/mirasierra",
+      "name": "mirasierra",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "mirasierra",
+      "lat": 40.49269952609948,
+      "lng": -3.7100484724217226
+    },
+    {
+      "slug": "madrid-capital/moncloa-aravaca",
+      "name": "moncloa aravaca",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "moncloa-aravaca",
+      "lat": 40.45256042002947,
+      "lng": -3.760273517750656
+    },
+    {
+      "slug": "madrid-capital/montecarmelo",
+      "name": "montecarmelo",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "montecarmelo",
+      "lat": 40.50478138500526,
+      "lng": -3.7006674989767596
+    },
+    {
+      "slug": "madrid-capital/moratalaz",
+      "name": "moratalaz",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "moratalaz",
+      "lat": 40.407249908403074,
+      "lng": -3.646927118103684
+    },
+    {
+      "slug": "madrid-capital/moscardo",
+      "name": "moscardo",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "moscardo",
+      "lat": 40.38774007765981,
+      "lng": -3.706798013344892
+    },
+    {
+      "slug": "madrid-capital/nino-jesus",
+      "name": "nino jesus",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "nino-jesus",
+      "lat": 40.411954240720235,
+      "lng": -3.673426867241259
+    },
+    {
+      "slug": "madrid-capital/nueva-espana",
+      "name": "nueva espana",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "nueva-espana",
+      "lat": 40.46150412324743,
+      "lng": -3.679127532769043
+    },
+    {
+      "slug": "madrid-capital/numancia",
+      "name": "numancia",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "numancia",
+      "lat": 40.39938816488923,
+      "lng": -3.662336667041123
+    },
+    {
+      "slug": "madrid-capital/opanel",
+      "name": "opanel",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "opanel",
+      "lat": 40.389465657910044,
+      "lng": -3.7216433802326008
+    },
+    {
+      "slug": "madrid-capital/orcasitas",
+      "name": "orcasitas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "orcasitas",
+      "lat": 40.36874507651988,
+      "lng": -3.713154818719278
+    },
+    {
+      "slug": "madrid-capital/orcasur-12-de-octubre",
+      "name": "orcasur 12 de octubre",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "orcasur-12-de-octubre",
+      "lat": 40.368636343480716,
+      "lng": -3.6996663195223305
+    },
+    {
+      "slug": "madrid-capital/pacifico",
+      "name": "pacifico",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "pacifico",
+      "lat": 40.40508094557072,
+      "lng": -3.6779023093579064
+    },
+    {
+      "slug": "madrid-capital/palacio",
+      "name": "palacio",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "palacio",
+      "lat": 40.41564178952714,
+      "lng": -3.711057422061448
+    },
+    {
+      "slug": "madrid-capital/palomas",
+      "name": "palomas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "palomas",
+      "lat": 40.452095897575646,
+      "lng": -3.61490140505693
+    },
+    {
+      "slug": "madrid-capital/palomeras-bajas",
+      "name": "palomeras bajas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "palomeras-bajas",
+      "lat": 40.387561324312784,
+      "lng": -3.659626062848387
+    },
+    {
+      "slug": "madrid-capital/palomeras-sureste",
+      "name": "palomeras sureste",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "palomeras-sureste",
+      "lat": 40.38542287989351,
+      "lng": -3.6419415104022064
+    },
+    {
+      "slug": "madrid-capital/palos-de-moguer",
+      "name": "palos de moguer",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "palos-de-moguer",
+      "lat": 40.40377057886069,
+      "lng": -3.694387605161246
+    },
+    {
+      "slug": "madrid-capital/pau-de-carabanchel",
+      "name": "pau de carabanchel",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "pau-de-carabanchel",
+      "lat": 40.363549736134495,
+      "lng": -3.7556170731450025
+    },
+    {
+      "slug": "madrid-capital/pavones",
+      "name": "pavones",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "pavones",
+      "lat": 40.399594324265294,
+      "lng": -3.6344152952187097
+    },
+    {
+      "slug": "madrid-capital/penagrande",
+      "name": "penagrande",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "penagrande",
+      "lat": 40.4775134083164,
+      "lng": -3.7226565207337994
+    },
+    {
+      "slug": "madrid-capital/pilar",
+      "name": "pilar",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "pilar",
+      "lat": 40.47727355949556,
+      "lng": -3.711495606773703
+    },
+    {
+      "slug": "madrid-capital/pinar-del-rey",
+      "name": "pinar del rey",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "pinar-del-rey",
+      "lat": 40.472273728727636,
+      "lng": -3.6448395178725184
+    },
+    {
+      "slug": "madrid-capital/portazgo",
+      "name": "portazgo",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "portazgo",
+      "lat": 40.3889860814182,
+      "lng": -3.6481313083456874
+    },
+    {
+      "slug": "madrid-capital/pradolongo",
+      "name": "pradolongo",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "pradolongo",
+      "lat": 40.381562333736255,
+      "lng": -3.7077506265508364
+    },
+    {
+      "slug": "madrid-capital/prosperidad",
+      "name": "prosperidad",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "prosperidad",
+      "lat": 40.44295583266235,
+      "lng": -3.6714492637807066
+    },
+    {
+      "slug": "madrid-capital/pueblo-nuevo",
+      "name": "pueblo nuevo",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "pueblo-nuevo",
+      "lat": 40.43129648668951,
+      "lng": -3.6394160824393773
+    },
+    {
+      "slug": "madrid-capital/puente-de-vallecas",
+      "name": "puente de vallecas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "puente-de-vallecas",
+      "lat": 40.389908485234635,
+      "lng": -3.6583202228437455
+    },
+    {
+      "slug": "madrid-capital/puerta-bonita",
+      "name": "puerta bonita",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "puerta-bonita",
+      "lat": 40.38110282428765,
+      "lng": -3.73815277114203
+    },
+    {
+      "slug": "madrid-capital/puerta-del-angel",
+      "name": "puerta del angel",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "puerta-del-angel",
+      "lat": 40.40925302265262,
+      "lng": -3.7323755438737485
+    },
+    {
+      "slug": "madrid-capital/quintana",
+      "name": "quintana",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "quintana",
+      "lat": 40.43684086011187,
+      "lng": -3.645542746352288
+    },
+    {
+      "slug": "madrid-capital/recoletos",
+      "name": "recoletos",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "recoletos",
+      "lat": 40.42471286160585,
+      "lng": -3.685018174163846
+    },
+    {
+      "slug": "madrid-capital/rejas",
+      "name": "rejas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "rejas",
+      "lat": 40.445703555859076,
+      "lng": -3.5856458492751893
+    },
+    {
+      "slug": "madrid-capital/retiro",
+      "name": "retiro",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "retiro",
+      "lat": 40.4114625624781,
+      "lng": -3.674850003127525
+    },
+    {
+      "slug": "madrid-capital/rios-rosas-nuevos-ministerios",
+      "name": "rios rosas nuevos ministerios",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "rios-rosas-nuevos-ministerios",
+      "lat": 40.44202498330623,
+      "lng": -3.699166202015684
+    },
+    {
+      "slug": "madrid-capital/rosas-musas",
+      "name": "rosas musas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "rosas-musas",
+      "lat": 40.42501846679257,
+      "lng": -3.6055000273202356
+    },
+    {
+      "slug": "madrid-capital/salvador",
+      "name": "salvador",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "salvador",
+      "lat": 40.444470827718284,
+      "lng": -3.633764434317591
+    },
+    {
+      "slug": "madrid-capital/san-blas",
+      "name": "san blas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "san-blas",
+      "lat": 40.435547286402816,
+      "lng": -3.6119479223290947
+    },
+    {
+      "slug": "madrid-capital/san-cristobal",
+      "name": "san cristobal",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "san-cristobal",
+      "lat": 40.34236897245652,
+      "lng": -3.6879876571606554
+    },
+    {
+      "slug": "madrid-capital/san-diego",
+      "name": "san diego",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "san-diego",
+      "lat": 40.38859330468969,
+      "lng": -3.668213954072852
+    },
+    {
+      "slug": "madrid-capital/san-fermin",
+      "name": "san fermin",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "san-fermin",
+      "lat": 40.37215347118213,
+      "lng": -3.691026922543534
+    },
+    {
+      "slug": "madrid-capital/san-isidro",
+      "name": "san isidro",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "san-isidro",
+      "lat": 40.39500093072709,
+      "lng": -3.728206012706996
+    },
+    {
+      "slug": "madrid-capital/san-juan-bautista",
+      "name": "san juan bautista",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "san-juan-bautista",
+      "lat": 40.45041700603863,
+      "lng": -3.6579802840665603
+    },
+    {
+      "slug": "madrid-capital/san-pascual",
+      "name": "san pascual",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "san-pascual",
+      "lat": 40.4423451588272,
+      "lng": -3.6526657296825005
+    },
+    {
+      "slug": "madrid-capital/sanchinarro",
+      "name": "sanchinarro",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "sanchinarro",
+      "lat": 40.49376864676531,
+      "lng": -3.654648931364075
+    },
+    {
+      "slug": "madrid-capital/santa-eugenia",
+      "name": "santa eugenia",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "santa-eugenia",
+      "lat": 40.38374275977255,
+      "lng": -3.6120428752581666
+    },
+    {
+      "slug": "madrid-capital/simancas",
+      "name": "simancas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "simancas",
+      "lat": 40.434131880779866,
+      "lng": -3.6252684837485107
+    },
+    {
+      "slug": "madrid-capital/sol",
+      "name": "sol",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "sol",
+      "lat": 40.416545194448766,
+      "lng": -3.7044390751429446
+    },
+    {
+      "slug": "madrid-capital/tetuan",
+      "name": "tetuan",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "tetuan",
+      "lat": 40.45980339894024,
+      "lng": -3.7009186439299437
+    },
+    {
+      "slug": "madrid-capital/timon",
+      "name": "timon",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "timon",
+      "lat": 40.47272341776655,
+      "lng": -3.586700101915943
+    },
+    {
+      "slug": "madrid-capital/trafalgar",
+      "name": "trafalgar",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "trafalgar",
+      "lat": 40.43327596539599,
+      "lng": -3.7017550936721286
+    },
+    {
+      "slug": "madrid-capital/tres-olivos-valverde",
+      "name": "tres olivos valverde",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "tres-olivos-valverde",
+      "lat": 40.490209149533186,
+      "lng": -3.689657362628952
+    },
+    {
+      "slug": "madrid-capital/universidad-malasana",
+      "name": "universidad malasana",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "universidad-malasana",
+      "lat": 40.42485336357686,
+      "lng": -3.7058911484034667
+    },
+    {
+      "slug": "madrid-capital/usera",
+      "name": "usera",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "usera",
+      "lat": 40.37562474574688,
+      "lng": -3.7033659149612244
+    },
+    {
+      "slug": "madrid-capital/valdeacederas",
+      "name": "valdeacederas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "valdeacederas",
+      "lat": 40.46680793933559,
+      "lng": -3.701993862256049
+    },
+    {
+      "slug": "madrid-capital/valdebebas-valdefuentes",
+      "name": "valdebebas valdefuentes",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "valdebebas-valdefuentes",
+      "lat": 40.48863028536441,
+      "lng": -3.6176512954769016
+    },
+    {
+      "slug": "madrid-capital/valdebernardo-valderribas",
+      "name": "valdebernardo valderribas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "valdebernardo-valderribas",
+      "lat": 40.39820841895384,
+      "lng": -3.6108291924930076
+    },
+    {
+      "slug": "madrid-capital/valdecarros",
+      "name": "valdecarros",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "valdecarros",
+      "lat": 40.35730489507967,
+      "lng": -3.626468291803618
+    },
+    {
+      "slug": "madrid-capital/valdemarin",
+      "name": "valdemarin",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "valdemarin",
+      "lat": 40.4683360986971,
+      "lng": -3.78282819975522
+    },
+    {
+      "slug": "madrid-capital/valdezarza",
+      "name": "valdezarza",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "valdezarza",
+      "lat": 40.46565682517727,
+      "lng": -3.717847083984005
+    },
+    {
+      "slug": "madrid-capital/vallehermoso",
+      "name": "vallehermoso",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "vallehermoso",
+      "lat": 40.4420646809265,
+      "lng": -3.7113996495136026
+    },
+    {
+      "slug": "madrid-capital/ventas",
+      "name": "ventas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "ventas",
+      "lat": 40.42742846573356,
+      "lng": -3.651945501395727
+    },
+    {
+      "slug": "madrid-capital/vicalvaro",
+      "name": "vicalvaro",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "vicalvaro",
+      "lat": 40.389795154146945,
+      "lng": -3.5816255584400687
+    },
+    {
+      "slug": "madrid-capital/villa-de-vallecas",
+      "name": "villa de vallecas",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "villa-de-vallecas",
+      "lat": 40.37161911212221,
+      "lng": -3.6096571547528633
+    },
+    {
+      "slug": "madrid-capital/villaverde",
+      "name": "villaverde",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "villaverde",
+      "lat": 40.34872558951352,
+      "lng": -3.694602739158569
+    },
+    {
+      "slug": "madrid-capital/villaverde-alto",
+      "name": "villaverde alto",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "villaverde-alto",
+      "lat": 40.34641134426162,
+      "lng": -3.709640724846769
+    },
+    {
+      "slug": "madrid-capital/vinateros",
+      "name": "vinateros",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "vinateros",
+      "lat": 40.40537590006579,
+      "lng": -3.6441352788872132
+    },
+    {
+      "slug": "madrid-capital/virgen-del-cortijo-manoteras",
+      "name": "virgen del cortijo manoteras",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "virgen-del-cortijo-manoteras",
+      "lat": 40.487153337082574,
+      "lng": -3.6669835826756225
+    },
+    {
+      "slug": "madrid-capital/vista-alegre",
+      "name": "vista alegre",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "vista-alegre",
+      "lat": 40.38692841498268,
+      "lng": -3.7418910777968377
+    },
+    {
+      "slug": "madrid-capital/zofio",
+      "name": "zofio",
+      "ccaa": "Comunidad de Madrid",
+      "pisosDistrict": "zofio",
+      "lat": 40.38162246769961,
+      "lng": -3.7145251698538577
+    }
+  ]
+}

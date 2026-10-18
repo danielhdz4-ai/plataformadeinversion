@@ -1,3 +1,6 @@
+import type { RoomRentComparable } from "@/lib/listing/room-rent";
+import type { NotaryPortalStats } from "@/lib/notariado/types";
+
 export type RentComparable = {
   id: string;
   title: string | null;
@@ -7,7 +10,13 @@ export type RentComparable = {
   distanceM: number;
 };
 
-import type { NotaryPortalStats } from "@/lib/notariado/types";
+export type RoomRentSummary = {
+  comparables: RoomRentComparable[];
+  estimatePerRoom: number | null;
+  conservativePerRoom: number | null;
+  totalEstimateMonthly: number | null;
+  bedrooms: number;
+};
 
 export type ListingSummary = {
   listingId: string;
@@ -24,6 +33,7 @@ export type ListingSummary = {
     comparablesCount: number;
   };
   comparables: RentComparable[];
+  roomRent?: RoomRentSummary | null;
   notary: {
     priceM2: number | null;
     avgPrice: number | null;
@@ -46,7 +56,7 @@ export type ListingSummary = {
     rentChangePct: number;
   };
   demographics: { note: string };
-  localDevelopments: {
+  localDevelopments: readonly {
     title: string;
     category: string;
     year: string;

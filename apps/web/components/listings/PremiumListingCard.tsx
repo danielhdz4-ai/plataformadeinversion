@@ -6,6 +6,7 @@ import { decodeListingTitle } from "@/lib/decode-html";
 import type { ListingSummary } from "@/lib/listing/summary-types";
 import { portalBadge } from "@/lib/portals";
 import { SaveListingButton } from "@/components/listings/SaveListingButton";
+import { listingDetailHref } from "@/lib/listing/return-navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -38,6 +39,8 @@ export type PremiumListingCardProps = {
   /** Resumen completo en panel derecho; lista más compacta */
   compact?: boolean;
   onSelect?: () => void;
+  /** Ruta scan/explorar para ?from= al abrir ficha completa */
+  returnTo?: string | null;
 };
 
 export function PremiumListingCard({
@@ -60,7 +63,9 @@ export function PremiumListingCard({
   summaryLoading,
   compact = false,
   onSelect,
+  returnTo,
 }: PremiumListingCardProps) {
+  const fichaHref = listingDetailHref(listingId, returnTo);
   const portal = portalBadge(sourcePortal);
   const cleanTitle = decodeListingTitle(title);
   const imgSrc = proxiedThumb(thumbnailUrl);
@@ -104,7 +109,7 @@ export function PremiumListingCard({
     >
       <div className={`relative w-full shrink-0 overflow-hidden bg-neutral-100 ${imageHeight}`}>
         <Link
-          href={`/app/listings/${listingId}`}
+          href={fichaHref}
           className="block h-full w-full"
           onClick={(e) => e.stopPropagation()}
         >
@@ -136,7 +141,7 @@ export function PremiumListingCard({
       <div className="space-y-2 border-b border-neutral-100 p-3">
         <div className="flex items-start justify-between gap-2">
           <Link
-            href={`/app/listings/${listingId}`}
+            href={fichaHref}
             className="min-w-0 flex-1"
             onClick={(e) => e.stopPropagation()}
           >

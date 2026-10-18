@@ -1,10 +1,14 @@
 import { isOpenAccess } from "@/lib/open-access";
+import { prefetchScanZoneInventory } from "@/lib/scrape/prefetch-scan-zone.server";
 import { runScanForPolygon } from "@/lib/scan/runScan";
 import type { ScanPolygon } from "@/lib/scan/types";
 import type { ScanRunFilters } from "@/lib/scan/bedroom-filter";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getDbClient, requireAppUser } from "@/lib/supabase/request-client";
 import { after, NextResponse } from "next/server";
+
+/** Prefetch de portales puede tardar 1–3 min (barrios cercanos al radio del scan). */
+export const maxDuration = 300;
 
 export async function POST(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
@@ -24,7 +28,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
   const { data: scanRow, error } = await supabase
     .from("scans")
-    .select("polygon, filters")
+    .select("polygon, filters, operation")
     .eq("id", id)
     .single();
   if (error || !scanRow) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -37,7 +41,15 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   after(async () => {
     const admin = createAdminClient();
     try {
-      await runScanForPolygon(id, polygon, filters);
+      await admin.from("scans").update({ progress_pct: 12 }).eq("id", id);
+      try {
+        const prefetch = await prefetchScanZoneInventory(polygon);
+        console.info("scan prefetch", id, prefetch);
+      } catch (prefetchErr) {
+        console.warn("scan prefetch failed (continuing)", id, prefetchErr);
+      }
+      await admin.from("scans").update({ progress_pct: 45 }).eq("id", id);
+      await runScanForPolygon(id, polygon, filters, scanRow.operation ?? "buy_to_rent");
     } catch (e) {
       await admin
         .from("scans")

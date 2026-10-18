@@ -8,29 +8,35 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-export async function runFotocasaSale() {
+export async function runFotocasaSale(options = {}) {
   const supabase = getSupabase();
+  const citySlug = options.citySlug ?? "espana";
   const { data: run, error: runErr } = await supabase
     .from("scrape_runs")
-    .insert({ source: PORTAL, city_slug: "espana", status: "running" })
+    .insert({ source: PORTAL, city_slug: citySlug, status: "running" })
     .select("id")
     .single();
   if (runErr) throw runErr;
 
-  const limit = maxListings();
+  const globalLimit = maxListings();
+  const perZoneLimit = Number(process.env.FOTOCASA_PER_ZONE ?? "0");
   const maxPages = Number(process.env.FOTOCASA_MAX_PAGES ?? "5");
   const zoneFilter = process.env.FOTOCASA_ZONES?.split(",").map((s) => s.trim()).filter(Boolean);
-  let zones = FOTOCASA_SALE_ZONES;
+  let zones = options.zones ?? FOTOCASA_SALE_ZONES;
   if (zoneFilter?.length) zones = zones.filter((z) => zoneFilter.includes(z.slug));
 
   let inserted = 0;
   let cards = 0;
 
+  const zoneCapReached = (zoneInserted) =>
+    perZoneLimit > 0 ? zoneInserted >= perZoneLimit : inserted >= globalLimit;
+
   try {
     for (const zone of zones) {
-      if (inserted >= limit) break;
+      if (perZoneLimit <= 0 && inserted >= globalLimit) break;
+      let zoneInserted = 0;
       let emptyStreak = 0;
-      for (let page = 1; page <= maxPages && inserted < limit; page++) {
+      for (let page = 1; page <= maxPages && !zoneCapReached(zoneInserted); page++) {
         const { listings } = await fetchFotocasaListPage(zone.slug, page);
         if (listings.length === 0) {
           emptyStreak++;
@@ -41,18 +47,21 @@ export async function runFotocasaSale() {
         cards += listings.length;
 
         for (const mapped of listings) {
-          if (inserted >= limit) break;
+          if (zoneCapReached(zoneInserted)) break;
           if (!mapped.externalId || mapped.price == null) continue;
 
           let lon = mapped.lon;
           let lat = mapped.lat;
           let geocodeQuality = lon != null && lat != null ? 3 : 4;
           if (lon == null || lat == null) {
-            const geo = await geocodeSpain(`${zone.name}, España`);
+            const geoQuery = [mapped.postalCode, zone.name, mapped.city, "España"]
+              .filter(Boolean)
+              .join(", ");
+            const geo = await geocodeSpain(geoQuery);
             if (geo) {
               lon = geo.lon;
               lat = geo.lat;
-              geocodeQuality = 3;
+              geocodeQuality = 5;
             }
           }
           if (lon == null || lat == null) continue;
@@ -92,6 +101,7 @@ export async function runFotocasaSale() {
               lat,
             });
             inserted++;
+            zoneInserted++;
           }
         }
         await sleep(Number(process.env.PAUSE_MS ?? "900"));

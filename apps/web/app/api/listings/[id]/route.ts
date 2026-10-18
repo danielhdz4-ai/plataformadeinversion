@@ -1,3 +1,5 @@
+import { resolveListingGrossRoiPct } from "@/lib/listing/gross-roi";
+import { resolveRentEstMonthly } from "@/lib/listing/rent-est";
 import { fetchOfficialMarketForPostal } from "@/lib/listing/official-market-query";
 import { fetchNotaryForListing } from "@/lib/notariado/resolve-notary";
 import { getDbClient } from "@/lib/supabase/request-client";
@@ -32,9 +34,23 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   let official = null;
   official = postal ? await fetchOfficialMarketForPostal(supabase, postal) : [];
 
+  const price = Number((data as { price?: number }).price);
+  const rentResolved = resolveRentEstMonthly(price, inv?.rent_est ?? null);
+  const investment = inv
+    ? {
+        ...inv,
+        rent_est: rentResolved,
+        roi_gross: resolveListingGrossRoiPct(
+          price,
+          rentResolved,
+          inv.roi_gross != null ? Number(inv.roi_gross) : null
+        ),
+      }
+    : null;
+
   return NextResponse.json({
     ...data,
-    investment: inv,
+    investment,
     enrichment: enrich,
     notary,
     officialMarket: official,
