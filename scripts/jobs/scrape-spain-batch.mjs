@@ -1,19 +1,19 @@
 /**
- * Scrape venta + alquiler por lote (Tier 1, Tier 2 o rotación diaria).
+ * Scrape venta multi-portal por lote (Tier 1, Tier 2 o rotación diaria).
  *
  * Env:
  *   TIER=1|2|all
  *   BATCH_SIZE=10
  *   CITY_SLUGS=madrid,valencia (opcional, ignora rotación)
- *   MAX_LISTINGS=35
+ *   MAX_LISTINGS=400
  *   PAUSE_MS=2500
  */
+import { runCitySaleIngest } from "../scrapers/lib/run-city-sale-ingest.mjs";
 import { runKelifySale } from "../scrapers/lib/run-kelify-scrape.mjs";
-import { runPisosRent, runPisosSale } from "../scrapers/lib/run-pisos-scrape.mjs";
 import { citiesForRotation, getCityConfig, listCities } from "../scrapers/lib/spain-city.mjs";
 
 const pauseMs = Number(process.env.PAUSE_MS ?? "2500");
-process.env.MAX_LISTINGS = process.env.MAX_LISTINGS ?? process.env.KELIFY_MAX_LISTINGS ?? "800";
+process.env.MAX_LISTINGS = process.env.MAX_LISTINGS ?? process.env.KELIFY_MAX_LISTINGS ?? "400";
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
@@ -36,25 +36,24 @@ for (const city of cities) {
   try {
     if (process.env.KELIFY_ONLY === "1") {
       const kelify = await runKelifySale(city.slug);
-      results.push({ city: city.slug, ok: true, kelify, pisosSkipped: true, kelifyOnly: true });
+      results.push({ city: city.slug, ok: true, kelify, kelifyOnly: true });
       continue;
     }
-    if (city.pisosSkip) {
-      const kelify = await runKelifySale(city.slug);
-      results.push({ city: city.slug, ok: true, kelify, pisosSkipped: true });
-    } else {
-      const sale = await runPisosSale(city.slug);
-      await sleep(pauseMs);
-      const rent = await runPisosRent(city.slug);
-      await sleep(pauseMs);
-      let kelify = null;
+
+    const ingest = await runCitySaleIngest(city.slug);
+    await sleep(pauseMs);
+
+    let kelify = null;
+    if (process.env.SKIP_KELIFY !== "1") {
       try {
         kelify = await runKelifySale(city.slug);
       } catch (e) {
         kelify = { error: e instanceof Error ? e.message : String(e) };
       }
-      results.push({ city: city.slug, ok: true, sale, rent, kelify });
+      await sleep(pauseMs);
     }
+
+    results.push({ city: city.slug, ok: ingest.ok !== false, ingest, kelify });
   } catch (e) {
     results.push({
       city: city.slug,

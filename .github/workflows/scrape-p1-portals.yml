@@ -1,0 +1,31 @@
+name: Scrape Fotocasa and habitaclia Spain
+on:
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+    inputs:
+      max_listings:
+        description: MAX_LISTINGS per portal pass
+        default: "600"
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js playwright
+      - run: npx playwright install chromium --with-deps
+      - name: P1 portals Spain
+        run: node scripts/jobs/scrape-p1-portals-spain.mjs
+        env:
+          MAX_LISTINGS: ${{ github.event.inputs.max_listings || '1200' }}
+          FOTOCASA_MAX_PAGES: "10"
+          FOTOCASA_PER_ZONE: "120"
+          HABITACLIA_MAX_PAGES: "3"
+          PAUSE_MS: "900"
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

@@ -22,8 +22,12 @@
 | 1.4 | `coverage_regions` + leyenda mapa | ✅ API + UI |
 | 1.5 | `user_map_requests` + botón “Solicitar datos” | ✅ migración + API |
 | 1.6 | `/api/platform/scrape-status` | ✅ |
+| 1.7 | **Ingestión on-demand por scan** (`zone-ingest.mjs`, pisos.com forzado) | ✅ código local |
+| 1.8 | Objetivo ~180 ventas en polígono + refuerzo ciudad | ✅ default |
+| 1.9 | `last_seen_at`, `zone_ingest_runs`, archivar stale en polígono | ✅ migración (aplicar prod) |
 
-**DoD B1:** Tier1 ≥800 ventas/ciudad; Valencia z=12 ≥40 pins (medir tras scrapes).
+**DoD B1:** Tier1 ≥800 ventas/ciudad; Valencia z=12 ≥40 pins (medir tras scrapes).  
+**DoD barrio:** Scan Hortaleza 2 km → ≥100 ventas en polígono tras 1ª pasada (medir en prod).
 
 ## Fase 2 — Geolocalización (B2)
 
@@ -64,19 +68,54 @@
 
 | Paso | Entregable | Estado |
 |------|------------|--------|
-| 5.1 | Dedup por RC + hash dirección | 🔜 (mejora sobre heurística) |
-| 5.2 | `rent_benchmarks` por ciudad (R0) | pendiente |
-| 5.3 | Resend alertas scrape fallido | pendiente |
+| 5.1 | Dedup por RC + hash dirección | ✅ RC en `dedup-cross-portal.mjs` |
+| 5.2 | `rent_benchmarks` por ciudad (R0) | ✅ migración + job + precompute |
+| 5.3 | Resend alertas scrape fallido | ✅ `scrape-health-alert.yml` |
 | 5.4 | Purga `archived` >90 días | ✅ `purge-archived-listings.mjs` |
 | 5.5 | `refresh-coverage-counts` + fulfill map requests | ✅ jobs + workflow |
+
+## Fase 6 — Barrio / oficial (parcial)
+
+| Paso | Entregable | Estado |
+|------|------------|--------|
+| 6.1 | Tabla `census_sections` + RPC listing/bbox | ✅ migración |
+| 6.2 | Seed Barcelona piloto + `import-census-seed.mjs` | ✅ |
+| 6.3 | `/api/map/census-sections` | ✅ |
+| 6.4 | Ficha resumen demografía INE | ✅ summary + UI |
+| 6.5 | `sync-notary-tier1.yml` | ✅ (JSON por CP; fetch opcional) |
+| 6.6 | Capa INE en mapa Explorar | ✅ toggle + bbox (piloto BCN) |
+| 6.7 | Import geometría INE provincia completa | 🔜 |
+
+## Fase 7 — Lanzamiento (pendiente)
+
+| Paso | Entregable | Estado |
+|------|------------|--------|
+| 7.1 | Commit + push `main` (workflows + zone-ingest + migraciones) | 🔄 en curso |
+| 7.1b | Workflow `scan-zone-ingest.yml` + `/api/scans/[id]/rank` | ✅ |
+| 7.2 | Vercel prod con `RESEND_*`, `CRON_SECRET`, `SCAN_TARGET_IN_POLYGON` | 🔜 |
+| 7.3 | Supabase prod: `rent_benchmarks`, `census_sections`, `zone_ingest` | 🔜 (SQL editor parcial) |
+| 7.4 | Email scan completado (usuario marca checkbox) | ✅ código |
+| 7.5 | Dominio + Resend verificado | 🔜 usuario |
+| 7.6 | Legal (privacidad, cookies) | 🔜 `docs/LANZAMIENTO.md` |
+
+## Fase 8 — Calidad datos (después del lanzamiento)
+
+| Paso | Entregable | Estado |
+|------|------------|--------|
+| 8.1 | Idealista estable en ingest (Playwright / proxy) | 🔜 probes |
+| 8.2 | Geocode ≥85 % Tier1 (`geocode-batch` + Catastro) | 🔜 medir |
+| 8.3 | Más barrios en `zone-catalog` (ciudades medianas) | 🔜 |
+| 8.4 | Habitaclia / Hipoges / Solvia en `zone-ingest` | 🔜 parcial bank cron |
+| 8.5 | Dedup RC en prod (job programado) | ✅ job |
 
 ## Operación continua
 
 1. Push workflows a GitHub (PAT scope `workflow`).
-2. `supabase db push` migración `20251017180000_*`.
-3. Cron: tier1 → precompute-roi → geocode-batch.
-4. Monitor: `/api/platform/scrape-status` + inventario en header.
+2. `supabase db push` migraciones `20251019120000`, `20251019140000`/`40100`, `20251019160000`.
+3. Tras push: workflow **Import census seed** + **Precompute ROI**.
+4. Cron: tier1 → precompute-roi → geocode-batch → Madrid districts 4×/día.
+5. Monitor: `/api/platform/scrape-status` + aviso scan si `in_polygon_after` &lt; 100.
 
 ---
 
-**Última actualización:** 2026-10-17 — implementación agente Fase 1–4 en repo.
+**Última actualización:** 2026-10-20 — Fase 1.7 zone-ingest + F7/F8 lanzamiento.

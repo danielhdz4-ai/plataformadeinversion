@@ -1,4 +1,5 @@
 import { openAccessUserId } from "@/lib/open-access";
+import { publicDbError } from "@/lib/ops/db-api-errors";
 import { getDbClient, requireAppUser } from "@/lib/supabase/request-client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
   const json = await req.json();
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.message, code: "VALIDATION" }, { status: 400 });
+    return NextResponse.json({ error: "Los datos del análisis no son válidos.", code: "VALIDATION" }, { status: 400 });
   }
 
   const { data, error } = await supabase
@@ -57,6 +58,16 @@ export async function POST(req: NextRequest) {
     .select("id")
     .single();
 
-  if (error) return NextResponse.json({ error: error.message, code: "DB" }, { status: 500 });
+  if (error) {
+    return NextResponse.json(
+      {
+        error: publicDbError("api/scans POST", error.message, {
+          userMessage: "No se pudo crear el análisis. Inténtalo de nuevo.",
+        }),
+        code: "DB",
+      },
+      { status: 500 }
+    );
+  }
   return NextResponse.json({ scanId: data.id, status: "pending" });
 }

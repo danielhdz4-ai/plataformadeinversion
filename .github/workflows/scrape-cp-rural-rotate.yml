@@ -1,0 +1,36 @@
+name: Scrape CP rural rotate
+
+on:
+  schedule:
+    - cron: "30 3 * * *"
+  workflow_dispatch:
+    inputs:
+      batch_size:
+        description: CPs por ejecución
+        default: "8"
+        required: false
+
+jobs:
+  scrape-cps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js
+      - name: Seed centroides (prioridad)
+        run: node scripts/jobs/seed-cp-centroids.mjs
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Scrape CP batch
+        run: node scripts/jobs/scrape-cp-rotate.mjs
+        env:
+          BATCH_SIZE: ${{ github.event.inputs.batch_size || '8' }}
+          SCRAPE_TARGET_PER_CP: "120"
+          SCRAPE_CP_BOOST_ROUNDS: "3"
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

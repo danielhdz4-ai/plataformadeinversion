@@ -6,6 +6,7 @@ import {
   fetchHabitacliaWithBrowser,
   zoneFallbackGeo,
 } from "./habitaclia-api.mjs";
+import { nearAnchor, normalizeCp } from "./cp-utils.mjs";
 
 const PORTAL = "habitaclia";
 
@@ -14,6 +15,9 @@ function sleep(ms) {
 }
 
 export async function runHabitacliaSale(options = {}) {
+  const postalCodeTarget = normalizeCp(options.postalCodeTarget);
+  const cpAnchor = options.anchor ?? null;
+  const cpRadiusKm = Number(process.env.SCAN_CP_PORTAL_RADIUS_KM ?? "18");
   const supabase = getSupabase();
   const citySlug = options.citySlug ?? "espana";
   const { data: run, error: runErr } = await supabase
@@ -57,6 +61,14 @@ export async function runHabitacliaSale(options = {}) {
         for (const mapped of listings) {
           if (zoneCapReached(zoneInserted)) break;
           if (!mapped.externalId || mapped.price == null || mapped.price < 5000) continue;
+          const anchorPt = cpAnchor
+            ? { lat: cpAnchor.lat, lng: cpAnchor.lng ?? cpAnchor.lon }
+            : null;
+          const listingLat = mapped.lat ?? zoneGeo.lat;
+          const listingLon = mapped.lon ?? zoneGeo.lon;
+          if (postalCodeTarget && anchorPt && !nearAnchor(listingLat, listingLon, anchorPt, cpRadiusKm)) {
+            continue;
+          }
 
           const payload = {
             source_portal: PORTAL,
@@ -74,6 +86,8 @@ export async function runHabitacliaSale(options = {}) {
             status: "active",
             geocode_quality: 4,
             scraped_at: new Date().toISOString(),
+            postal_code: postalCodeTarget ?? null,
+            last_seen_at: new Date().toISOString(),
           };
 
           if (dryRun()) {

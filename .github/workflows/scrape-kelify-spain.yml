@@ -1,0 +1,42 @@
+name: Kelify discover Spain
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+    inputs:
+      max_per_city:
+        description: Max listings per city
+        default: "3000"
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js playwright
+      - run: npx playwright install chromium --with-deps
+      - name: Discover all cities
+        run: node scripts/jobs/kelify-discover-spain.mjs
+        env:
+          KELIFY_MAX_LISTINGS: ${{ github.event.inputs.max_per_city || '3000' }}
+          KELIFY_SCROLL_ROUNDS: "45"
+          PAUSE_MS: "3500"
+          KELIFY_EMAIL: ${{ secrets.KELIFY_EMAIL }}
+          KELIFY_PASSWORD: ${{ secrets.KELIFY_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Hydrate batch
+        run: node scripts/jobs/kelify-hydrate-batch.mjs
+        env:
+          KELIFY_HYDRATE_MAX: "200"
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Precompute ROI
+        run: node scripts/jobs/precompute-roi.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

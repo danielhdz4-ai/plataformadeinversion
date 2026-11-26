@@ -1,8 +1,14 @@
 import type { ReactNode } from "react";
 
-export type IconName = "scan" | "explore" | "saved" | "calculator";
+export type IconName = "scan" | "explore" | "opportunities" | "saved" | "calculator" | "home";
 
 const paths: Record<IconName, ReactNode> = {
+  home: (
+    <>
+      <path d="M3 10.5 12 3l9 7.5" />
+      <path d="M5 9.8V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.8" />
+    </>
+  ),
   scan: (
     <>
       <circle cx="11" cy="11" r="7" />
@@ -14,6 +20,11 @@ const paths: Record<IconName, ReactNode> = {
     <>
       <path d="M3 6l7-3 11 5v11l-11-5-7 3V6z" />
       <path d="M10 3v11M21 8l-11 5" />
+    </>
+  ),
+  opportunities: (
+    <>
+      <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7L12 16.8 5.7 21l2.3-7-6-4.6h7.6L12 2z" />
     </>
   ),
   saved: (

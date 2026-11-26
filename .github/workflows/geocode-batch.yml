@@ -1,0 +1,26 @@
+name: Geocode batch
+on:
+  schedule:
+    - cron: "30 8 * * *"
+  workflow_dispatch:
+
+jobs:
+  geocode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js
+      - run: node scripts/jobs/geocode-batch.mjs
+        env:
+          GEOCODE_BATCH_MAX: "200"
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - run: npm install && pnpm --filter @pi/catastro-client build
+      - run: node scripts/jobs/geocode-catastro-refine.mjs
+        env:
+          CATASTRO_REFINE_MAX: "40"
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

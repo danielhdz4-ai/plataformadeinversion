@@ -1,52 +1,353 @@
 @import "tailwindcss";
 @import "maplibre-gl/dist/maplibre-gl.css";
 
-/* Gestorhogar-style: hueso + negro */
-:root {
-  --bone: #f7f6f3;
-  --paper: #ffffff;
-  --ink: #0a0a0a;
-  --ink-muted: #525252;
-  --line: #e5e5e5;
-  --background: var(--bone);
-  --foreground: var(--ink);
+/* ─────────────────────────────────────────────────────────────
+   Identidad «Brasa» · petróleo + lima
+   Un solo juego de tokens; el tema oscuro/claro solo reasigna
+   variables. Ningún componente debe llevar colores hardcodeados:
+   usar siempre bg-surface, text-ink, text-lime, border-line, etc.
+   ───────────────────────────────────────────────────────────── */
+
+@theme inline {
+  --color-void: var(--t-void);
+  --color-deep: var(--t-deep);
+  --color-surface: var(--t-surface);
+  --color-raised: var(--t-raised);
+  --color-line: var(--t-line);
+  --color-ink: var(--t-ink);
+  --color-ink-muted: var(--t-muted);
+  --color-lime: var(--t-lime);
+  --color-lime-ink: var(--t-lime-ink);
+  --color-mint: var(--t-mint);
+  --color-clay: var(--t-clay);
+  --color-amber: var(--t-amber);
+  --color-sand: var(--t-sand);
+  --font-display: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+/* ── Tema oscuro (por defecto: la app se abre en Brasa) ── */
+:root,
+.dark {
+  --t-void: #07100f;
+  --t-deep: #0d2421;
+  --t-surface: #132e2a;
+  --t-raised: #1a3a35;
+  --t-line: #1f4440;
+  --t-ink: #f2efe6;
+  --t-muted: #8fa9a2;
+  --t-lime: #c6f24e;
+  --t-lime-ink: #08150f;
+  --t-mint: #5fe3b4;
+  --t-clay: #ff6b4a;
+  --t-amber: #f5b93f;
+  --t-sand: #e4ffa8;
+  color-scheme: dark;
+}
+
+/* ── Tema claro ── */
+.light {
+  --t-void: #f7f6f1;
+  --t-deep: #efeee8;
+  --t-surface: #ffffff;
+  --t-raised: #fbfaf7;
+  --t-line: #dedbd1;
+  --t-ink: #0e1a17;
+  --t-muted: #5d6f69;
+  --t-lime: #7fae12;
+  --t-lime-ink: #ffffff;
+  --t-mint: #0f9c78;
+  --t-clay: #d8492a;
+  --t-amber: #b47b0b;
+  --t-sand: #23402f;
+  color-scheme: light;
 }
 
 body {
-  background: var(--bone);
-  color: var(--ink);
-  font-family: "Segoe UI", system-ui, sans-serif;
+  background: var(--t-void);
+  color: var(--t-ink);
+  font-family: var(--font-display);
+  font-style: normal;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
 }
 
+/* Nunca cursivas: tono uniforme en toda la plataforma */
+em,
+i,
+cite {
+  font-style: normal;
+  font-weight: inherit;
+}
+
+svg text {
+  font-style: normal;
+  font-family: var(--font-display);
+}
+
+::selection {
+  background: var(--t-lime);
+  color: var(--t-lime-ink);
+}
+
+/* ── Superficies reutilizables ── */
 .glass-panel {
-  background: var(--paper);
-  border: 1px solid var(--line);
+  background: var(--t-surface);
+  border: 1px solid var(--t-line);
 }
 
+.brasa-card {
+  background: var(--t-surface);
+  border: 1px solid var(--t-line);
+  border-radius: 1rem;
+  transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.brasa-card:hover {
+  border-color: color-mix(in srgb, var(--t-lime) 45%, var(--t-line));
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px -24px rgb(0 0 0 / 55%);
+}
+
+/* Controles nativos con la piel Brasa (inputs, selects) */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select,
+textarea {
+  background: var(--t-raised);
+  border: 1px solid var(--t-line);
+  color: var(--t-ink);
+  border-radius: 0.6rem;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--t-lime);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--t-lime) 18%, transparent);
+}
+
+input[type="range"] {
+  accent-color: var(--t-lime);
+}
+
+/* ── Marca: barrido de radar ── */
+@keyframes ri-sweep-rot {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ri-sweep {
+  animation: ri-sweep-rot 4.2s linear infinite;
+}
+
+@keyframes ri-ping {
+  0% {
+    opacity: 1;
+    transform: scale(0.6);
+  }
+  70% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+.ri-ping {
+  animation: ri-ping 2.6s ease-out infinite;
+}
+
+.ri-lift {
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.group:hover .ri-lift {
+  transform: scale(1.06) rotate(-4deg);
+}
+
+/* Barrido del pie de marca en el header */
+.ri-brand-shine {
+  position: relative;
+}
+
+.ri-brand-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    color-mix(in srgb, var(--t-lime) 14%, transparent) 50%,
+    transparent 70%
+  );
+  background-size: 220% 100%;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  pointer-events: none;
+}
+
+.ri-brand-shine:hover::after {
+  opacity: 1;
+  animation: brasa-shimmer 2.2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ri-sweep,
+  .ri-ping {
+    animation: none;
+  }
+}
+
+/* Halo de acento para héroes y cifras clave */
+.brasa-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.brasa-glow::after {
+  content: "";
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  right: -120px;
+  top: -180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--t-lime) 22%, transparent), transparent 65%);
+  pointer-events: none;
+}
+
+/* ── Animaciones ── */
+@keyframes brasa-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes brasa-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes brasa-pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+
+/* Barrido de carga (esqueletos) */
+@keyframes brasa-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer {
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--t-lime) 10%, transparent) 45%,
+    color-mix(in srgb, var(--t-lime) 18%, transparent) 50%,
+    color-mix(in srgb, var(--t-lime) 10%, transparent) 55%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: brasa-shimmer 1.5s linear infinite;
+}
+
+.brasa-rise {
+  animation: brasa-rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.brasa-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: brasa-marquee 55s linear infinite;
+}
+
+.brasa-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+.brasa-live-dot {
+  animation: brasa-pulse-dot 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brasa-rise,
+  .brasa-marquee-track,
+  .brasa-live-dot {
+    animation: none;
+  }
+  .brasa-card:hover {
+    transform: none;
+  }
+}
+
+/* Rail de scroll horizontal tipo carrusel */.brasa-scroller {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+
+.brasa-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.brasa-scroller > * {
+  scroll-snap-align: start;
+  flex: 0 0 auto;
+}
+
+/* ── Pines del mapa ── */
 .roi-pin {
-  background: #fff;
-  border: 2px solid #0a0a0a;
-  color: #0a0a0a;
+  background: var(--t-surface);
+  border: 2px solid var(--t-lime);
+  color: var(--t-ink);
   font-size: 11px;
   font-weight: 700;
   padding: 4px 8px;
   border-radius: 999px;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 45%);
   cursor: pointer;
   white-space: nowrap;
 }
 
 .roi-pin.selected {
-  background: #0a0a0a;
-  color: #fff;
+  background: var(--t-lime);
+  color: var(--t-lime-ink);
 }
 
 .roi-pin.compact {
   font-size: 10px;
   padding: 2px 6px;
   border-width: 1px;
-  box-shadow: 0 1px 4px rgb(0 0 0 / 10%);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 40%);
 }
 
 @media print {

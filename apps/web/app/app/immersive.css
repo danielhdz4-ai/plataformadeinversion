@@ -1,0 +1,41 @@
+/* Pantalla completa (modo inmersivo) para /app/*.
+   Se activa con el botón de la cabecera o con `?fullscreen=1`. */
+
+html.app-immersive,
+html.app-immersive body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+html.app-immersive .app-shell {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+}
+
+/* En pantalla completa el header se compacta para ganar altura de mapa/lista. */
+html.app-immersive .app-shell > header .app-header-bar {
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
+}
+
+html.app-immersive .app-shell > header .app-header-brand {
+  font-size: 0.75rem;
+}
+
+html.app-immersive .app-shell > header nav a {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+/* Sin barra de scroll visible (mapa y paneles usan su propio scroll). */
+html.app-immersive .app-shell ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+html.app-immersive .app-shell ::-webkit-scrollbar-thumb {
+  background: rgb(212 212 212);
+  border-radius: 9999px;
+}

@@ -1,0 +1,24 @@
+{
+  "base": "https://plataformadeinversion.vercel.app",
+  "deploy": "dpl_EE1dDxNzc5a86RxUDBnm1ec4868e",
+  "deployedAt": "2026-11-23",
+  "waitScrape": false,
+  "tested": 51,
+  "buckets": { "A": 33, "B": 8, "C": 4, "D": 6, "E": 0 },
+  "bucketsBeforeFreshnessDeploy": { "A": 35, "B": 11, "C": 4, "D": 1, "E": 0 },
+  "avgZoneMs": 2237,
+  "errors": 0,
+  "weakCp": [
+    { "cp": "01001", "total": 0 },
+    { "cp": "18411", "total": 2 },
+    { "cp": "20001", "total": 0 },
+    { "cp": "21001", "total": 17 },
+    { "cp": "21200", "total": 5 },
+    { "cp": "26001", "total": 0 },
+    { "cp": "31001", "total": 0 },
+    { "cp": "05267", "total": 12 },
+    { "cp": "39680", "total": 1 },
+    { "cp": "25126", "total": 11 }
+  ],
+  "note": "Auditoría con ventana 14 d en zone + map-by-cp. Menos A/B que antes: coherente con frescura, no regresión de geocode."
+}

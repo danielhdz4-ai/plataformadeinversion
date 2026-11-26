@@ -1,5 +1,5 @@
 /**
- * B6 — Archiva duplicados cross-portal (misma zona + precio + m² aprox).
+ * B6 — Archiva duplicados cross-portal (RC catastro o heurística CP/precio/m²).
  * Prioridad: kelify > pisos.com > otros; luego scraped_at más reciente.
  */
 import { createClient } from "@supabase/supabase-js";
@@ -36,12 +36,33 @@ function dedupKey(row) {
   return `${pc}|${priceBucket}|${sqmBucket}|${beds}`;
 }
 
+function normalizeRc(rc) {
+  if (!rc) return null;
+  const n = String(rc).replace(/\s+/g, "").toUpperCase();
+  return n.length >= 14 ? n : null;
+}
+
+function pickLosers(list) {
+  if (list.length < 2) return [];
+  if (list.every((x) => x.source_portal === "kelify")) return [];
+  list.sort((a, b) => {
+    const dr = rank(b.source_portal) - rank(a.source_portal);
+    if (dr !== 0) return dr;
+    return new Date(b.scraped_at).getTime() - new Date(a.scraped_at).getTime();
+  });
+  const losers = [];
+  for (const loser of list.slice(1)) {
+    if (loser.source_portal === "kelify") continue;
+    losers.push(loser.id);
+  }
+  return losers;
+}
+
 const { data: rows, error } = await supabase
   .from("listings")
   .select("id, source_portal, price, sqm, bedrooms, postal_code, scraped_at")
   .eq("operation", "sale")
   .eq("status", "active")
-  .not("postal_code", "is", null)
   .limit(MAX);
 
 if (error) {
@@ -49,37 +70,72 @@ if (error) {
   process.exit(1);
 }
 
+const ids = (rows ?? []).map((r) => r.id);
+const rcByListing = new Map();
+for (let i = 0; i < ids.length; i += 200) {
+  const chunk = ids.slice(i, i + 200);
+  const { data: enrich } = await supabase
+    .from("listing_enrichment")
+    .select("listing_id, rc")
+    .in("listing_id", chunk)
+    .not("rc", "is", null);
+  for (const e of enrich ?? []) {
+    const rc = normalizeRc(e.rc);
+    if (rc) rcByListing.set(e.listing_id, rc);
+  }
+}
+
+const toArchive = new Set();
+let rcGroups = 0;
+let heuristicGroups = 0;
+
+const rcGroupsMap = new Map();
+for (const row of rows ?? []) {
+  const rc = rcByListing.get(row.id);
+  if (!rc) continue;
+  const k = `rc:${rc}`;
+  if (!rcGroupsMap.has(k)) rcGroupsMap.set(k, []);
+  rcGroupsMap.get(k).push(row);
+}
+
+for (const [, list] of rcGroupsMap) {
+  if (list.length < 2) continue;
+  rcGroups++;
+  for (const id of pickLosers(list)) toArchive.add(id);
+}
+
 const groups = new Map();
 for (const row of rows ?? []) {
+  if (toArchive.has(row.id)) continue;
   const k = dedupKey(row);
   if (!groups.has(k)) groups.set(k, []);
   groups.get(k).push(row);
 }
 
-const toArchive = [];
-  for (const [, list] of groups) {
+for (const [, list] of groups) {
   if (list.length < 2) continue;
-  if (list.every((x) => x.source_portal === "kelify")) continue;
-  list.sort((a, b) => {
-    const dr = rank(b.source_portal) - rank(a.source_portal);
-    if (dr !== 0) return dr;
-    return new Date(b.scraped_at).getTime() - new Date(a.scraped_at).getTime();
-  });
-  for (const loser of list.slice(1)) {
-    if (loser.source_portal === "kelify") continue;
-    toArchive.push(loser.id);
-  }
+  heuristicGroups++;
+  for (const id of pickLosers(list)) toArchive.add(id);
 }
 
-if (toArchive.length === 0) {
-  console.log(JSON.stringify({ ok: true, archived: 0, scanned: rows?.length ?? 0 }));
+const archiveIds = [...toArchive];
+if (archiveIds.length === 0) {
+  console.log(
+    JSON.stringify({
+      ok: true,
+      archived: 0,
+      scanned: rows?.length ?? 0,
+      rcGroups,
+      heuristicGroups,
+    })
+  );
   process.exit(0);
 }
 
 const { error: upErr } = await supabase
   .from("listings")
   .update({ status: "archived" })
-  .in("id", toArchive);
+  .in("id", archiveIds);
 
 if (upErr) {
   console.error(upErr.message);
@@ -87,5 +143,11 @@ if (upErr) {
 }
 
 console.log(
-  JSON.stringify({ ok: true, archived: toArchive.length, scanned: rows?.length ?? 0 })
+  JSON.stringify({
+    ok: true,
+    archived: archiveIds.length,
+    scanned: rows?.length ?? 0,
+    rcGroups,
+    heuristicGroups,
+  })
 );

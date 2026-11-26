@@ -42,7 +42,7 @@ export function AffordabilityCard({
   const wMort = total > 0 ? (b.mortgagePrincipal / total) * 100 : 34;
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-[#f7f6f3] p-4">
+    <div className="rounded-xl border border-neutral-200 bg-[#f3f2ef] p-4">
       <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
         Propiedades asequibles hasta
       </p>

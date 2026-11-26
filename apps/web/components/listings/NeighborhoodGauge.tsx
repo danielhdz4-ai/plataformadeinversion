@@ -15,38 +15,51 @@ export function NeighborhoodGauge({
   const cpPct = ((cpAvgM2 - min) / span) * 100;
   return (
     <div className="space-y-3">
-      <div className="relative h-3 rounded-full bg-neutral-200">
+      <div className="relative h-2 rounded-full bg-line">
         <div
-          className="absolute top-1/2 h-4 w-0.5 -translate-y-1/2 rounded bg-neutral-950"
-          style={{ left: `calc(${listingPct}% - 1px)` }}
+          className="absolute inset-y-0 left-0 rounded-full bg-lime/25"
+          style={{ width: `${cpPct}%` }}
+        />
+        <div
+          className="absolute top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-full bg-ink"
+          style={{ left: `calc(${listingPct}% - 1.5px)` }}
           title="Este inmueble"
         />
         <div
-          className="absolute top-1/2 h-4 w-0.5 -translate-y-1/2 rounded border border-dashed border-red-500 bg-red-400"
-          style={{ left: `calc(${cpPct}% - 1px)` }}
+          className="absolute top-1/2 h-4 w-[3px] -translate-y-1/2 rounded-full bg-mint"
+          style={{ left: `calc(${cpPct}% - 1.5px)` }}
           title="Media CP"
         />
       </div>
-      <div className="flex flex-wrap items-start justify-between gap-2 text-[10px]">
-        <div>
-          <p className="text-neutral-500">Esta propiedad</p>
-          <p className="font-semibold tabular-nums text-neutral-950">
-            {Math.round(listingM2).toLocaleString("es-ES")} €/m²
-            {vsPct != null && (
-              <span className={vsPct > 0 ? " text-red-600" : " text-emerald-700"}>
-                {" "}
-                ({vsPct > 0 ? "+" : ""}
-                {vsPct.toFixed(1)} %)
-              </span>
-            )}
-          </p>
-        </div>
-        <div className="text-right">
-          <p className="text-neutral-500">Media del código postal</p>
-          <p className="font-semibold tabular-nums text-neutral-800">
-            {Math.round(cpAvgM2).toLocaleString("es-ES")} €/m²
-          </p>
-        </div>
+      <div className="flex items-center justify-between gap-2 text-[10px]">
+        <span className="text-ink-muted">Esta propiedad</span>
+        <span className="text-ink-muted">Media del CP</span>
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        <span className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-ink" />
+          <span className="text-[15px] font-extrabold tabular-nums text-ink">
+            {Math.round(listingM2).toLocaleString("es-ES")}
+            <span className="ml-0.5 text-[10px] font-semibold text-ink-muted">€/m²</span>
+          </span>
+          {vsPct != null && (
+            <span
+              className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold tabular-nums ${
+                vsPct > 0 ? "bg-clay/15 text-clay" : "bg-lime/15 text-lime"
+              }`}
+            >
+              {vsPct > 0 ? "+" : ""}
+              {vsPct.toFixed(1)} %
+            </span>
+          )}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-mint" />
+          <span className="text-[15px] font-extrabold tabular-nums text-ink">
+            {Math.round(cpAvgM2).toLocaleString("es-ES")}
+            <span className="ml-0.5 text-[10px] font-semibold text-ink-muted">€/m²</span>
+          </span>
+        </span>
       </div>
     </div>
   );

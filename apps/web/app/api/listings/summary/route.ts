@@ -1,6 +1,8 @@
+import { parseCensusRpcRow } from "@/lib/listing/census-types";
 import { buildListingSummary } from "@/lib/listing/build-summary";
+import { resolveListingSqm } from "@/lib/listing/resolve-sqm";
 import { resolveListingGrossRoiPct } from "@/lib/listing/gross-roi";
-import { NOTARY_NATIONAL_POSTAL } from "@/lib/notariado/resolve-notary";
+import { notaryRowForListingValuation } from "@/lib/listing/notary-valuation-scope";
 import { fetchOfficialMarketForPostals } from "@/lib/listing/official-market-query";
 import { fetchItpPctForCcaa } from "@/lib/listing/tax-itp";
 import type { RentComparable } from "@/lib/listing/summary-types";
@@ -11,49 +13,53 @@ import { z } from "zod";
 const bodySchema = z.object({
   ids: z.array(z.string().uuid()).min(1).max(60),
   mode: z.enum(["whole", "rooms"]).optional(),
+  /** Sin RPC censal/comparables — métricas €/m² y notariado (lista Explorar). */
+  light: z.boolean().optional(),
 });
 
 export async function POST(req: NextRequest) {
   const parsed = bodySchema.safeParse(await req.json());
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.message }, { status: 400 });
+    return NextResponse.json({ error: "Los datos solicitados no son válidos." }, { status: 400 });
   }
 
   const supabase = await getDbClient();
   const ids = parsed.data.ids;
   const roomMode = parsed.data.mode === "rooms";
+  const light = parsed.data.light === true;
 
   const { data: listings, error } = await supabase
     .from("listings")
     .select(
       `
-      id, price, sqm, bedrooms, postal_code, city, ccaa,
+      id, price, sqm, title, bedrooms, postal_code, city, ccaa,
+      source_portal, source_url, scraped_at,
       listing_investment ( rent_est, roi_gross, rent_confidence, comparables_count )
     `
     )
     .in("id", ids);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("[api/listings/summary]", error.message);
+    return NextResponse.json({ error: "No se pudieron cargar las viviendas." }, { status: 500 });
+  }
 
   const postals = [...new Set((listings ?? []).map((l) => l.postal_code).filter(Boolean))] as string[];
-  const notaryLookupCodes = [...new Set([...postals, NOTARY_NATIONAL_POSTAL])];
   const notaryByPostal = new Map<string, Record<string, unknown>>();
 
-  if (notaryLookupCodes.length > 0) {
+  if (postals.length > 0) {
     const { data: notaryRows } = await supabase
       .from("notary_stats")
       .select("*")
-      .in("postal_code", notaryLookupCodes);
+      .in("postal_code", postals);
     for (const n of notaryRows ?? []) {
       const pc = n.postal_code as string;
       if (!notaryByPostal.has(pc)) notaryByPostal.set(pc, n);
     }
   }
 
-  const nationalNotary = notaryByPostal.get(NOTARY_NATIONAL_POSTAL) ?? null;
   function notaryForListing(postal: string | null | undefined) {
-    if (postal && notaryByPostal.has(postal)) return notaryByPostal.get(postal)!;
-    return nationalNotary;
+    return notaryRowForListingValuation(postal, notaryByPostal);
   }
 
   const officialByPostal = await fetchOfficialMarketForPostals(
@@ -62,31 +68,47 @@ export async function POST(req: NextRequest) {
   );
 
   const comparablesById = new Map<string, RentComparable[]>();
+  const censusById = new Map<string, ReturnType<typeof parseCensusRpcRow>>();
 
-  await Promise.all(
-    ids.map(async (id) => {
-      const { data: comps, error: compErr } = await supabase.rpc("rent_comparables_near", {
-        p_listing_id: id,
-        max_m: roomMode ? 2500 : 500,
-        lim: roomMode ? 24 : 8,
-      });
-      if (compErr || !comps) {
-        comparablesById.set(id, []);
-        return;
-      }
-      comparablesById.set(
-        id,
-        (comps as Record<string, unknown>[]).map((c) => ({
-          id: c.id as string,
-          title: (c.title as string) ?? null,
-          price: Number(c.price),
-          sqm: c.sqm != null ? Number(c.sqm) : null,
-          bedrooms: c.bedrooms != null ? Number(c.bedrooms) : null,
-          distanceM: Number(c.distance_m),
-        }))
-      );
-    })
-  );
+  if (!light) {
+    await Promise.all(
+      ids.map(async (id) => {
+        const { data: censusRows, error: censusErr } = await supabase.rpc("census_for_listing", {
+          p_listing_id: id,
+        });
+        if (censusErr) return;
+        const censusRow = Array.isArray(censusRows) ? censusRows[0] : censusRows;
+        if (censusRow) {
+          censusById.set(id, parseCensusRpcRow(censusRow as Record<string, unknown>));
+        }
+      })
+    );
+
+    await Promise.all(
+      ids.map(async (id) => {
+        const { data: comps, error: compErr } = await supabase.rpc("rent_comparables_near", {
+          p_listing_id: id,
+          max_m: roomMode ? 2500 : 1200,
+          lim: roomMode ? 24 : 10,
+        });
+        if (compErr || !comps) {
+          comparablesById.set(id, []);
+          return;
+        }
+        comparablesById.set(
+          id,
+          (comps as Record<string, unknown>[]).map((c) => ({
+            id: c.id as string,
+            title: (c.title as string) ?? null,
+            price: Number(c.price),
+            sqm: c.sqm != null ? Number(c.sqm) : null,
+            bedrooms: c.bedrooms != null ? Number(c.bedrooms) : null,
+            distanceM: Number(c.distance_m),
+          }))
+        );
+      })
+    );
+  }
 
   const summaries: Record<string, ReturnType<typeof buildListingSummary>> = {};
   const { isRoomRentComparable, estimateRoomRentMonthly } = await import(
@@ -103,7 +125,10 @@ export async function POST(req: NextRequest) {
       {
         id: row.id,
         price: Number(row.price),
-        sqm: row.sqm != null ? Number(row.sqm) : null,
+        sqm: resolveListingSqm(
+          row.sqm != null ? Number(row.sqm) : null,
+          row.title as string | null
+        ),
         postal_code: row.postal_code,
         ccaa: row.ccaa as string | null,
         listing_investment: inv
@@ -118,7 +143,8 @@ export async function POST(req: NextRequest) {
       roomMode ? allComps.filter((c) => !isRoomRentComparable(c)).slice(0, 5) : allComps.slice(0, 5),
       notaryForListing(row.postal_code as string | null),
       row.postal_code ? officialByPostal.get(row.postal_code) ?? [] : [],
-      itpPct
+      itpPct,
+      censusById.get(row.id) ?? null
     );
 
     if (roomMode) {

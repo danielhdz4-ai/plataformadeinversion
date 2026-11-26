@@ -1,8 +1,10 @@
 /** Páginas sin mapa a pantalla completa (calculadora, guardados, ficha). */
 export function AppScrollPage({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto bg-[#f7f6f3]">
-      <div className="mx-auto max-w-4xl px-4 py-8 md:px-6">{children}</div>
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[#f3f2ef]">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div className="mx-auto w-full max-w-4xl px-4 py-6 lg:px-8">{children}</div>
+      </div>
     </div>
   );
 }

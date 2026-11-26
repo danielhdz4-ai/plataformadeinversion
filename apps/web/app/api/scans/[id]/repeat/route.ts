@@ -5,6 +5,7 @@ import { getDbClient, requireAppUser } from "@/lib/supabase/request-client";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { after, NextResponse } from "next/server";
 import type { ScanRunFilters } from "@/lib/scan/bedroom-filter";
+import { publicDbError } from "@/lib/ops/db-api-errors";
 
 export async function POST(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id: sourceId } = await ctx.params;
@@ -41,7 +42,14 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     .single();
 
   if (insErr || !created) {
-    return NextResponse.json({ error: insErr?.message ?? "insert failed" }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: publicDbError("api/scans/repeat", insErr?.message ?? "insert failed", {
+          userMessage: "No se pudo repetir el análisis.",
+        }),
+      },
+      { status: 500 }
+    );
   }
 
   const polygon = source.polygon as ScanPolygon;

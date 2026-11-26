@@ -1,0 +1,110 @@
+[
+  {
+    "cusec": "0801901001",
+    "province_code": "08",
+    "municipality_name": "Barcelona",
+    "section_name": "Barceloneta (piloto)",
+    "postal_codes": ["08003"],
+    "metrics_year": 2023,
+    "source_url": "https://www.ine.es/dyngs/INE/es/index.htm?padre=2595",
+    "metrics": {
+      "population": 15240,
+      "mean_net_income_eur": 19850,
+      "tertiary_education_pct": 44.2,
+      "unemployment_pct": 7.8
+    },
+    "geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [2.182, 41.374],
+          [2.198, 41.374],
+          [2.198, 41.384],
+          [2.182, 41.384],
+          [2.182, 41.374]
+        ]
+      ]
+    }
+  },
+  {
+    "cusec": "0801901002",
+    "province_code": "08",
+    "municipality_name": "Barcelona",
+    "section_name": "Gòtic / Sant Pere (piloto)",
+    "postal_codes": ["08002", "08003"],
+    "metrics_year": 2023,
+    "source_url": "https://www.ine.es/dyngs/INE/es/index.htm?padre=2595",
+    "metrics": {
+      "population": 22100,
+      "mean_net_income_eur": 17620,
+      "tertiary_education_pct": 41.0,
+      "unemployment_pct": 9.1
+    },
+    "geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [2.168, 41.378],
+          [2.186, 41.378],
+          [2.186, 41.392],
+          [2.168, 41.392],
+          [2.168, 41.378]
+        ]
+      ]
+    }
+  },
+  {
+    "cusec": "0801902001",
+    "province_code": "08",
+    "municipality_name": "Barcelona",
+    "section_name": "Eixample esquerra (piloto)",
+    "postal_codes": ["08001", "08011", "08015"],
+    "metrics_year": 2023,
+    "source_url": "https://www.ine.es/dyngs/INE/es/index.htm?padre=2595",
+    "metrics": {
+      "population": 28500,
+      "mean_net_income_eur": 22400,
+      "tertiary_education_pct": 52.6,
+      "unemployment_pct": 6.4
+    },
+    "geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [2.148, 41.382],
+          [2.172, 41.382],
+          [2.172, 41.402],
+          [2.148, 41.402],
+          [2.148, 41.382]
+        ]
+      ]
+    }
+  },
+  {
+    "cusec": "0801903001",
+    "province_code": "08",
+    "municipality_name": "Barcelona",
+    "section_name": "Poblenou (piloto)",
+    "postal_codes": ["08005", "08018"],
+    "metrics_year": 2023,
+    "source_url": "https://www.ine.es/dyngs/INE/es/index.htm?padre=2595",
+    "metrics": {
+      "population": 31200,
+      "mean_net_income_eur": 24100,
+      "tertiary_education_pct": 48.9,
+      "unemployment_pct": 5.9
+    },
+    "geojson": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [2.188, 41.392],
+          [2.215, 41.392],
+          [2.215, 41.412],
+          [2.188, 41.412],
+          [2.188, 41.392]
+        ]
+      ]
+    }
+  }
+]

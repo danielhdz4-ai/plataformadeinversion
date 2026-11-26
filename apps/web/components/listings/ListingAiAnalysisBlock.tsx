@@ -81,13 +81,13 @@ export function ListingAiAnalysisBlock({ listingId, compact = false, autoLoadCac
 
   if (premiumRequired || (isAiPremiumGated() && !analysis)) {
     return (
-      <div className="rounded-lg border border-amber-200 bg-amber-50/80 p-3 text-xs text-amber-950">
+      <div className="brasa-card border-amber/30 bg-amber/10 p-3 text-xs text-ink">
         <p className="font-semibold">Análisis IA — Premium</p>
-        <p className="mt-1 text-amber-900/90">
+        <p className="mt-1 text-ink-muted">
           Revalorización, reforma estimada y scoring global con Gemini. De momento abierto en beta; luego incluido en
           Premium.
         </p>
-        <Link href="/app/premium" className="mt-2 inline-block font-medium underline">
+        <Link href="/app/premium" className="mt-2 inline-block font-semibold text-lime underline">
           Ver planes
         </Link>
       </div>
@@ -96,18 +96,18 @@ export function ListingAiAnalysisBlock({ listingId, compact = false, autoLoadCac
 
   if (!analysis) {
     return (
-      <div className="rounded-lg border border-violet-200 bg-violet-50/50 p-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-violet-800">Análisis con IA</p>
-        <p className="mt-1 text-xs text-neutral-700">
+      <div className="brasa-card p-3">
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-lime">Análisis con IA</p>
+        <p className="mt-1 text-xs text-ink-muted">
           Score global, revalorización prudente y rango de reforma con{" "}
           <span className="font-medium">Google Gemini</span> (datos del anuncio + ROI + notariado).
         </p>
-        {error && <p className="mt-2 text-xs text-red-700">{error}</p>}
+        {error && <p className="mt-2 text-xs text-clay">{error}</p>}
         <button
           type="button"
           disabled={loading}
           onClick={() => void load(true)}
-          className="mt-2 rounded-md bg-neutral-950 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+          className="mt-2 rounded-full bg-lime px-3 py-1.5 text-xs font-bold text-lime-ink disabled:opacity-50"
         >
           {loading ? "Generando…" : compact ? "Generar análisis IA" : "Analizar con IA"}
         </button>
@@ -116,50 +116,50 @@ export function ListingAiAnalysisBlock({ listingId, compact = false, autoLoadCac
   }
 
   return (
-    <div className="space-y-2 rounded-lg border border-violet-200/80 bg-white p-3">
+    <div className="brasa-card space-y-2 p-3">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-violet-800">Análisis IA</p>
-          <p className="mt-0.5 text-sm font-semibold text-neutral-950">{analysis.headline}</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-lime">Análisis IA</p>
+          <p className="mt-0.5 text-sm font-bold text-ink">{analysis.headline}</p>
         </div>
         <ScoreRing score={analysis.globalScore} />
       </div>
-      <p className={`text-neutral-700 ${compact ? "line-clamp-3 text-xs" : "text-sm"}`}>{analysis.summary}</p>
+      <p className={`text-ink-muted ${compact ? "line-clamp-3 text-xs" : "text-sm"}`}>{analysis.summary}</p>
       {!compact && (
         <>
           <div className="grid gap-2 sm:grid-cols-2">
             <BulletList title="Fortalezas" items={analysis.strengths} tone="ok" />
             <BulletList title="Riesgos" items={analysis.risks} tone="warn" />
           </div>
-          <dl className="grid gap-1 rounded border border-neutral-100 bg-[#faf9f7] p-2 text-xs">
+          <dl className="grid gap-1 rounded-xl bg-raised/70 p-2 text-xs">
             <div className="flex justify-between gap-2">
-              <dt className="text-neutral-600">Revalorización est.</dt>
-              <dd className="font-medium tabular-nums">
+              <dt className="text-ink-muted">Revalorización est.</dt>
+              <dd className="font-semibold tabular-nums text-ink">
                 {analysis.revaluation.annualPctEstimate > 0 ? "+" : ""}
                 {analysis.revaluation.annualPctEstimate.toFixed(1)} %/año · {analysis.revaluation.horizonYears} años
               </dd>
             </div>
             <div className="flex justify-between gap-2">
-              <dt className="text-neutral-600">Reforma est.</dt>
-              <dd className="font-medium tabular-nums">
+              <dt className="text-ink-muted">Reforma est.</dt>
+              <dd className="font-semibold tabular-nums text-ink">
                 {analysis.renovation.estimateEurLow.toLocaleString("es-ES")} –{" "}
                 {analysis.renovation.estimateEurHigh.toLocaleString("es-ES")} €
               </dd>
             </div>
             <div className="flex justify-between gap-2">
-              <dt className="text-neutral-600">Estrategia</dt>
-              <dd className="font-medium">{STRATEGY_LABEL[analysis.strategy]}</dd>
+              <dt className="text-ink-muted">Estrategia</dt>
+              <dd className="font-semibold text-ink">{STRATEGY_LABEL[analysis.strategy]}</dd>
             </div>
           </dl>
-          <p className="text-[10px] text-neutral-500">{analysis.strategyNote}</p>
-          <p className="text-[10px] text-neutral-400">
+          <p className="text-[10px] text-ink-muted">{analysis.strategyNote}</p>
+          <p className="text-[10px] text-ink-muted/70">
             {meta.cached ? "Desde caché" : "Generado"} · {meta.model}
             {meta.generatedAt ? ` · ${new Date(meta.generatedAt).toLocaleString("es-ES")}` : ""}
           </p>
         </>
       )}
       {compact && (
-        <p className="text-[10px] text-neutral-500">
+        <p className="text-[10px] text-ink-muted">
           Score {analysis.globalScore}/100 · {STRATEGY_LABEL[analysis.strategy]}
         </p>
       )}
@@ -167,7 +167,7 @@ export function ListingAiAnalysisBlock({ listingId, compact = false, autoLoadCac
         type="button"
         disabled={loading}
         onClick={() => void load(true)}
-        className="text-[10px] font-medium text-neutral-600 underline disabled:opacity-50"
+        className="text-[10px] font-semibold text-ink-muted underline hover:text-lime disabled:opacity-50"
       >
         {loading ? "Actualizando…" : "Regenerar análisis"}
       </button>
@@ -178,7 +178,7 @@ export function ListingAiAnalysisBlock({ listingId, compact = false, autoLoadCac
 function ScoreRing({ score }: { score: number }) {
   return (
     <div
-      className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-full border-2 border-violet-600 bg-violet-50 text-violet-950"
+      className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-full border-2 border-lime bg-lime/10 text-ink"
       title="Score global"
     >
       <span className="text-sm font-bold leading-none">{Math.round(score)}</span>
@@ -196,11 +196,11 @@ function BulletList({
   items: string[];
   tone: "ok" | "warn";
 }) {
-  const color = tone === "ok" ? "text-emerald-800" : "text-amber-900";
+  const color = tone === "ok" ? "text-lime" : "text-amber";
   return (
     <div>
       <p className={`text-[10px] font-semibold uppercase ${color}`}>{title}</p>
-      <ul className="mt-1 list-inside list-disc space-y-0.5 text-xs text-neutral-700">
+      <ul className="mt-1 list-inside list-disc space-y-0.5 text-xs text-ink-muted">
         {items.slice(0, 4).map((x) => (
           <li key={x}>{x}</li>
         ))}
@@ -208,3 +208,4 @@ function BulletList({
     </div>
   );
 }
+

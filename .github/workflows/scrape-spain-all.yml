@@ -1,0 +1,31 @@
+name: Scrape Spain all cities
+on:
+  workflow_dispatch:
+    inputs:
+      tier:
+        description: 1, 2 o all
+        default: "all"
+        required: true
+      max_listings:
+        description: MAX_LISTINGS por ciudad
+        default: "35"
+        required: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js
+      - run: node scripts/jobs/scrape-spain-batch.mjs
+        env:
+          TIER: ${{ github.event.inputs.tier }}
+          BATCH_SIZE: "999"
+          MAX_LISTINGS: ${{ github.event.inputs.max_listings }}
+          PAUSE_MS: "3500"
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

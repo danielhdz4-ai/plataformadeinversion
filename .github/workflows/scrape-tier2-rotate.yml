@@ -1,0 +1,31 @@
+name: Scrape tier2 rotate
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+    inputs:
+      batch_size:
+        description: Ciudades por ejecución
+        default: "12"
+        required: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js
+      - run: node scripts/jobs/scrape-spain-batch.mjs
+        env:
+          TIER: "2"
+          BATCH_SIZE: ${{ github.event.inputs.batch_size || '12' }}
+          MAX_LISTINGS: "220"
+          PISOS_MAX_PAGES: "25"
+          FOTOCASA_MAX_PAGES: "14"
+          FOTOCASA_PER_ZONE: "220"
+          PAUSE_MS: "3000"
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

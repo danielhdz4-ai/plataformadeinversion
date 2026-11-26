@@ -1,6 +1,6 @@
 "use client";
 
-import { decodeListingTitle } from "@/lib/decode-html";
+import { cleanListingTitle } from "@/lib/listing/display-title";
 import { portalBadge } from "@/lib/portals";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -45,7 +45,7 @@ export function ListingPropertyCard({
   onHover?: () => void;
 }) {
   const portal = portalBadge(sourcePortal);
-  const cleanTitle = decodeListingTitle(title);
+  const cleanTitle = cleanListingTitle(title, null);
   const imgSrc = proxiedThumb(thumbnailUrl);
   const [thumbFailed, setThumbFailed] = useState(false);
   useEffect(() => setThumbFailed(false), [thumbnailUrl]);

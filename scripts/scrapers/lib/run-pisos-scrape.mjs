@@ -1,6 +1,11 @@
 import { dryRun, getSupabase, maxListings } from "./env.mjs";
-import { fetchPisosDetailFields, parsePisosListingsFromHtml } from "./parse-pisos-ld.mjs";
+import {
+  fetchPisosDetailFields,
+  parsePisosListingsFromHtml,
+  postalCodeFromPisosUrl,
+} from "./parse-pisos-ld.mjs";
 import { isPlausibleMonthlyRent } from "./rent-plausible.mjs";
+import { nearAnchor, normalizeCp as normalizeCpShared } from "./cp-utils.mjs";
 import { getCityConfig } from "./spain-city.mjs";
 
 const PORTAL = "pisos_com";
@@ -22,9 +27,23 @@ function pisosSaleSearchUrls(pisosSlug, maxPages, district = null) {
   return urls;
 }
 
+function normalizeCp(v) {
+  return normalizeCpShared(v);
+}
+
+function pisosMatchesPostalTarget(row, postalCode, postalCodeTarget, anchorPt, radiusKm) {
+  if (!postalCodeTarget) return true;
+  if (normalizeCp(postalCode) === postalCodeTarget) return true;
+  if (anchorPt && row.lat != null && row.lon != null && nearAnchor(row.lat, row.lon, anchorPt, radiusKm)) {
+    return true;
+  }
+  return false;
+}
+
 export async function runPisosSale(citySlug, options = {}) {
   const city = getCityConfig(citySlug);
   const district = options.district ?? null;
+  const postalCodeTarget = normalizeCp(options.postalCodeTarget);
   const pageCap = options.maxPages ?? pisosMaxPages();
   const supabase = getSupabase();
   const runCitySlug = district ? `${city.slug}/${district}` : city.slug;
@@ -56,7 +75,8 @@ export async function runPisosSale(citySlug, options = {}) {
         emptyPages++;
         continue;
       }
-      const parseOpts = { max: limit - parsed.length, bbox: city.bbox };
+      const parseOpts = { max: limit - parsed.length, bbox: options.bbox ?? city.bbox };
+      if (postalCodeTarget) parseOpts.max = Math.min(limit - parsed.length, 80);
       if (city.regionPattern) parseOpts.regionPattern = city.regionPattern;
       const batch = parsePisosListingsFromHtml(await res.text(), parseOpts);
       if (batch.length === 0) emptyPages++;
@@ -67,20 +87,49 @@ export async function runPisosSale(citySlug, options = {}) {
         parsed.push(row);
       }
     }
-    if (parsed.length === 0) throw new Error(`No listings parsed for ${city.slug}`);
+    if (parsed.length === 0) {
+      if (postalCodeTarget || options.bbox) {
+        await supabase
+          .from("scrape_runs")
+          .update({
+            status: "completed",
+            finished_at: new Date().toISOString(),
+            listings_inserted: 0,
+            error_message: "no_listings_in_bbox",
+          })
+          .eq("id", run.id);
+        return { ok: true, inserted: 0, cards: 0, city: city.slug };
+      }
+      throw new Error(`No listings parsed for ${city.slug}`);
+    }
+
+    const cpRadiusKm = Number(process.env.SCAN_CP_PISOS_RADIUS_KM ?? "3.5");
+    const anchorPt =
+      options.fallbackLat != null && options.fallbackLng != null
+        ? { lat: options.fallbackLat, lng: options.fallbackLng }
+        : null;
 
     let inserted = 0;
     for (let i = 0; i < parsed.length; i++) {
       const row = parsed[i];
       let price = row.price;
       let sqm = row.sqm;
-      if (price == null && row.sourceUrl) {
+      let postalCode = row.postalCode ?? null;
+      let inCp = pisosMatchesPostalTarget(row, postalCode, postalCodeTarget, anchorPt, cpRadiusKm);
+      const needsDetail =
+        price == null ||
+        (postalCodeTarget && !inCp && row.sourceUrl && anchorPt && row.lat != null && row.lon != null);
+      if (needsDetail && row.sourceUrl) {
         const detail = await fetchPisosDetailFields(row.sourceUrl);
-        if (detail?.price) price = detail.price;
+        if (detail?.price && price == null) price = detail.price;
         if (detail?.sqm && sqm == null) sqm = detail.sqm;
+        if (detail?.postalCode) postalCode = detail.postalCode;
+        inCp = pisosMatchesPostalTarget(row, postalCode, postalCodeTarget, anchorPt, cpRadiusKm);
         if (i > 0 && i % 4 === 0) await new Promise((r) => setTimeout(r, 280));
       }
+      if (postalCodeTarget && !inCp) continue;
       if (price == null || price < 5000) continue;
+      if (postalCodeTarget) postalCode = postalCodeTarget;
       const payload = {
         source_portal: PORTAL,
         source_external_id: String(row.externalId),
@@ -91,12 +140,15 @@ export async function runPisosSale(citySlug, options = {}) {
         bedrooms: row.bedrooms ?? null,
         bathrooms: row.bathrooms ?? null,
         thumbnail_url: row.thumbnail ?? null,
-        postal_code: row.postalCode ?? null,
+        postal_code: postalCode ?? null,
         city: row.city ?? city.name,
         ccaa: city.ccaa,
         source_url: row.sourceUrl,
+        property_kind: row.propertyKind ?? null,
         geocode_quality: 4,
         status: "active",
+        scraped_at: new Date().toISOString(),
+        last_seen_at: new Date().toISOString(),
       };
       if (dryRun()) {
         inserted++;
@@ -108,11 +160,22 @@ export async function runPisosSale(citySlug, options = {}) {
         .select("id")
         .maybeSingle();
       if (!error && upserted?.id) {
-        await supabase.rpc("patch_listing_geom", {
-          listing_id: upserted.id,
-          lon: row.lon,
-          lat: row.lat,
-        });
+        let lon = row.lon;
+        let lat = row.lat;
+        let quality = 4;
+        if ((lon == null || lat == null) && options.fallbackLng != null && options.fallbackLat != null) {
+          lon = options.fallbackLng;
+          lat = options.fallbackLat;
+          quality = 5;
+        }
+        if (lon != null && lat != null) {
+          await supabase.from("listings").update({ geocode_quality: quality }).eq("id", upserted.id);
+          await supabase.rpc("patch_listing_geom", {
+            listing_id: upserted.id,
+            lon,
+            lat,
+          });
+        }
         inserted++;
       }
     }
@@ -207,10 +270,13 @@ export async function runPisosRent(citySlug) {
       const row = parsed[i];
       let rent = row.price;
       let sqm = row.sqm;
-      if (rent == null && row.sourceUrl) {
+      let bedrooms = row.bedrooms ?? null;
+      // El JSON-LD de pisos.com no trae precio ni m²: ficha cuando falte cualquiera.
+      if (row.sourceUrl && (rent == null || sqm == null || bedrooms == null)) {
         const detail = await fetchPisosDetailFields(row.sourceUrl);
-        if (detail?.price) rent = detail.price;
+        if (detail?.price && rent == null) rent = detail.price;
         if (detail?.sqm && sqm == null) sqm = detail.sqm;
+        if (detail?.bedrooms && bedrooms == null) bedrooms = detail.bedrooms;
       }
       if (rent == null || !isPlausibleMonthlyRent(rent)) continue;
       const payload = {
@@ -220,14 +286,15 @@ export async function runPisosRent(citySlug) {
         title: row.title,
         price: rent,
         sqm: sqm ?? null,
-        bedrooms: row.bedrooms ?? null,
-        postal_code: row.postalCode ?? null,
+        bedrooms: bedrooms,
+        postal_code: row.postalCode ?? postalCodeFromPisosUrl(row.sourceUrl) ?? null,
         city: row.city ?? city.name,
         ccaa: city.ccaa,
         source_url: row.sourceUrl,
         thumbnail_url: row.thumbnail ?? null,
         status: "active",
         geocode_quality: 4,
+        last_seen_at: new Date().toISOString(),
       };
       if (dryRun()) {
         inserted++;

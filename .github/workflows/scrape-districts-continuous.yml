@@ -1,0 +1,73 @@
+name: Scrape districts continuous (Madrid Valencia Sevilla)
+on:
+  schedule:
+    - cron: "15 */4 * * *"
+  workflow_dispatch:
+    inputs:
+      city:
+        description: madrid | valencia | sevilla | rotate
+        default: rotate
+      batch:
+        description: DISTRICT_BATCH (rotate ignora)
+        default: "0"
+
+jobs:
+  rotate:
+    if: github.event.inputs.city == 'rotate' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js playwright
+      - run: npx playwright install chromium --with-deps
+      - name: Rotating district batch
+        run: node scripts/jobs/scrape-districts-rotate.mjs
+        env:
+          DISTRICT_BATCH_SIZE: "35"
+          FOTOCASA_PER_ZONE: "55"
+          FOTOCASA_MAX_PAGES: "6"
+          PISOS_PER_DISTRICT: "45"
+          PISOS_MAX_PAGES: "5"
+          IDEALISTA_ENABLED: "1"
+          IDEALISTA_PER_DISTRICT: "80"
+          IDEALISTA_MAX_PAGES: "6"
+          ARCHIVE_STALE: "1"
+          PAUSE_MS: "650"
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          IDEALISTA_PROXY_URL: ${{ secrets.IDEALISTA_PROXY_URL }}
+
+  city:
+    if: github.event.inputs.city != 'rotate' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        batch: [0, 1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js playwright
+      - run: npx playwright install chromium --with-deps
+      - name: City district batch
+        run: node scripts/jobs/scrape-city-districts.mjs
+        env:
+          CITY_SLUG: ${{ github.event.inputs.city }}
+          DISTRICT_BATCH: ${{ matrix.batch }}
+          DISTRICT_BATCH_SIZE: "35"
+          FOTOCASA_PER_ZONE: "55"
+          FOTOCASA_MAX_PAGES: "6"
+          PISOS_PER_DISTRICT: "45"
+          PISOS_MAX_PAGES: "5"
+          IDEALISTA_ENABLED: "1"
+          IDEALISTA_PER_DISTRICT: "80"
+          ARCHIVE_STALE: "1"
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          IDEALISTA_PROXY_URL: ${{ secrets.IDEALISTA_PROXY_URL }}

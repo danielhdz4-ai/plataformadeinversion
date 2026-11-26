@@ -22,29 +22,45 @@ export async function middleware(request: NextRequest) {
     if (!rl.ok) return apiRateLimitResponse(rl.retryAfterSec);
   }
 
-  let supabaseResponse = NextResponse.next({ request });
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+  if (!supabaseUrl || !supabaseAnon) {
+    if (request.nextUrl.pathname.startsWith("/app") && !isOpenAccess()) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
     }
-  );
+    return NextResponse.next({ request });
+  }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let supabaseResponse = NextResponse.next({ request });
+  const supabase = createServerClient(supabaseUrl, supabaseAnon, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        supabaseResponse = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) =>
+          supabaseResponse.cookies.set(name, value, options)
+        );
+      },
+    },
+  });
+
+  let user: { id: string } | null = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    if (!isOpenAccess() && request.nextUrl.pathname.startsWith("/app")) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next({ request });
+  }
 
   if (request.nextUrl.pathname.startsWith("/app") && !user && !isOpenAccess()) {
     const url = request.nextUrl.clone();

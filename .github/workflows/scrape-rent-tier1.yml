@@ -1,0 +1,39 @@
+name: Scrape rent Tier1 (comparables ROI)
+
+# Mantiene frescos los comparables de ALQUILER (input del ROI).
+# Sin alquiler reciente el motor cae a benchmarks/heurístico y el ROI pierde fiabilidad.
+on:
+  schedule:
+    - cron: "40 5 * * *"
+  workflow_dispatch:
+    inputs:
+      city_slugs:
+        description: "Slugs separados por coma (vacío = Tier 1)"
+        required: false
+        default: ""
+      max_listings:
+        description: "Máx anuncios de alquiler por ciudad"
+        required: false
+        default: "160"
+
+concurrency:
+  group: scrape-rent-tier1
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js
+      - run: node scripts/jobs/scrape-rent-batch.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CITY_SLUGS: ${{ inputs.city_slugs }}
+          MAX_LISTINGS: ${{ inputs.max_listings || '160' }}
+          PISOS_MAX_PAGES: "8"

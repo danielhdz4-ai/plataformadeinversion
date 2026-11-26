@@ -1,28 +1,44 @@
 /**
- * Push main usando GH_TOKEN de .env.local (cuenta danielhdz4-ai).
+ * Push main al repo canónico con un token válido de `gh` (cuenta canónica
+ * danielhdz4-ai debe tener scope `repo` + `workflow`).
+ * Orden: GH_TOKEN de .env.local → gh auth token (cuentas con `workflow`).
  */
-import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import {
+  authenticatedRemoteUrl,
+  readGithubToken,
+  repoRoot,
+  resolveGithubRepo,
+} from "./lib/github-remote.mjs";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
-const envPath = join(root, ".env.local");
-let token = process.env.GH_TOKEN;
-if (!token) {
-  const raw = readFileSync(envPath, "utf8");
-  const m = raw.match(/^GH_TOKEN=(.+)$/m);
-  token = m?.[1]?.trim();
+function ghToken(user) {
+  const args = ["auth", "token"];
+  if (user) args.push("--user", user);
+  const r = spawnSync("gh", args, { encoding: "utf8", shell: false });
+  const t = (r.stdout ?? "").trim();
+  return r.status === 0 && t ? t : null;
 }
-if (!token) {
-  console.error("Missing GH_TOKEN in .env.local");
+
+const repo = resolveGithubRepo();
+const candidates = [
+  ...new Set(
+    [readGithubToken(), ghToken(), ghToken("danielhdz3-ai"), ghToken("danielhdz-ai")].filter(Boolean)
+  ),
+];
+
+if (candidates.length === 0) {
+  console.error("No hay token válido (GH_TOKEN ni gh auth).");
   process.exit(1);
 }
 
-const remote = `https://x-access-token:${token}@github.com/danielhdz4-ai/plataformadeinversion.git`;
-const r = spawnSync("git", ["push", remote, "HEAD:main"], {
-  cwd: root,
-  stdio: "inherit",
-  shell: false,
-});
-process.exit(r.status ?? 1);
+for (const token of candidates) {
+  console.log(`push HEAD -> main en ${repo} (token …${token.slice(-4)})`);
+  const r = spawnSync("git", ["push", authenticatedRemoteUrl(token, repo), "HEAD:main"], {
+    cwd: repoRoot,
+    stdio: "inherit",
+    shell: false,
+  });
+  if (r.status === 0) process.exit(0);
+}
+console.error("Push falló con todos los tokens disponibles.");
+process.exit(1);

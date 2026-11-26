@@ -1,0 +1,28 @@
+name: Scan zone ingest
+on:
+  workflow_dispatch:
+    inputs:
+      scan_id:
+        description: UUID del scan (polígono en Supabase)
+        required: true
+
+jobs:
+  ingest-and-rank:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js
+      - name: Zone ingest + ROI + rank
+        run: node scripts/jobs/scan-zone-ingest-by-id.mjs "${{ github.event.inputs.scan_id }}"
+        env:
+          SCAN_ID: ${{ github.event.inputs.scan_id }}
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          SCAN_TARGET_IN_POLYGON: "180"
+          SCAN_ZONE_BOOST_ROUNDS: "3"

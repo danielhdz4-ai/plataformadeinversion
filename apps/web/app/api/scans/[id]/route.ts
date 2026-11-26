@@ -15,7 +15,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
   }
   const { data, error } = await supabase
     .from("scans")
-    .select("id, status, progress_pct, created_at, polygon, filters, operation")
+    .select("id, status, progress_pct, error_message, created_at, polygon, filters, operation")
     .eq("id", id)
     .single();
   if (error || !data) return NextResponse.json({ error: "Not found" }, { status: 404 });

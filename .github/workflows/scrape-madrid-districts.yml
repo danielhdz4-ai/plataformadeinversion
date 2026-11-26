@@ -1,0 +1,37 @@
+name: Scrape Madrid districts (Fotocasa + pisos)
+on:
+  schedule:
+    - cron: "30 2,8,14,20 * * *"
+  workflow_dispatch:
+    inputs:
+      batch:
+        description: DISTRICT_BATCH (0-3, vacío = matrix 0-3)
+        required: false
+
+jobs:
+  batch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        batch: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js
+      - name: Madrid barrios
+        if: ${{ github.event.inputs.batch == '' || github.event.inputs.batch == matrix.batch }}
+        run: node scripts/jobs/scrape-madrid-districts.mjs
+        env:
+          DISTRICT_BATCH: ${{ matrix.batch }}
+          DISTRICT_BATCH_SIZE: "40"
+          FOTOCASA_PER_ZONE: "45"
+          FOTOCASA_MAX_PAGES: "6"
+          PISOS_PER_DISTRICT: "35"
+          PISOS_MAX_PAGES: "4"
+          PAUSE_MS: "650"
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

@@ -1,0 +1,50 @@
+name: Precompute ROI
+on:
+  schedule:
+    - cron: "45 6,18 * * *"
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Scrape pisos sale Barcelona
+      - Scrape pisos rent Barcelona
+      - Scrape kelify sale Barcelona
+      - Scrape tier1 cities
+      - Scrape tier2 rotate
+      - Scrape Spain all cities
+      - Scrape kelify tier1
+    types: [completed]
+
+jobs:
+  roi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js
+      - run: node scripts/jobs/refresh-rent-benchmarks.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - run: node scripts/jobs/sync-listing-roi.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - run: node scripts/jobs/precompute-roi.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ROI_CONCURRENCY: "8"
+      - name: Bootstrap notary from listings
+        run: node scripts/jobs/bootstrap-notary-from-listings.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Sync opportunity flags
+        run: node scripts/jobs/sync-listing-opportunities.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPPORTUNITY_CONCURRENCY: "16"
+          OPPORTUNITY_PAGE_SIZE: "250"

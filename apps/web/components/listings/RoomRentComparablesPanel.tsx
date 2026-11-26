@@ -1,3 +1,4 @@
+import { MetricCard, MetricSection } from "@/components/ui/MetricCard";
 import { decodeListingTitle } from "@/lib/decode-html";
 import type { RoomRentComparable } from "@/lib/listing/room-rent";
 
@@ -27,88 +28,64 @@ export function RoomRentComparablesPanel({
   radiusM?: number;
 }) {
   const nRooms = Math.max(1, bedrooms ?? 2);
-  const totalEst =
-    estimatePerRoom != null ? estimatePerRoom * nRooms : null;
-  const totalCons =
-    conservativePerRoom != null ? conservativePerRoom * nRooms : null;
+  const totalEst = estimatePerRoom != null ? estimatePerRoom * nRooms : null;
+  const totalCons = conservativePerRoom != null ? conservativePerRoom * nRooms : null;
 
   return (
-    <section className="rounded-xl border border-neutral-200 bg-neutral-950 p-3 text-white shadow-sm">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <h4 className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
-            Habitaciones en alquiler
-          </h4>
-          <p className="mt-0.5 text-[10px] text-neutral-500">
-            Radio ~{Math.round(radiusM / 100) / 10} km · {comparables.length} comparables
-          </p>
-        </div>
-        {conservativePerRoom != null && (
-          <div className="text-right">
-            <p className="text-[9px] uppercase text-neutral-500">Estimación conservadora</p>
-            <p className="text-lg font-bold tabular-nums">{fmt(conservativePerRoom)} €/mes</p>
-            {totalCons != null && (
-              <p className="text-[10px] text-neutral-400">
-                × {nRooms} hab. ≈ {fmt(totalCons)} €/mes
-              </p>
-            )}
-          </div>
-        )}
+    <MetricSection
+      title="Habitaciones en alquiler"
+      hint={`Radio ${(radiusM / 1000).toFixed(1)} km · ${comparables.length} comparables · ${nRooms} hab.`}
+    >
+      <div className="grid grid-cols-2 gap-2 pb-2">
+        <MetricCard
+          label="Mediana por habitación"
+          value={estimatePerRoom != null ? fmt(estimatePerRoom) : "—"}
+          unit="€/mes"
+          size="sm"
+          sub={totalEst != null ? `Piso completo ≈ ${fmt(totalEst)} €/mes` : undefined}
+        />
+        <MetricCard
+          label="Escenario conservador"
+          value={conservativePerRoom != null ? fmt(conservativePerRoom) : "—"}
+          unit="€/mes"
+          size="sm"
+          sub={totalCons != null ? `× ${nRooms} hab ≈ ${fmt(totalCons)} €/mes` : undefined}
+        />
       </div>
 
-      {estimatePerRoom != null && (
-        <p className="mt-2 text-xs text-neutral-300">
-          Mediana habitación: <span className="font-semibold text-white">{fmt(estimatePerRoom)} €/mes</span>
-          {totalEst != null && (
-            <>
-              {" "}
-              · piso completo estimado{" "}
-              <span className="font-semibold text-emerald-400">{fmt(totalEst)} €/mes</span>
-            </>
-          )}
-        </p>
-      )}
-
       {comparables.length === 0 ? (
-        <p className="mt-3 text-xs text-neutral-500">
-          No hay habitaciones en alquiler en el radio. Amplía zona o revisa scrape de alquileres.
+        <p className="py-2 text-[12px] text-ink-muted">
+          No hay habitaciones en alquiler en el radio. Amplía zona o revisa el scrape de alquileres.
         </p>
       ) : (
-        <ul className="mt-3 max-h-[420px] space-y-2 overflow-y-auto pr-1">
+        <ul className="max-h-[420px] space-y-2 overflow-y-auto py-1 pr-1">
           {comparables.map((c) => {
             const img = proxiedThumb(c.thumbnailUrl);
             const title = decodeListingTitle(c.title ?? "Habitación");
-            const specs = [
-              c.sqm != null ? `${c.sqm} m²` : null,
-              c.bedrooms != null ? `${c.bedrooms} bd` : null,
-            ]
+            const specs = [c.sqm != null ? `${c.sqm} m²` : null, c.bedrooms != null ? `${c.bedrooms} bd` : null]
               .filter(Boolean)
               .join(" · ");
             return (
               <li
                 key={c.id}
-                className="flex gap-2.5 rounded-lg border border-neutral-800 bg-neutral-900/80 p-2"
+                className="flex gap-2.5 rounded-xl border border-line bg-raised/60 p-2 transition hover:border-lime/40"
               >
-                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md bg-neutral-800">
+                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-surface">
                   {img ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={img} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-[9px] text-neutral-600">
-                      —
-                    </div>
+                    <div className="flex h-full items-center justify-center text-[9px] text-ink-muted">—</div>
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="line-clamp-2 text-[11px] font-medium leading-snug text-neutral-100">
-                    {title}
-                  </p>
-                  {specs && <p className="mt-0.5 text-[10px] text-neutral-500">{specs}</p>}
+                  <p className="line-clamp-2 text-[11px] font-medium leading-snug text-ink">{title}</p>
+                  {specs && <p className="mt-0.5 text-[10px] text-ink-muted">{specs}</p>}
                   <div className="mt-1 flex items-end justify-between gap-2">
-                    <span className="text-base font-bold tabular-nums text-white">
-                      {fmt(c.price)} €/mes
+                    <span className="text-[15px] font-extrabold tabular-nums text-ink">
+                      {fmt(c.price)} <span className="text-[10px] font-semibold text-ink-muted">€/mes</span>
                     </span>
-                    <span className="text-[10px] text-neutral-500">a {Math.round(c.distanceM)} m</span>
+                    <span className="text-[10px] text-ink-muted">a {Math.round(c.distanceM)} m</span>
                   </div>
                 </div>
               </li>
@@ -116,6 +93,6 @@ export function RoomRentComparablesPanel({
           })}
         </ul>
       )}
-    </section>
+    </MetricSection>
   );
 }

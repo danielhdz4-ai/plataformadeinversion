@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
 
   const parsed = bodySchema.safeParse(await req.json());
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.message }, { status: 400 });
+    return NextResponse.json({ error: "La solicitud no es válida." }, { status: 400 });
   }
 
   const { minLng, minLat, maxLng, maxLat, note } = parsed.data;
@@ -43,8 +43,13 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     const missing = error.message.includes("user_map_requests") && error.message.includes("does not exist");
+    if (!missing) console.error("[api/map/request]", error.message);
     return NextResponse.json(
-      { error: missing ? "Solicitudes aún no activas (migración pendiente)" : error.message },
+      {
+        error: missing
+          ? "Las solicitudes de zona estarán disponibles muy pronto."
+          : "No se pudo registrar la solicitud. Inténtalo de nuevo.",
+      },
       { status: missing ? 503 : 500 }
     );
   }

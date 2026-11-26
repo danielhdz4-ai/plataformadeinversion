@@ -32,7 +32,12 @@ function titleFromKelifyCard(card) {
   return slug && slug.length > 3 ? slug : `Kelify ${card.propertyId}`;
 }
 
-export async function runKelifySale(citySlug) {
+import { nearAnchor, normalizeCp } from "./cp-utils.mjs";
+
+export async function runKelifySale(citySlug, options = {}) {
+  const postalCodeTarget = normalizeCp(options.postalCodeTarget);
+  const cpAnchor = options.anchor ?? null;
+  const cpRadiusKm = Number(process.env.SCAN_CP_PORTAL_RADIUS_KM ?? "18");
   const city = getCityConfig(citySlug);
   const supabase = getSupabase();
   const { data: run, error: runErr } = await supabase
@@ -169,6 +174,9 @@ export async function runKelifySale(citySlug) {
         if (i > 0 && i % 3 === 0) await sleep(220);
       }
       if (price == null || price < 5000) continue;
+      if (postalCodeTarget && !normalizeCp(postalCode)) {
+        postalCode = postalCodeTarget;
+      }
       let lon = centerLon + ((i % 7) - 3) * 0.002;
       let lat = centerLat + ((i % 5) - 2) * 0.002;
       let geocodeQuality = 4;
@@ -183,6 +191,12 @@ export async function runKelifySale(citySlug) {
         geocodeQuality = 3;
       }
       if (i > 0 && i % 4 === 0) await sleep(280);
+
+      const anchorPt = cpAnchor
+        ? { lat: cpAnchor.lat, lng: cpAnchor.lng ?? cpAnchor.lon }
+        : null;
+      if (postalCodeTarget && !nearAnchor(lat, lon, anchorPt, cpRadiusKm)) continue;
+      if (postalCodeTarget) postalCode = postalCodeTarget;
 
       const payload = {
         source_portal: PORTAL,
@@ -206,6 +220,7 @@ export async function runKelifySale(citySlug) {
         geocode_quality: geocodeQuality,
         kelify_hydrated: false,
         scraped_at: new Date().toISOString(),
+        last_seen_at: new Date().toISOString(),
       };
 
       if (dryRun()) {

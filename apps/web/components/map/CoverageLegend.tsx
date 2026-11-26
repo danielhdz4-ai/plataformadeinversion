@@ -37,7 +37,7 @@ export function CoverageLegend({ className = "" }: { className?: string }) {
             className={`rounded-full border px-2 py-0.5 ${
               r.tier === 1
                 ? "border-neutral-950 bg-neutral-950 text-white"
-                : "border-neutral-200 bg-[#f7f6f3] text-neutral-800"
+                : "border-neutral-200 bg-[#f3f2ef] text-neutral-800"
             }`}
             title={
               r.last_scrape_at

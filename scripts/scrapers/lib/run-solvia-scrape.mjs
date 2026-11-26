@@ -1,6 +1,7 @@
 import { dryRun, getSupabase, maxListings } from "./env.mjs";
 import { geocodeSpain } from "./geocode-es.mjs";
 import { fetchSolviaProvinces, mapSolviaListing, searchSolviaProvince } from "./solvia-api.mjs";
+import { provinceMatchesPostal } from "./cp-province.mjs";
 
 const PORTAL = "solvia";
 
@@ -8,7 +9,28 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-export async function runSolviaSale() {
+function nearAnchor(lat, lon, anchor, maxKm) {
+  if (!anchor || lat == null || lon == null) return false;
+  const dLat = ((lat - anchor.lat) * Math.PI) / 180;
+  const dLng = ((lon - anchor.lng) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((anchor.lat * Math.PI) / 180) *
+      Math.cos((lat * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  const km = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return km <= maxKm;
+}
+
+function normalizeCp(v) {
+  const s = String(v ?? "").replace(/\D/g, "").slice(0, 5);
+  return s.length === 5 ? s : null;
+}
+
+export async function runSolviaSale(options = {}) {
+  const postalCodeTarget = normalizeCp(options.postalCodeTarget);
+  const anchor = options.anchor ?? null;
+  const cpRadiusKm = Number(process.env.SCAN_CP_PORTAL_RADIUS_KM ?? "18");
   const supabase = getSupabase();
   const { data: run, error: runErr } = await supabase
     .from("scrape_runs")
@@ -17,14 +39,19 @@ export async function runSolviaSale() {
     .single();
   if (runErr) throw runErr;
 
-  const limit = maxListings();
+  const limit = postalCodeTarget
+    ? Number(process.env.SCAN_SOLVIA_CP_LIMIT ?? "100")
+    : maxListings();
   const pageSize = Number(process.env.SOLVIA_PAGE_SIZE ?? "24");
-  const maxPages = Number(process.env.SOLVIA_MAX_PAGES ?? "8");
+  const maxPages = Number(options.maxPages ?? process.env.SOLVIA_MAX_PAGES ?? "8");
   const provinceFilter = process.env.SOLVIA_PROVINCE_IDS?.split(",").map((s) => s.trim()).filter(Boolean);
 
   let provinces = await fetchSolviaProvinces();
   if (provinceFilter?.length) {
     provinces = provinces.filter((p) => provinceFilter.includes(String(p.id)));
+  }
+  if (postalCodeTarget) {
+    provinces = provinces.filter((p) => provinceMatchesPostal(p.nombre, postalCodeTarget));
   }
 
   let inserted = 0;
@@ -57,6 +84,7 @@ export async function runSolviaSale() {
             }
           }
           if (lon == null || lat == null) continue;
+          if (postalCodeTarget && !nearAnchor(lat, lon, anchor, cpRadiusKm)) continue;
 
           const payload = {
             source_portal: PORTAL,
@@ -74,6 +102,8 @@ export async function runSolviaSale() {
             status: "active",
             geocode_quality: geocodeQuality,
             scraped_at: new Date().toISOString(),
+            postal_code: postalCodeTarget ?? null,
+            last_seen_at: new Date().toISOString(),
           };
 
           if (dryRun()) {

@@ -64,7 +64,17 @@ export async function runFotocasaSale(options = {}) {
               geocodeQuality = 5;
             }
           }
+          if ((lon == null || lat == null) && zone.lng != null && zone.lat != null) {
+            lon = zone.lng;
+            lat = zone.lat;
+            geocodeQuality = 4;
+          }
           if (lon == null || lat == null) continue;
+
+          if (options.cityBbox) {
+            const [minLng, minLat, maxLng, maxLat] = options.cityBbox;
+            if (lon < minLng || lon > maxLng || lat < minLat || lat > maxLat) continue;
+          }
 
           const payload = {
             source_portal: PORTAL,
@@ -83,6 +93,7 @@ export async function runFotocasaSale(options = {}) {
             status: "active",
             geocode_quality: geocodeQuality,
             scraped_at: new Date().toISOString(),
+            last_seen_at: new Date().toISOString(),
           };
 
           if (dryRun()) {

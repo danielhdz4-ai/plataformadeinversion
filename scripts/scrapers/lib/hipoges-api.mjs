@@ -1,3 +1,5 @@
+import { readResponseJson } from "./http-json.mjs";
+
 const BASE = "https://realestate.hipoges.com";
 const LIST_PATH = "/es/point/venta/pisos-y-casas/espana/5";
 
@@ -47,7 +49,7 @@ export async function createHipogesSession() {
       Accept: "application/json",
     },
   });
-  const csrfJson = await csrfRes.json();
+  const csrfJson = await readResponseJson(csrfRes, "Hipoges CSRF");
   const more = csrfRes.headers.getSetCookie?.() ?? [];
   cookieHeader = [...cookies, ...more].map((c) => c.split(";")[0]).join("; ");
   return { cookieHeader, csrfToken: csrfJson.csrfToken ?? "" };
@@ -74,7 +76,7 @@ export async function fetchHipogesListingPage(session, { page = 1, itemsPerPage 
     const err = await res.text();
     throw new Error(`Hipoges listing HTTP ${res.status}: ${err.slice(0, 200)}`);
   }
-  return res.json();
+  return readResponseJson(res, "Hipoges listing");
 }
 
 export function mapHipogesAsset(row) {

@@ -1,0 +1,39 @@
+name: Scrape Barcelona metro (deep)
+
+on:
+  workflow_dispatch:
+    inputs:
+      pisos_per_city:
+        description: MAX_LISTINGS por ciudad pisos
+        default: "700"
+        required: false
+      fotocasa_per_zone:
+        description: Inserciones máx por zona Fotocasa
+        default: "350"
+        required: false
+  schedule:
+    # Dom 05:00 UTC — inventario denso para scans BCN
+    - cron: "0 5 * * 0"
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js playwright
+      - run: npx playwright install chromium
+      - run: node scripts/jobs/scrape-bcn-metro.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PISOS_PER_CITY: ${{ github.event.inputs.pisos_per_city || '700' }}
+          FOTOCASA_PER_ZONE: ${{ github.event.inputs.fotocasa_per_zone || '350' }}
+          FOTOCASA_MAX_PAGES: "25"
+          PISOS_MAX_PAGES: "45"
+          PAUSE_MS: "700"
+          SKIP_HABITACLIA: "0"

@@ -25,25 +25,46 @@ import { DEMO_POLYGON } from "@/lib/scan/demo-polygon";
 import type { ScanPolygon } from "@/lib/scan/types";
 import { maxPurchasePriceFromCash } from "@pi/roi-engine";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { SpainLocationSearch } from "@/components/location/SpainLocationSearch";
+import { filtersFromUrlSearchParams } from "@/lib/filters/url-sync";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type Pin = { id: string; lng: number; lat: number; roi: number | null; price: number };
 type GeocodeHit = { label: string; lat: number; lng: number; bbox: [number, number, number, number] | null };
 
+function cpFromGeocodeLabel(label: string | null | undefined): string | null {
+  if (!label) return null;
+  return /CP\s*(\d{5})/i.exec(label)?.[1] ?? null;
+}
+
 type FilterMode = "entry_budget" | "price_range";
 
 export default function NewScanPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-full items-center justify-center p-8 text-sm text-neutral-600">
+          Cargando asistente de scan…
+        </div>
+      }
+    >
+      <NewScanPageContent />
+    </Suspense>
+  );
+}
+
+function NewScanPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlFiltersReady = useRef(false);
   const [step, setStep] = useState(0);
   const [pins, setPins] = useState<Pin[]>([]);
   const [polygon, setPolygon] = useState<ScanPolygon | null>(null);
-  const [locationMode, setLocationMode] = useState<"search" | "draw">("search");
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<GeocodeHit[]>([]);
   const [placeLabel, setPlaceLabel] = useState<string | null>(null);
   const [center, setCenter] = useState<{ lng: number; lat: number } | null>(null);
-  const [radiusKm, setRadiusKm] = useState(1.5);
+  const [radiusKm, setRadiusKm] = useState(2);
   const [flyTo, setFlyTo] = useState<{ center: [number, number]; zoom: number } | null>(null);
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -81,8 +102,10 @@ export default function NewScanPage() {
   const [onlyWithRoi, setOnlyWithRoi] = useState(false);
 
   const visibleBboxRef = useRef<[number, number, number, number] | null>(null);
+  const stepRef = useRef(step);
+  stepRef.current = step;
 
-  const zoneReady = Boolean(polygon || (center && locationMode === "search"));
+  const zoneReady = Boolean(center && polygon);
 
   const areaKm2 = useMemo(() => circleAreaKm2(radiusKm), [radiusKm]);
 
@@ -109,25 +132,46 @@ export default function NewScanPage() {
   const usesRoi = scanOperationUsesRoi(operation);
 
   useEffect(() => {
-    if (locationMode !== "search" || !center) return;
+    if (!center) return;
     setPolygon(circlePolygon(center.lng, center.lat, radiusKm));
-  }, [center, radiusKm, locationMode]);
+  }, [center, radiusKm]);
 
   useEffect(() => {
-    if (query.trim().length < 2) {
-      setSuggestions([]);
-      return;
+    if (urlFiltersReady.current) return;
+    urlFiltersReady.current = true;
+    const fromUrl = filtersFromUrlSearchParams(searchParams);
+    if (fromUrl.priceMin != null && fromUrl.priceMin > 0) {
+      setFinance((f) => ({ ...f, priceMin: fromUrl.priceMin! }));
     }
-    const t = setTimeout(async () => {
-      const res = await fetch(`/api/geocode?q=${encodeURIComponent(query.trim())}`);
+    if (fromUrl.priceMax != null && fromUrl.priceMax > 0 && fromUrl.priceMax < 2_000_000) {
+      setFinance((f) => ({ ...f, priceMax: fromUrl.priceMax! }));
+      setFilterMode("price_range");
+    }
+    if (fromUrl.minRoiGross != null && fromUrl.minRoiGross > 0) {
+      setMinRoiGross(fromUrl.minRoiGross);
+    }
+    if (fromUrl.onlyWithRoi) setOnlyWithRoi(true);
+    if (searchParams.get("notify") === "1") setNotifyEmail(true);
+
+    const cp = searchParams.get("cp")?.replace(/\D/g, "").slice(0, 5);
+    const q = cp ?? searchParams.get("q")?.trim();
+    if (!q) return;
+
+    void (async () => {
+      setQuery(q);
+      const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`);
       if (!res.ok) return;
-      const data = (await res.json()) as { results: GeocodeHit[] };
-      setSuggestions(data.results ?? []);
-    }, 280);
-    return () => clearTimeout(t);
-  }, [query]);
+      const data = (await res.json()) as { results?: GeocodeHit[] };
+      const hit = data.results?.[0];
+      if (!hit) return;
+      pickPlaceRef.current(hit);
+    })();
+  }, [searchParams]);
+
+  const pickPlaceRef = useRef<(hit: GeocodeHit) => void>(() => {});
 
   const loadMap = useCallback(async (bbox: [number, number, number, number]) => {
+    if (stepRef.current !== 0) return;
     visibleBboxRef.current = bbox;
     const [minLng, minLat, maxLng, maxLat] = bbox;
     const res = await fetch(
@@ -135,14 +179,30 @@ export default function NewScanPage() {
     );
     if (!res.ok) return;
     const data = (await res.json()) as { features: Pin[] };
-    setPins(data.features ?? []);
+    const next = data.features ?? [];
+    setPins((prev) => {
+      if (prev.length === next.length && prev.every((p, i) => p.id === next[i]?.id)) return prev;
+      return next;
+    });
   }, []);
 
+  const polygonFitKey = useMemo(
+    () => (center ? `${center.lng.toFixed(5)},${center.lat.toFixed(5)}` : null),
+    [center]
+  );
+
+  const applyScanCenter = useCallback((lng: number, lat: number, label?: string) => {
+    setCenter({ lng, lat });
+    setPolygon(circlePolygon(lng, lat, radiusKm));
+    if (label) setPlaceLabel(label);
+    else setPlaceLabel("Zona señalada en mapa");
+  }, [radiusKm]);
+
   function pickPlace(hit: GeocodeHit) {
-    setQuery(hit.label.split(",")[0] ?? hit.label);
-    setPlaceLabel(hit.label);
-    setSuggestions([]);
-    setCenter({ lng: hit.lng, lat: hit.lat });
+    const cp = cpFromGeocodeLabel(hit.label);
+    setQuery(cp ?? hit.label.split(",")[0] ?? hit.label);
+    setSelectedPinId(null);
+    applyScanCenter(hit.lng, hit.lat, hit.label);
     const zoom = hit.bbox
       ? Math.min(
           15,
@@ -150,65 +210,62 @@ export default function NewScanPage() {
         )
       : 13;
     setFlyTo({ center: [hit.lng, hit.lat], zoom });
-    setPolygon(circlePolygon(hit.lng, hit.lat, radiusKm));
   }
+
+  pickPlaceRef.current = pickPlace;
 
   async function startScan() {
     setLoading(true);
-    const zone = polygon ?? DEMO_POLYGON;
-    const res = await fetch("/api/scans", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        polygon: zone,
-        operation,
-        filters: {
-          priceMin: effectivePriceMin,
-          priceMax: effectivePriceMax,
-          bedroomsMin,
-          allowedBedrooms: bedroomFilter.allowedBedrooms,
-          bedroomsMinPlus: bedroomFilter.bedroomsMinPlus,
-          allowedBathrooms: bathroomFilter.allowedBathrooms,
-          bathroomsMinPlus: bathroomFilter.bathroomsMinPlus,
-          sqmMin,
-          sqmMax,
-          sourcePortals: selectedPortals(portalToggles),
-          minRoiGross: usesRoi ? minRoiGross : undefined,
-          onlyWithRoi: usesRoi ? onlyWithRoi : false,
-          rooms,
-          bathrooms,
-          filterMode,
-          leverage,
-          notifyEmail,
-          finance,
-          radiusKm,
-          center,
-        },
-      }),
-    });
-    const body = (await res.json()) as { scanId?: string; error?: string };
-    if (!res.ok || !body.scanId) {
+    try {
+      const zone = polygon ?? DEMO_POLYGON;
+      const res = await fetch("/api/scans", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          polygon: zone,
+          operation,
+          filters: {
+            priceMin: effectivePriceMin,
+            priceMax: effectivePriceMax,
+            bedroomsMin,
+            allowedBedrooms: bedroomFilter.allowedBedrooms,
+            bedroomsMinPlus: bedroomFilter.bedroomsMinPlus,
+            allowedBathrooms: bathroomFilter.allowedBathrooms,
+            bathroomsMinPlus: bathroomFilter.bathroomsMinPlus,
+            sqmMin,
+            sqmMax,
+            sourcePortals: selectedPortals(portalToggles),
+            minRoiGross: usesRoi ? minRoiGross : undefined,
+            onlyWithRoi: usesRoi ? onlyWithRoi : false,
+            rooms,
+            bathrooms,
+            filterMode,
+            leverage,
+            notifyEmail,
+            finance,
+            radiusKm,
+            center,
+          },
+        }),
+      });
+      const body = (await res.json()) as { scanId?: string; error?: string };
+      if (!res.ok || !body.scanId) {
+        alert(body.error ?? "Error al crear scan");
+        return;
+      }
+      router.push(`/app/scan/${body.scanId}`);
+    } catch {
+      alert("Error de red al crear el scan");
+    } finally {
       setLoading(false);
-      alert(body.error ?? "Error al crear scan");
-      return;
     }
-    const runRes = await fetch(`/api/scans/${body.scanId}/run`, { method: "POST" });
-    setLoading(false);
-    if (!runRes.ok && runRes.status !== 202) {
-      const runBody = (await runRes.json().catch(() => ({}))) as { error?: string };
-      alert(runBody.error ?? "El scan no pudo ejecutarse. Revisa la zona e inténtalo de nuevo.");
-      return;
-    }
-    router.push(`/app/scan/${body.scanId}`);
   }
-
-  const zoneVisual = locationMode === "draw" ? "drawn" : "radius";
 
   return (
     <div className="flex h-full min-h-0 flex-1 overflow-hidden">
       <aside className="flex min-h-0 w-full max-w-[440px] shrink-0 flex-col border-r border-neutral-200 bg-white lg:w-[440px]">
         <div className="min-h-0 flex-1 overflow-y-auto p-5">
-          <h1 className="text-lg font-semibold text-neutral-950">
+          <h1 className="text-2xl font-bold tracking-tight text-neutral-950">
             Encuentra inmuebles que generan dinero
           </h1>
           <p className="mt-1 text-sm text-neutral-600">
@@ -221,103 +278,62 @@ export default function NewScanPage() {
           {step === 0 && (
             <div className="mt-6 space-y-4">
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-lg border border-neutral-200 bg-[#f7f6f3] px-3 py-2 text-sm">
+                <div className="rounded-lg border border-neutral-200 bg-[#f3f2ef] px-3 py-2 text-sm">
                   España · EUR (€)
                 </div>
                 <div className="rounded-lg border border-neutral-200 px-3 py-2 text-xs text-neutral-500">
                   Fuentes: kelify · pisos.com · Hipoges · Solvia · Fotocasa · habitaclia
                 </div>
               </div>
-              <div className="flex rounded-lg border border-neutral-200 p-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLocationMode("search");
-                    setSelectedPinId(null);
-                  }}
-                  className={`flex-1 rounded-md py-2 text-sm font-medium ${locationMode === "search" ? "bg-neutral-950 text-white" : "text-neutral-700"}`}
-                >
-                  Buscar
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLocationMode("draw");
-                    setCenter(null);
-                    setPolygon(null);
-                    setPlaceLabel(null);
-                    setSelectedPinId(null);
-                  }}
-                  className={`flex-1 rounded-md py-2 text-sm font-medium ${locationMode === "draw" ? "bg-neutral-950 text-white" : "text-neutral-700"}`}
-                >
-                  Dibujar área
-                </button>
+              <p className="text-sm text-neutral-600">
+                Busca un CP o barrio, <strong className="font-medium text-neutral-900">haz un clic en el mapa</strong>{" "}
+                o elige un piso. El área azul es un círculo — no hace falta dibujar vértices.
+              </p>
+              <SpainLocationSearch value={query} onChange={setQuery} onPick={pickPlace} />
+              {placeLabel && (
+                <p className="rounded-lg border border-neutral-200 bg-[#f3f2ef] px-3 py-2 text-sm text-neutral-800">
+                  {placeLabel} · ~{areaKm2.toFixed(1)} km² (radio {radiusKm} km)
+                </p>
+              )}
+              {selectedPinId && (
+                <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">
+                  Centro en el piso seleccionado — puedes mover la zona con otro clic en el mapa.
+                </p>
+              )}
+              {radiusKm < 2 && (
+                <p className="text-xs text-neutral-600">
+                  Recomendado ≥ 2 km para importar cientos de ventas del barrio.
+                </p>
+              )}
+              <RangeField
+                label="Tamaño del área (radio)"
+                value={radiusKm}
+                min={0.8}
+                max={5}
+                step={0.2}
+                suffix=" km"
+                onChange={setRadiusKm}
+              />
+              <div className="flex flex-wrap gap-2">
+                {[1.5, 2, 2.5, 3].map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setRadiusKm(r)}
+                    className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                      Math.abs(radiusKm - r) < 0.05
+                        ? "border-neutral-950 bg-neutral-950 text-white"
+                        : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400"
+                    }`}
+                  >
+                    {r} km
+                  </button>
+                ))}
               </div>
-              {locationMode === "search" ? (
-                <div className="relative">
-                  <input
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && suggestions[0]) {
-                        e.preventDefault();
-                        pickPlace(suggestions[0]);
-                      }
-                    }}
-                    placeholder="CP (5 dígitos) o barrio — ej. 08906, Castellón"
-                    className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm"
-                  />
-                  {suggestions.length > 0 && (
-                    <ul className="absolute z-20 mt-1 max-h-48 w-full overflow-auto rounded-lg border bg-white shadow-lg">
-                      {suggestions.map((s, idx) => (
-                        <li key={`${s.lat},${s.lng},${idx}`}>
-                          <button
-                            type="button"
-                            onClick={() => pickPlace(s)}
-                            className="w-full px-3 py-2 text-left text-sm hover:bg-neutral-100"
-                          >
-                            {s.label}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-2 text-sm text-neutral-600">
-                  <p>Dibuja el polígono en el mapa (solo España).</p>
-                  <p className="text-xs text-neutral-500">
-                    Mínimo 3 clics en el mapa → «Cerrar zona» o doble clic. Los pins del mapa se
-                    seleccionan con un clic normal.
-                  </p>
-                  {polygon && (
-                    <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">
-                      Zona cerrada — ya puedes pulsar Siguiente.
-                    </p>
-                  )}
-                </div>
-              )}
-              {placeLabel && locationMode === "search" && (
-                <p className="rounded-lg border border-neutral-200 bg-[#f7f6f3] px-3 py-2 text-sm text-neutral-800">
-                  Encontrado — área ~{areaKm2.toFixed(1)} km² (radio {radiusKm} km)
+              {!center && (
+                <p className="rounded-lg border border-dashed border-neutral-300 px-3 py-2 text-xs text-neutral-500">
+                  Elige ubicación para continuar (buscador, mapa o pin).
                 </p>
-              )}
-              {selectedPinId && locationMode === "search" && (
-                <p className="rounded-lg border border-neutral-200 bg-[#f7f6f3] px-3 py-2 text-sm text-neutral-800">
-                  Pin seleccionado — centro del scan en ese inmueble (radio {radiusKm} km). Pulsa
-                  Siguiente cuando quieras.
-                </p>
-              )}
-              {locationMode === "search" && (
-                <RangeField
-                  label="Radio de búsqueda"
-                  value={radiusKm}
-                  min={0.5}
-                  max={5}
-                  step={0.1}
-                  suffix=" km"
-                  onChange={setRadiusKm}
-                />
               )}
               <button
                 type="button"
@@ -352,7 +368,7 @@ export default function NewScanPage() {
                   </button>
                 ))}
               </div>
-              <p className="rounded-lg bg-[#f7f6f3] p-3 text-sm text-neutral-700">
+              <p className="rounded-lg bg-[#f3f2ef] p-3 text-sm text-neutral-700">
                 {SCAN_OPERATIONS.find((o) => o.id === operation)?.description}
               </p>
               <div className="flex gap-2 pt-2">
@@ -676,7 +692,7 @@ export default function NewScanPage() {
                   checked={notifyEmail}
                   onChange={(e) => setNotifyEmail(e.target.checked)}
                 />
-                Avísame por correo cuando termine (requiere Resend — próximamente)
+                Avísame por correo cuando termine (requiere cuenta con email y Resend en prod)
               </label>
 
               <p className="text-xs text-neutral-500">
@@ -710,43 +726,48 @@ export default function NewScanPage() {
             </div>
           )}
 
-          <p className="mt-6 text-center text-xs text-neutral-400">
-            <Link href="/app/explorar" className="font-medium text-neutral-950 underline">
+          <div className="mt-6 space-y-2 text-center text-xs">
+            <Link
+              href="/app/oportunidades"
+              className="block rounded-lg bg-orange-600 py-2.5 text-sm font-semibold text-white hover:bg-orange-700"
+            >
+              Ver oportunidades marcadas →
+            </Link>
+            <Link href="/app/explorar" className="font-medium text-neutral-600 underline">
               Explorar inventario en mapa
             </Link>
-          </p>
+          </div>
         </div>
       </aside>
 
       <div className="relative min-h-0 flex-1">
         <RoiScanMap
-          drawMode={step === 0 && locationMode === "draw"}
-          polygon={polygon}
-          zoneVisual={zoneVisual}
-          centerMarker={center}
-          onPolygonChange={(p) => {
-            setPolygon(p);
-            if (p) setPlaceLabel("Zona dibujada (España)");
-            else if (locationMode === "draw") setPlaceLabel(null);
+          pickCenterMode={step === 0}
+          onMapCenterPick={(lng, lat) => {
+            setSelectedPinId(null);
+            applyScanCenter(lng, lat);
+            setFlyTo({ center: [lng, lat], zoom: 14 });
           }}
+          polygon={polygon}
+          zoneVisual="radius"
+          centerMarker={center}
           initialView={SPAIN_VIEW}
           autoFitPolygon={Boolean(polygon && step === 0)}
+          polygonFitKey={step === 0 ? polygonFitKey : null}
           pins={pins}
           selectedId={selectedPinId}
           onSelectPin={(id) => {
             setSelectedPinId(id);
             const pin = pins.find((x) => x.id === id);
             if (!pin) return;
-            if (locationMode === "search") {
-              setCenter({ lng: pin.lng, lat: pin.lat });
-              setPolygon(circlePolygon(pin.lng, pin.lat, radiusKm));
-              setPlaceLabel(
-                `Inmueble · ${pin.price.toLocaleString("es-ES")} €${
-                  pin.roi != null ? ` · ${pin.roi.toFixed(1)}% ROI` : ""
-                }`
-              );
-              setFlyTo({ center: [pin.lng, pin.lat], zoom: 15 });
-            }
+            applyScanCenter(
+              pin.lng,
+              pin.lat,
+              `Inmueble · ${pin.price.toLocaleString("es-ES")} €${
+                pin.roi != null ? ` · ${pin.roi.toFixed(1)}% ROI` : ""
+              }`
+            );
+            setFlyTo({ center: [pin.lng, pin.lat], zoom: 15 });
           }}
           onBboxChange={loadMap}
           flyTo={flyTo}

@@ -1,7 +1,7 @@
 const STEPS = [
-  "Recopilando datos de la zona",
-  "Buscando anuncios (kelify · pisos.com)",
-  "Estimando alquiler y ROI",
+  "Importando anuncios del barrio (todos los portales activos)",
+  "Calculando alquiler y ROI por piso",
+  "Preparando ranking en tu zona",
 ] as const;
 
 export function ScanProgressOverlay({ activeStep = 1 }: { activeStep?: number }) {

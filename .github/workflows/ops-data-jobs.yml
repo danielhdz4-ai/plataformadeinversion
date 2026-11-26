@@ -1,0 +1,57 @@
+name: Ops data jobs
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+    inputs:
+      job:
+        description: dedup | purge | coverage | map-requests | census
+        required: true
+        default: coverage
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js
+      - name: Finalize stale scrape runs
+        if: github.event.inputs.job == 'coverage' || github.event_name == 'schedule'
+        run: node scripts/jobs/finalize-stale-scrape-runs.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Refresh coverage counts
+        if: github.event.inputs.job == 'coverage' || github.event_name == 'schedule'
+        run: node scripts/jobs/refresh-coverage-counts.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Dedup cross-portal
+        if: github.event.inputs.job == 'dedup'
+        run: node scripts/jobs/dedup-cross-portal.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Purge archived
+        if: github.event.inputs.job == 'purge'
+        run: node scripts/jobs/purge-archived-listings.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Fulfill map requests
+        if: github.event.inputs.job == 'map-requests'
+        run: npm install playwright && npx playwright install chromium --with-deps && node scripts/jobs/fulfill-map-requests.mjs
+        env:
+          MAX_LISTINGS: "80"
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: Import census seed (Barcelona piloto)
+        if: github.event.inputs.job == 'census'
+        run: node scripts/jobs/import-census-seed.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

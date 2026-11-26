@@ -1,3 +1,5 @@
+import { readResponseJson } from "./http-json.mjs";
+
 const API = "https://www.solvia.es/api";
 
 export async function fetchSolviaProvinces() {
@@ -5,7 +7,7 @@ export async function fetchSolviaProvinces() {
     headers: { Accept: "application/json", "User-Agent": "Mozilla/5.0 (compatible; PlataformaInversion/0.1)" },
   });
   if (!res.ok) throw new Error(`Solvia provincias HTTP ${res.status}`);
-  const data = await res.json();
+  const data = await readResponseJson(res, "Solvia provincias");
   return data.provincias ?? [];
 }
 
@@ -34,7 +36,7 @@ export async function searchSolviaProvince(provinceId, { page = 0, pageSize = 24
       },
       body: JSON.stringify(body),
     });
-    if (res.ok) return res.json();
+    if (res.ok) return readResponseJson(res, "Solvia buscar");
     const t = await res.text();
     lastErr = new Error(`Solvia buscar HTTP ${res.status}: ${t.slice(0, 200)}`);
     if (res.status >= 500) continue;

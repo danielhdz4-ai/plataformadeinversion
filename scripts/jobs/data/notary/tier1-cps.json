@@ -1,0 +1,13 @@
+{
+  "description": "CP representativos Tier 1 para sync notariado (JSON local o PENOTARIADO_FETCH)",
+  "postalCodes": [
+    "28001",
+    "08001",
+    "46001",
+    "41001",
+    "29001",
+    "48001",
+    "50001",
+    "30001"
+  ]
+}

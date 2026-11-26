@@ -12,7 +12,7 @@ const FEATURES = [
 export default function PremiumPage() {
   return (
     <AppScrollPage>
-      <div className="mx-auto max-w-lg space-y-6 py-8">
+      <div className="mx-auto max-w-lg space-y-6">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-neutral-500">Próximamente</p>
           <h1 className="mt-2 text-3xl font-bold text-neutral-950">Premium</h1>

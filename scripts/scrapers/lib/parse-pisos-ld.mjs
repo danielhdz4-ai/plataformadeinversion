@@ -82,9 +82,34 @@ export function parsePisosListingsFromHtml(
       thumbnail: extractThumb(j),
       bedrooms: j.numberOfRooms ?? j.numberOfBedrooms ?? null,
       bathrooms: j.numberOfBathroomsTotal ?? null,
+      propertyKind: propertyKindFromText(
+        `${j.name ?? ""} ${j.description ?? ""} ${j["@type"] ?? ""}`
+      ),
     });
   }
   return out;
+}
+
+/**
+ * Normaliza la tipología (B8) a snake_case para `listings.property_kind`.
+ * Sin esto el filtro residencial no puede excluir garajes, locales o naves.
+ */
+export function propertyKindFromText(text) {
+  const t = String(text ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  if (/garaje|parking|plaza de aparcamiento/.test(t)) return "garaje";
+  if (/trastero/.test(t)) return "trastero";
+  if (/local comercial|local industrial|\blocal\b/.test(t)) return "local";
+  if (/oficina/.test(t)) return "oficina";
+  if (/\bnave\b|nave industrial/.test(t)) return "nave";
+  if (/terreno|solar|parcela/.test(t)) return "terreno";
+  if (/atico|duplex|penthouse/.test(t)) return "atico";
+  if (/estudio|loft/.test(t)) return "estudio";
+  if (/casa|chalet|adosado|pareado|villa|unifamiliar/.test(t)) return "casa";
+  if (/piso|apartamento|vivienda/.test(t)) return "piso";
+  return null;
 }
 
 function decodeHtml(s) {
@@ -124,7 +149,14 @@ function extractThumb(j) {
   return null;
 }
 
-/** Ficha /comprar/ cuando falta precio en listado. */
+/** Extrae el CP (5 dígitos) del slug de la URL de pisos.com (`...covadonga_centre08202-...`). */
+export function postalCodeFromPisosUrl(sourceUrl) {
+  if (!sourceUrl) return null;
+  const m = String(sourceUrl).match(/(0[1-9]\d{3}|[1-4]\d{4}|5[0-2]\d{3})-\d{9,12}_\d+/);
+  return m ? m[1] : null;
+}
+
+/** Ficha pisos.com: precio, m², dormitorios y CP (funciona en /comprar/ y /alquilar/). */
 export async function fetchPisosDetailFields(sourceUrl) {
   const res = await fetch(sourceUrl, {
     headers: {
@@ -135,14 +167,36 @@ export async function fetchPisosDetailFields(sourceUrl) {
   });
   if (!res.ok) return null;
   const html = await res.text();
-  const euro = [...html.matchAll(/(\d{1,3}(?:\.\d{3})+)\s*€/g)]
+  return parsePisosDetailHtml(html);
+}
+
+/** Parseo puro de la ficha (testeable sin red). */
+export function parsePisosDetailHtml(html) {
+  // Precio: bloque destacado de la ficha (`2.295 €/mes` o `185.000 €`).
+  const heroM = html.match(/price__value[^>]*>\s*([\d.]+)\s*(?:&euro;|€)/i);
+  const euro = [...html.matchAll(/(\d{1,3}(?:\.\d{3})+)\s*(?:&euro;|€)/g)]
     .map((m) => parseSpanishEuroInt(m[1]))
     .filter((n) => n != null && n >= 15_000);
-  const price = euro.length ? Math.max(...euro) : null;
-  const sqmM = html.match(/(\d{2,3})\s*m²/i);
-  const sqm = sqmM ? Number(sqmM[1]) : null;
+  const heroPrice = heroM ? parseSpanishEuroInt(heroM[1]) : null;
+  const price = heroPrice ?? (euro.length ? Math.max(...euro) : null);
+
+  // Superficie: preferir "Superficie construida"; si no, primera m² razonable.
+  const builtM = html.match(/Superficie\s+construida[^0-9]{0,80}?(\d{2,4})\s*m/i);
+  const usefulM = html.match(/Superficie\s+(?:&#xFA;til|útil)[^0-9]{0,80}?(\d{2,4})\s*m/i);
+  const anyM = html.match(/(\d{2,4})\s*m(?:²|&#xB2;)/i);
+  const sqm = Number(builtM?.[1] ?? usefulM?.[1] ?? anyM?.[1] ?? NaN);
+
+  // Dormitorios: `Habitaciones: 3` o `3 habs.`
+  const roomsM =
+    html.match(/(?:Habitaciones|Dormitorios)\s*:\s*<\/span>\s*(?:<[^>]+>\s*)*(\d{1,2})/i) ??
+    html.match(/(\d{1,2})\s*habs?\./i);
+  const bedrooms = roomsM ? Number(roomsM[1]) : null;
+
+  const cpM = html.match(/\b(0[1-9]\d{3}|[1-4]\d{4}|5[0-2]\d{3})\b/);
   return {
     price,
     sqm: Number.isFinite(sqm) && sqm >= 15 && sqm <= 2000 ? sqm : null,
+    bedrooms: Number.isFinite(bedrooms) && bedrooms > 0 && bedrooms < 20 ? bedrooms : null,
+    postalCode: cpM ? cpM[1] : null,
   };
 }

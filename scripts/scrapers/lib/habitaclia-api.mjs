@@ -1,17 +1,13 @@
-import { chromium } from "playwright";
+import { HABITACLIA_SALE_ZONES } from "./habitaclia-zones.mjs";
+
+export { HABITACLIA_SALE_ZONES };
 
 const BASE = "https://www.habitaclia.com";
 
-export const HABITACLIA_SALE_ZONES = [
-  { path: "/comprar/viviendas/madrid-provincia/madrid-capital/s", name: "Madrid", ccaa: "Madrid", lat: 40.4168, lon: -3.7038 },
-  { path: "/comprar/viviendas/barcelona-provincia/barcelona-capital/s", name: "Barcelona", ccaa: "Cataluña", lat: 41.3874, lon: 2.1686 },
-  { path: "/comprar/viviendas/valencia-provincia/valencia-capital/s", name: "Valencia", ccaa: "Comunitat Valenciana", lat: 39.4699, lon: -0.3763 },
-  { path: "/comprar/viviendas/sevilla-provincia/sevilla-capital/s", name: "Sevilla", ccaa: "Andalucía", lat: 37.3891, lon: -5.9845 },
-  { path: "/comprar/viviendas/malaga-provincia/malaga-capital/s", name: "Málaga", ccaa: "Andalucía", lat: 36.7213, lon: -4.4214 },
-  { path: "/comprar/viviendas/vizcaya-provincia/bilbao/s", name: "Bilbao", ccaa: "País Vasco", lat: 43.263, lon: -2.935 },
-  { path: "/comprar/viviendas/zaragoza-provincia/zaragoza-capital/s", name: "Zaragoza", ccaa: "Aragón", lat: 41.6488, lon: -0.8891 },
-  { path: "/comprar/viviendas/alicante-provincia/alicante-alacant/s", name: "Alicante", ccaa: "Comunitat Valenciana", lat: 38.3452, lon: -0.481 },
-];
+async function chromium() {
+  const { chromium: pw } = await import("playwright");
+  return pw;
+}
 
 export function zoneFallbackGeo(zone) {
   if (zone.lat != null && zone.lon != null) return { lat: zone.lat, lon: zone.lon };
@@ -85,7 +81,8 @@ async function parseListPage(page, url) {
 export async function fetchHabitacliaListPage(zonePath, { pageNum = 1, browser: existing } = {}) {
   const url = zoneUrl(zonePath, pageNum);
   const ownBrowser = !existing;
-  const browser = existing ?? (await chromium.launch({ headless: true }));
+  const pw = await chromium();
+  const browser = existing ?? (await pw.launch({ headless: true }));
   const page = await browser.newPage();
   try {
     const listings = await parseListPage(page, url);
@@ -97,7 +94,8 @@ export async function fetchHabitacliaListPage(zonePath, { pageNum = 1, browser: 
 }
 
 export async function createHabitacliaBrowser() {
-  return chromium.launch({ headless: true });
+  const pw = await chromium();
+  return pw.launch({ headless: true });
 }
 
 export async function fetchHabitacliaWithBrowser(browser, zonePath, pageNum = 1) {

@@ -13,7 +13,28 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-export async function runHipogesSale() {
+function normalizeCp(v) {
+  const s = String(v ?? "").replace(/\D/g, "").slice(0, 5);
+  return s.length === 5 ? s : null;
+}
+
+function nearAnchor(lat, lon, anchor, maxKm) {
+  if (!anchor || lat == null || lon == null) return false;
+  const dLat = ((lat - anchor.lat) * Math.PI) / 180;
+  const dLng = ((lon - anchor.lng) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((anchor.lat * Math.PI) / 180) *
+      Math.cos((lat * Math.PI) / 180) *
+      Math.sin(dLng / 2) ** 2;
+  const km = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return km <= maxKm;
+}
+
+export async function runHipogesSale(options = {}) {
+  const postalCodeTarget = normalizeCp(options.postalCodeTarget);
+  const anchor = options.anchor ?? null;
+  const cpRadiusKm = Number(process.env.SCAN_CP_PORTAL_RADIUS_KM ?? "18");
   const supabase = getSupabase();
   const { data: run, error: runErr } = await supabase
     .from("scrape_runs")
@@ -22,15 +43,18 @@ export async function runHipogesSale() {
     .single();
   if (runErr) throw runErr;
 
-  const limit = maxListings();
+  const limit = postalCodeTarget
+    ? Number(process.env.SCAN_HIPOGES_CP_LIMIT ?? "120")
+    : maxListings();
   const pageSize = Number(process.env.HIPOGES_PAGE_SIZE ?? "40");
+  const maxPages = Number(options.maxPages ?? process.env.HIPOGES_MAX_PAGES ?? "40");
   let session = await createHipogesSession();
   let page = 1;
   let inserted = 0;
   let cards = 0;
 
   try {
-    while (inserted < limit) {
+    while (inserted < limit && page <= maxPages) {
       let data;
       try {
         data = await fetchHipogesListingPage(session, {
@@ -67,6 +91,7 @@ export async function runHipogesSale() {
           }
         }
         if (lon == null || lat == null) continue;
+        if (postalCodeTarget && !nearAnchor(lat, lon, anchor, cpRadiusKm)) continue;
 
         const payload = {
           source_portal: PORTAL,
@@ -84,6 +109,8 @@ export async function runHipogesSale() {
           status: "active",
           geocode_quality: geocodeQuality,
           scraped_at: new Date().toISOString(),
+          postal_code: postalCodeTarget ?? null,
+          last_seen_at: new Date().toISOString(),
         };
 
         if (dryRun()) {

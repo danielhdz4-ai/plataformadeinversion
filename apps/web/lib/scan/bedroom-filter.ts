@@ -59,6 +59,16 @@ export type ScanRunFilters = {
   sourcePortals?: string[];
   minRoiGross?: number;
   onlyWithRoi?: boolean;
+  /** medium = excluir low; high = solo high */
+  rentConfidenceMin?: "medium" | "high" | null;
+  /** Descuento mín. vs valoración orientativa (%) */
+  minDiscountPct?: number;
+  /** Score compuesto 0–100 (ver opportunity-metrics) */
+  minOpportunityScore?: number;
+  /** Tipos de vendedor (bank, agency, private, auction) */
+  sellerKinds?: import("@/lib/listing/seller-kind").SellerKind[];
+  /** Solo anuncios vistos/scrapeados en los últimos N días */
+  maxScrapedAgeDays?: number | null;
 };
 
 /** Aplica filtro dormitorios sobre query Supabase. */

@@ -1,0 +1,39 @@
+name: Scrape kelify tier1
+on:
+  schedule:
+    - cron: "0 7,19 * * *"
+  workflow_dispatch:
+
+jobs:
+  kelify:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        city:
+          - barcelona
+          - madrid
+          - valencia
+          - sevilla
+          - malaga
+          - bilbao
+          - zaragoza
+          - murcia
+          - castellon
+          - alicante
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js playwright
+      - run: npx playwright install chromium --with-deps
+      - run: node scripts/scrapers/kelify-sale-city.mjs
+        env:
+          CITY_SLUG: ${{ matrix.city }}
+          MAX_LISTINGS: "3000"
+          KELIFY_SCROLL_ROUNDS: "45"
+          KELIFY_EMAIL: ${{ secrets.KELIFY_EMAIL }}
+          KELIFY_PASSWORD: ${{ secrets.KELIFY_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

@@ -21,10 +21,17 @@ export const SCAN_PORTALS: { id: ScanPortalId; label: string }[] = [
 ];
 
 export function defaultPortalToggles(): Record<ScanPortalId, boolean> {
-  return Object.fromEntries(SCAN_PORTAL_IDS.map((id) => [id, true])) as Record<
-    ScanPortalId,
-    boolean
-  >;
+  const on = new Set<ScanPortalId>([
+    "fotocasa",
+    "pisos_com",
+    "kelify",
+    "hipoges",
+    "solvia",
+    "habitaclia",
+  ]);
+  return Object.fromEntries(
+    SCAN_PORTAL_IDS.map((id) => [id, on.has(id)])
+  ) as Record<ScanPortalId, boolean>;
 }
 
 export function selectedPortals(toggles: Record<string, boolean>): ScanPortalId[] {

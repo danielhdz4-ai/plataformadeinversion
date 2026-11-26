@@ -1,38 +1,53 @@
 /**
- * Push commits con .github/workflows (requiere GH_TOKEN scope workflow en danielhdz4-ai).
+ * Push con .github/workflows (requiere GH_TOKEN con scope `workflow`).
+ * Repo canónico: danielhdz4-ai/plataformadeinversion (override GITHUB_REPOSITORY).
  */
-import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import {
+  authenticatedRemoteUrl,
+  readGithubToken,
+  repoRoot,
+  resolveGithubRepo,
+} from "./lib/github-remote.mjs";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
-let token = process.env.GH_TOKEN;
+const token = readGithubToken();
 if (!token) {
-  const raw = readFileSync(join(root, ".env.local"), "utf8");
-  token = raw.match(/^GH_TOKEN=(.+)$/m)?.[1]?.trim();
-}
-if (!token) {
-  console.error("Missing GH_TOKEN");
+  console.error("Missing GH_TOKEN in .env.local");
   process.exit(1);
 }
 
-const res = await fetch("https://api.github.com/user", {
-  headers: { Authorization: `token ${token}`, "User-Agent": "pi-ops" },
-});
-const scopes = res.headers.get("x-oauth-scopes") ?? "";
+/** Scopes del PAT consultados contra la API antes de intentar el push. */
+async function oauthScopes(pat) {
+  const res = await fetch("https://api.github.com/user", {
+    headers: { Authorization: `Bearer ${pat}`, "User-Agent": "plataformadeinversion-ops" },
+  });
+  const header = res.headers.get("x-oauth-scopes") ?? "";
+  const login = (await res.json().catch(() => ({})))?.login ?? "?";
+  return { ok: res.ok, login, scopes: header.split(",").map((s) => s.trim()).filter(Boolean) };
+}
+
+const { ok, login, scopes } = await oauthScopes(token);
+if (!ok) {
+  console.error(JSON.stringify({ error: "GH_TOKEN inválido o sin permisos", scopes }));
+  process.exit(1);
+}
 if (!scopes.includes("workflow")) {
   console.error(
     JSON.stringify({
-      ok: false,
-      error: "GH_TOKEN needs workflow scope on danielhdz4-ai",
+      error: "GH_TOKEN needs workflow scope",
+      login,
       scopes,
-      fix: "GitHub Settings → Developer settings → PAT → enable workflow, update .env.local GH_TOKEN",
+      fix: `github.com/settings/tokens → añadir scope workflow al PAT de ${login}`,
     })
   );
   process.exit(1);
 }
 
-const remote = `https://x-access-token:${token}@github.com/danielhdz4-ai/plataformadeinversion.git`;
-const r = spawnSync("git", ["push", remote, "HEAD:main"], { cwd: root, stdio: "inherit" });
+const repo = resolveGithubRepo();
+console.log(`push HEAD -> main en ${repo} (cuenta ${login}, scopes ${scopes.join(",")})`);
+const r = spawnSync("git", ["push", authenticatedRemoteUrl(token, repo), "HEAD:main"], {
+  cwd: repoRoot,
+  stdio: "inherit",
+  shell: false,
+});
 process.exit(r.status ?? 1);

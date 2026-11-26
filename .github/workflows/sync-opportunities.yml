@@ -1,0 +1,31 @@
+name: Sync listing opportunities
+on:
+  schedule:
+    - cron: "15 3 * * *"
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Precompute ROI
+    types: [completed]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js
+      - name: Bootstrap notary from listings (proxy CP)
+        run: node scripts/jobs/bootstrap-notary-from-listings.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          NOTARY_BOOTSTRAP_MIN_CP: "6"
+      - run: node scripts/jobs/sync-listing-opportunities.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPPORTUNITY_CONCURRENCY: "16"
+          OPPORTUNITY_PAGE_SIZE: "250"

@@ -1,0 +1,26 @@
+name: Scrape pisos sale Barcelona
+on:
+  schedule:
+    - cron: "0 6,18 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "DRY_RUN=1"
+        required: false
+        default: "0"
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js
+      - run: node scripts/scrapers/pisos-sale-barcelona.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || '0' }}
+          MAX_LISTINGS: "40"

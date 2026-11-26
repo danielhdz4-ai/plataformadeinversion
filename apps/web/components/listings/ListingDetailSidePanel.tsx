@@ -2,14 +2,23 @@
 
 import { ListingAiAnalysisBlock } from "@/components/listings/ListingAiAnalysisBlock";
 import { ListingResumenPanel } from "@/components/listings/ListingResumenPanel";
-import { PriceTrendChart } from "@/components/listings/PriceTrendChart";
 import { NeighborhoodGauge } from "@/components/listings/NeighborhoodGauge";
+import { MetricCard, MetricSection } from "@/components/ui/MetricCard";
 import { RoomRentComparablesPanel } from "@/components/listings/RoomRentComparablesPanel";
 import { NotariadoPortalPanel } from "@/components/notariado/NotariadoPortalPanel";
 import { decodeListingTitle } from "@/lib/decode-html";
+import { cleanListingTitle } from "@/lib/listing/display-title";
+import { resolveListingSqm } from "@/lib/listing/resolve-sqm";
 import type { ListingSummary } from "@/lib/listing/summary-types";
 import { portalBadge } from "@/lib/portals";
 import { SaveListingButton } from "@/components/listings/SaveListingButton";
+import {
+  OpportunityScoreBadge,
+  SellerKindBadge,
+  ValuationSnippet,
+} from "@/components/listings/OpportunityBadges";
+import { PriceValuationSlider } from "@/components/listings/PriceValuationSlider";
+import { computeOpportunityMetrics } from "@/lib/listing/opportunity-metrics";
 import { listingDetailHref } from "@/lib/listing/return-navigation";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -18,6 +27,7 @@ import { useEffect, useMemo, useState } from "react";
 export type SidePanelListing = {
   id: string;
   title: string | null;
+  propertyKind?: string | null;
   price: number;
   city?: string | null;
   sourcePortal?: string | null;
@@ -45,19 +55,25 @@ export function ListingDetailSidePanel({
   listing,
   summary,
   summaryLoading,
+  detailLoading,
   onClose,
   onSummaryModeChange,
   summaryMode = "whole",
   preferRoomsTab = false,
+  showEmptyState = true,
 }: {
   listing: SidePanelListing | null;
   summary: ListingSummary | null;
   summaryLoading?: boolean;
+  /** Carga del resumen completo (notariado, INE, habitaciones). */
+  detailLoading?: boolean;
   onClose?: () => void;
   /** Al abrir «Habitaciones», pedir resumen con comparables de habitación. */
   onSummaryModeChange?: (mode: "whole" | "rooms") => void;
   summaryMode?: "whole" | "rooms";
   preferRoomsTab?: boolean;
+  /** En feed ancho: ocultar columna vacía hasta que haya selección. */
+  showEmptyState?: boolean;
 }) {
   const [tab, setTab] = useState<Tab>("resumen");
   const [fetched, setFetched] = useState<SidePanelListing | null>(null);
@@ -118,19 +134,20 @@ export function ListingDetailSidePanel({
 
   const resolved = fetched ?? listing;
   const tabClass = (active: boolean) =>
-    `shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium ${
-      active ? "bg-neutral-950 text-white" : "text-neutral-600 hover:bg-neutral-200/80"
+    `shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition ${
+      active ? "bg-lime text-lime-ink" : "text-ink-muted hover:bg-raised hover:text-ink"
     }`;
 
   const panelShell =
-    "flex min-h-0 shrink-0 flex-col border-l border-neutral-200 bg-white w-full max-w-md xl:w-[min(440px,36vw)] xl:max-w-none";
+    "flex min-h-0 shrink-0 flex-col border-l border-line bg-deep w-full max-w-md xl:h-full xl:w-[min(400px,32vw)] xl:max-w-none xl:overflow-hidden";
 
   if (!resolved) {
+    if (!showEmptyState) return null;
     return (
-      <aside className={`hidden xl:flex ${panelShell} bg-[#f7f6f3]`}>
+      <aside className={`hidden xl:flex ${panelShell}`}>
         <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
-          <p className="text-sm font-medium text-neutral-800">Detalle del inmueble</p>
-          <p className="mt-2 max-w-xs text-xs text-neutral-500">
+          <p className="text-sm font-semibold text-ink">Detalle del inmueble</p>
+          <p className="mt-2 max-w-xs text-xs text-ink-muted">
             Selecciona un piso en el mapa o en la lista para ver resumen, ROI, comparables y análisis.
           </p>
         </div>
@@ -139,22 +156,36 @@ export function ListingDetailSidePanel({
   }
 
   const portal = portalBadge(resolved.sourcePortal);
-  const title = decodeListingTitle(resolved.title ?? "Inmueble");
+  const title = cleanListingTitle(resolved.title ?? "Inmueble", resolved.propertyKind ?? null);
   const imgSrc = proxiedThumb(resolved.thumbnailUrl);
+  const effectiveSqm = resolveListingSqm(resolved.sqm, resolved.title);
   const specs = [
     resolved.bedrooms != null ? `${resolved.bedrooms} hab.` : null,
     resolved.bathrooms != null ? `${resolved.bathrooms} baños` : null,
-    resolved.sqm != null ? `${resolved.sqm} m²` : null,
+    effectiveSqm != null ? `${effectiveSqm} m²` : null,
   ]
     .filter(Boolean)
     .join(" · ");
   const displayRoi = summary?.roi.grossRoiPct ?? resolved.roi ?? null;
+  const opportunity =
+    summary?.opportunity ??
+    computeOpportunityMetrics(
+      {
+        price: resolved.price,
+        sqm: effectiveSqm,
+        roi: displayRoi,
+        sourcePortal: resolved.sourcePortal,
+        title: resolved.title,
+        sourceUrl: resolved.sourceUrl,
+      },
+      summary
+    );
 
   return (
     <aside
       className={`${panelShell} fixed inset-y-0 right-0 z-50 shadow-2xl xl:static xl:z-auto xl:shadow-none`}
     >
-      <div className="shrink-0 border-b border-neutral-200 bg-[#f7f6f3]">
+      <div className="shrink-0 border-b border-line bg-deep">
         {imgSrc && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={imgSrc} alt="" className="h-36 w-full object-cover" />
@@ -163,50 +194,68 @@ export function ListingDetailSidePanel({
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded bg-neutral-950 px-1.5 py-0.5 text-[9px] font-bold uppercase text-white">
+                <span className="rounded-full bg-ink px-2 py-0.5 text-[9px] font-bold uppercase text-void">
                   En venta
                 </span>
-                <span className="text-[10px] font-semibold uppercase text-neutral-500">{portal.name}</span>
+                <SellerKindBadge kind={opportunity.sellerKind} />
+                <OpportunityScoreBadge score={opportunity.opportunityScore} />
+                <span className="text-[10px] font-bold uppercase tracking-wide text-ink-muted">{portal.name}</span>
                 {resolved.rank != null && (
-                  <span className="text-[10px] text-neutral-500">#{resolved.rank} ranking</span>
+                  <span className="text-[10px] text-ink-muted">#{resolved.rank} ranking</span>
                 )}
               </div>
-              <h2 className="mt-1 line-clamp-2 text-sm font-semibold capitalize text-neutral-950">{title}</h2>
+              <h2 className="mt-1 line-clamp-2 text-sm font-bold capitalize text-ink">{title}</h2>
               {resolved.city && (
-                <p className="text-xs text-neutral-500">{decodeListingTitle(resolved.city)}</p>
+                <p className="text-xs text-ink-muted">{decodeListingTitle(resolved.city)}</p>
               )}
-              {specs && <p className="text-xs text-neutral-600">{specs}</p>}
+              {specs && <p className="text-xs text-ink-muted">{specs}</p>}
             </div>
             {onClose && (
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded p-1 text-neutral-500 hover:bg-neutral-200"
+                className="rounded-lg p-1 text-ink-muted transition hover:bg-raised hover:text-ink"
                 aria-label="Cerrar detalle"
               >
                 ×
               </button>
             )}
           </div>
-          <div className="mt-2 flex items-end justify-between gap-2">
-            <p className="text-xl font-bold tabular-nums text-neutral-950">
-              {resolved.price.toLocaleString("es-ES")} €
-            </p>
-            <div className="flex shrink-0 items-center gap-2">
-              <SaveListingButton listingId={resolved.id} compact />
-              {displayRoi != null && (
-                <span className="rounded-md bg-neutral-950 px-2 py-0.5 text-xs font-bold text-white tabular-nums">
-                  {displayRoi.toFixed(2)}% ROI
-                </span>
+          <div className="mt-2 space-y-2">
+            <ValuationSnippet
+              price={resolved.price}
+              valuationMid={opportunity.valuationMid}
+              discountPct={opportunity.discountPct}
+            />
+            <div className="flex items-end justify-between gap-2">
+              {opportunity.valuationMid == null && (
+                <p className="text-xl font-extrabold tabular-nums text-ink">
+                  {resolved.price.toLocaleString("es-ES")} €
+                </p>
               )}
+              <div className="ml-auto flex shrink-0 items-center gap-2">
+                <SaveListingButton listingId={resolved.id} compact />
+                {displayRoi != null && (
+                  <span className="rounded-full bg-lime px-2.5 py-1 text-xs font-bold tabular-nums text-lime-ink">
+                    {displayRoi.toFixed(2)} % ROI
+                  </span>
+                )}
+              </div>
             </div>
+            <PriceValuationSlider price={resolved.price} metrics={opportunity} />
           </div>
+          <Link
+            href={listingDetailHref(resolved.id, returnTo)}
+            className="mt-2 inline-block text-[11px] font-semibold text-lime hover:underline"
+          >
+            Ficha completa y calculadora →
+          </Link>
           {resolved.sourceUrl && (
             <a
               href={resolved.sourceUrl}
               target="_blank"
               rel="noreferrer"
-              className="mt-2 inline-block text-[11px] font-medium text-neutral-700 underline"
+              className="mt-2 inline-block text-[11px] font-medium text-ink-muted underline hover:text-ink"
             >
               Ver anuncio en {portal.name}
             </a>
@@ -225,8 +274,7 @@ export function ListingDetailSidePanel({
             }}
           >
             Habitaciones
-          </button>
-          <button type="button" className={tabClass(tab === "notariado")} onClick={() => setTab("notariado")}>
+          </button>          <button type="button" className={tabClass(tab === "notariado")} onClick={() => setTab("notariado")}>
             Notariado
           </button>
           <button type="button" className={tabClass(tab === "ia")} onClick={() => setTab("ia")}>
@@ -237,96 +285,114 @@ export function ListingDetailSidePanel({
           </button>
           <Link
             href={listingDetailHref(resolved.id, returnTo)}
-            className="shrink-0 rounded-md px-2.5 py-1 text-[11px] font-medium text-neutral-600 hover:bg-neutral-200/80"
+            className="shrink-0 rounded-lg px-2.5 py-1 text-[11px] font-semibold text-lime hover:bg-raised"
           >
             Ficha →
           </Link>
         </nav>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto bg-void">
         {tab === "resumen" && (
           <>
             {summaryLoading && !summary && (
-              <div className="animate-pulse space-y-3 p-4">
-                <div className="h-4 w-3/4 rounded bg-neutral-200" />
-                <div className="h-24 rounded bg-neutral-200" />
-                <div className="h-32 rounded bg-neutral-200" />
+              <div className="space-y-3 p-3">
+                <div className="shimmer h-4 w-3/4 rounded" />
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="shimmer h-20 rounded-xl" />
+                  <div className="shimmer h-20 rounded-xl" />
+                </div>
+                <div className="shimmer h-32 rounded-xl" />
               </div>
             )}
             {summary && (
-              <ListingResumenPanel summary={summary} listingId={resolved.id} embedded showAi={false} />
+              <div className="p-3">
+                <ListingResumenPanel summary={summary} listingId={resolved.id} embedded showAi={false} />
+              </div>
+            )}
+            {summaryLoading && summary && (
+              <p className="px-4 pt-2 text-[10px] text-ink-muted">Completando comparables y datos INE…</p>
             )}
             {!summaryLoading && !summary && (
-              <p className="p-4 text-xs text-neutral-500">No hay métricas de mercado para este anuncio.</p>
+              <p className="p-4 text-xs text-ink-muted">No hay métricas de mercado para este anuncio.</p>
             )}
           </>
         )}
         {tab === "habitaciones" && (
-          <div className="space-y-3 bg-[#faf9f7] p-3">
-            {(summaryLoading || summaryMode !== "rooms") && !summary?.roomRent && (
-              <div className="animate-pulse space-y-3">
-                <div className="h-24 rounded-lg bg-neutral-200" />
-                <div className="h-48 rounded-xl bg-neutral-800" />
+          <div className="space-y-3 p-3">
+            {(summaryLoading || detailLoading) && summaryMode === "rooms" && !summary?.roomRent && (
+              <div className="space-y-3">
+                <div className="shimmer h-24 rounded-2xl" />
+                <div className="shimmer h-32 rounded-2xl" />
               </div>
             )}
             {summary?.roomRent && summaryMode === "rooms" ? (
               <>
                 {summary.priceEvolution && (
-                  <section className="rounded-lg border border-neutral-200 bg-white p-2.5">
-                    <h4 className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-                      Evolución de precios — mercado local
-                    </h4>
-                    <div className="mt-2 grid gap-3">
-                      <div>
-                        <div className="mb-1 flex items-baseline justify-between gap-1">
-                          <span className="text-[11px] font-medium text-neutral-800">Venta €/m²</span>
-                          <span className="text-[11px] tabular-nums text-neutral-950">
-                            {summary.priceEvolution.saleM2.at(-1)?.y != null
-                              ? `${Math.round(summary.priceEvolution.saleM2.at(-1)!.y).toLocaleString("es-ES")} €`
-                              : "—"}
-                            <span className="ml-1 text-emerald-700">
-                              +{summary.priceEvolution.saleChangePct.toFixed(1)}%
-                            </span>
-                          </span>
-                        </div>
-                        <PriceTrendChart points={summary.priceEvolution.saleM2} />
-                      </div>
-                      <div>
-                        <div className="mb-1 flex items-baseline justify-between gap-1">
-                          <span className="text-[11px] font-medium text-neutral-800">Alquiler €/m²/mes</span>
-                          <span className="text-[11px] tabular-nums text-neutral-950">
-                            {summary.priceEvolution.rentM2.at(-1)?.y != null
-                              ? `${summary.priceEvolution.rentM2.at(-1)!.y.toFixed(1)} €`
-                              : "—"}
-                            <span className="ml-1 text-emerald-700">
-                              +{summary.priceEvolution.rentChangePct.toFixed(1)}%
-                            </span>
-                          </span>
-                        </div>
-                        <PriceTrendChart
-                          points={summary.priceEvolution.rentM2}
-                          stroke="#525252"
-                          fill="rgba(82,82,82,0.12)"
-                        />
-                      </div>
+                  <MetricSection title="Evolución · mercado local">
+                    <div className="grid gap-2 pb-1">
+                      <MetricCard
+                        label="Venta €/m²"
+                        value={
+                          summary.priceEvolution.saleM2.at(-1)?.y != null
+                            ? Math.round(summary.priceEvolution.saleM2.at(-1)!.y).toLocaleString("es-ES")
+                            : "—"
+                        }
+                        unit="€/m²"
+                        size="sm"
+                        delta={`${summary.priceEvolution.saleChangePct.toFixed(1)} %`}
+                        deltaTone={summary.priceEvolution.saleChangePct >= 0 ? "good" : "bad"}
+                        series={summary.priceEvolution.saleM2}
+                      />
+                      <MetricCard
+                        label="Alquiler €/m²"
+                        value={
+                          summary.priceEvolution.rentM2.at(-1)?.y != null
+                            ? summary.priceEvolution.rentM2.at(-1)!.y.toFixed(1)
+                            : "—"
+                        }
+                        unit="€/m²·mes"
+                        size="sm"
+                        delta={`${summary.priceEvolution.rentChangePct.toFixed(1)} %`}
+                        deltaTone={summary.priceEvolution.rentChangePct >= 0 ? "good" : "bad"}
+                        series={summary.priceEvolution.rentM2}
+                      />
                     </div>
-                  </section>
+                  </MetricSection>
                 )}
                 {summary.neighborhood.listingPriceM2 != null &&
                   summary.neighborhood.cpAvgPriceM2 != null && (
-                    <section className="rounded-lg border border-neutral-200 bg-white p-2.5">
-                      <h4 className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-                        Resumen del barrio (€/m²)
-                      </h4>
-                      <div className="mt-2">
-                        <NeighborhoodGauge
-                          listingM2={summary.neighborhood.listingPriceM2}
-                          cpAvgM2={summary.neighborhood.cpAvgPriceM2}
-                          vsPct={summary.neighborhood.vsCpPct}
+                    <MetricSection title="Posición en el barrio">
+                      <div className="grid grid-cols-2 gap-2 pb-2">
+                        <MetricCard
+                          label="Este inmueble"
+                          value={summary.neighborhood.listingPriceM2.toLocaleString("es-ES", {
+                            maximumFractionDigits: 0,
+                          })}
+                          unit="€/m²"
+                          size="sm"
+                          delta={
+                            summary.neighborhood.vsCpPct != null
+                              ? `${summary.neighborhood.vsCpPct > 0 ? "+" : ""}${summary.neighborhood.vsCpPct.toFixed(1)} %`
+                              : null
+                          }
+                          deltaTone={(summary.neighborhood.vsCpPct ?? 0) <= 0 ? "good" : "bad"}
+                        />
+                        <MetricCard
+                          label="Media del CP"
+                          value={summary.neighborhood.cpAvgPriceM2.toLocaleString("es-ES", {
+                            maximumFractionDigits: 0,
+                          })}
+                          unit="€/m²"
+                          size="sm"
                         />
                       </div>
-                    </section>
+                      <NeighborhoodGauge
+                        listingM2={summary.neighborhood.listingPriceM2}
+                        cpAvgM2={summary.neighborhood.cpAvgPriceM2}
+                        vsPct={summary.neighborhood.vsCpPct}
+                      />
+                    </MetricSection>
                   )}
                 <RoomRentComparablesPanel
                   comparables={summary.roomRent.comparables}
@@ -335,11 +401,13 @@ export function ListingDetailSidePanel({
                   bedrooms={summary.roomRent.bedrooms}
                 />
               </>
-            ) : summaryMode === "rooms" && !summaryLoading ? (
-              <p className="text-xs text-neutral-600">
+            ) : summaryMode === "rooms" && !summaryLoading && !detailLoading ? (
+              <p className="text-xs text-ink-muted">
                 No hay habitaciones en alquiler cerca de este inmueble. Prueba otra zona o espera al scrape de
                 alquileres.
               </p>
+            ) : summaryMode !== "rooms" ? (
+              <p className="text-xs text-ink-muted">Cargando comparables de habitación…</p>
             ) : null}
           </div>
         )}
@@ -389,3 +457,4 @@ export function ListingDetailSidePanel({
     </aside>
   );
 }
+

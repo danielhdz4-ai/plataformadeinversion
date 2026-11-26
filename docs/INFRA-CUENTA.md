@@ -24,7 +24,12 @@
 
 ## Vercel
 
-- Proyecto previsto: `plataformadeinversion` (o nombre del monorepo `apps/web`).
+- Proyecto: **`danielhdz5-ai/plataformadeinversion`**.
+- **Dominio de producción: `https://radarinversion.com`** (comprado en Namecheap el 26/11/2026, expira 26/11/2027).
+  - DNS: **nameservers → `ns1.vercel-dns.com` / `ns2.vercel-dns.com`** (Namecheap → Domain List → Manage → Nameservers → Custom DNS).
+  - Alternativa sin cambiar NS: `A @ 216.198.79.1`, `A @ 64.29.17.1`, `CNAME www → cname.vercel-dns.com`.
+  - Canónico sin `www`; `www` redirige a apex.
+  - `NEXT_PUBLIC_SITE_URL=https://radarinversion.com` (override opcional; el fallback del código ya usa el dominio).
 - Variables mínimas (cuando exista Next.js): ver `.env.example`.
 
 ## GitHub

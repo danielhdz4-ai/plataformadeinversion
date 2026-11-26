@@ -1,0 +1,30 @@
+name: Scrape postal code on demand
+
+on:
+  workflow_dispatch:
+    inputs:
+      postal_code:
+        description: "Código postal España (5 dígitos)"
+        required: true
+        type: string
+
+jobs:
+  scrape-cp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js
+      - name: Scrape CP
+        run: node scripts/ops/run-scrape-cp.mjs "${{ github.event.inputs.postal_code }}"
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SCRAPE_TARGET_PER_CP: "200"
+          SCRAPE_CP_BOOST_ROUNDS: "4"
+          SCRAPE_CP_FOTOCASA_PAGES: "20"
+          SCRAPE_CP_PISOS_PAGES: "14"
+          SCRAPE_CP_PISOS_MAX: "250"

@@ -28,6 +28,13 @@ export function normalizeScanFilters(raw: Record<string, unknown> | undefined): 
     sourcePortals: portals?.length ? portals : undefined,
     minRoiGross: f.minRoiGross != null ? Number(f.minRoiGross) : undefined,
     onlyWithRoi: f.onlyWithRoi === true,
+    minDiscountPct: f.minDiscountPct != null ? Number(f.minDiscountPct) : undefined,
+    minOpportunityScore: f.minOpportunityScore != null ? Number(f.minOpportunityScore) : undefined,
+    sellerKinds: Array.isArray(f.sellerKinds) ? (f.sellerKinds as ScanRunFilters["sellerKinds"]) : undefined,
+    maxScrapedAgeDays:
+      f.maxScrapedAgeDays != null && f.maxScrapedAgeDays !== ""
+        ? Number(f.maxScrapedAgeDays)
+        : undefined,
   };
 }
 
@@ -95,6 +102,31 @@ export function listingMatchesPortalFilter(
   return portal != null && allowed.includes(portal);
 }
 
+const CONF_RANK: Record<string, number> = { high: 3, medium: 2, low: 1 };
+
+export function listingMatchesRentConfidenceFilter(
+  confidence: string | null | undefined,
+  filters: ScanRunFilters
+): boolean {
+  const min = filters.rentConfidenceMin;
+  if (!min) return true;
+  const need = CONF_RANK[min] ?? 0;
+  const got = CONF_RANK[String(confidence ?? "").toLowerCase()] ?? 0;
+  if (filters.rentConfidenceMin === "medium") return got >= 2;
+  if (filters.rentConfidenceMin === "high") return got >= 3;
+  return true;
+}
+
+export function listingMatchesRoiFilter(
+  roi: number | null | undefined,
+  filters: ScanRunFilters
+): boolean {
+  const min = filters.minRoiGross ?? 0;
+  if (filters.onlyWithRoi && (roi == null || roi <= 0)) return false;
+  if (min > 0 && (roi == null || roi < min)) return false;
+  return true;
+}
+
 export function listingMatchesScanFilters(
   listing: {
     price?: number | null;
@@ -102,6 +134,10 @@ export function listingMatchesScanFilters(
     bathrooms?: number | null;
     sqm?: number | null;
     source_portal?: string | null;
+    roi?: number | null;
+    roi_gross?: number | null;
+    rent_confidence?: string | null;
+    rentConfidence?: string | null;
   },
   filters: ScanRunFilters
 ): boolean {
@@ -111,5 +147,16 @@ export function listingMatchesScanFilters(
   if (!listingMatchesBathroomFilter(listing.bathrooms, filters)) return false;
   if (!listingMatchesSqmFilter(listing.sqm, filters)) return false;
   if (!listingMatchesPortalFilter(listing.source_portal, filters)) return false;
+  const roi = listing.roi ?? listing.roi_gross ?? null;
+  if (!listingMatchesRoiFilter(roi, filters)) return false;
+  const conf = listing.rentConfidence ?? listing.rent_confidence ?? null;
+  if (!listingMatchesRentConfidenceFilter(conf, filters)) return false;
   return true;
+}
+
+export function filterListings<T extends Parameters<typeof listingMatchesScanFilters>[0]>(
+  rows: T[],
+  filters: ScanRunFilters
+): T[] {
+  return rows.filter((r) => listingMatchesScanFilters(r, filters));
 }

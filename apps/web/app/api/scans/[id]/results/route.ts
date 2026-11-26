@@ -12,6 +12,7 @@ import {
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getDbClient, requireAppUser } from "@/lib/supabase/request-client";
 import { NextResponse } from "next/server";
+import { publicDbError } from "@/lib/ops/db-api-errors";
 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
@@ -49,7 +50,12 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     .eq("scan_id", id)
     .order("rank");
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    return NextResponse.json(
+      { error: publicDbError("api/scans/results", error.message) },
+      { status: 500 }
+    );
+  }
 
   const rawResults = (data ?? []).map((row) => ({
     rank: row.rank,

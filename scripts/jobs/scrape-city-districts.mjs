@@ -46,7 +46,7 @@ console.log(`City districts ${citySlug} batch ${batchIdx}:`, zones.length, "zone
 
 results.fotocasa = await runFotocasaSale({
   citySlug: `${citySlug}-districts-${batchIdx}`,
-  zones: zones.map((z) => ({ slug: z.slug, name: z.name, ccaa: z.ccaa })),
+  zones: zones.map((z) => ({ slug: z.slug, name: z.name, ccaa: z.ccaa, lat: z.lat, lng: z.lng })),
 });
 
 for (const z of zones) {
@@ -57,11 +57,13 @@ for (const z of zones) {
   const seenIdealista = new Set();
 
   try {
-    const pisos = await runPisosSale(pisosCity, {
-      district,
-      maxListings: pisosPer,
-      maxPages: pisosPages,
-    });
+        const pisos = await runPisosSale(pisosCity, {
+          district,
+          maxListings: pisosPer,
+          maxPages: pisosPages,
+          fallbackLng: z.lng,
+          fallbackLat: z.lat,
+        });
     results.pisos.push({ district, ...pisos });
     if (pisos?.externalIds) for (const id of pisos.externalIds) seenPisos.add(String(id));
   } catch (e) {

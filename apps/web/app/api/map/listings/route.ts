@@ -1,4 +1,5 @@
-import { decodeListingTitle } from "@/lib/decode-html";
+import { cleanListingTitle } from "@/lib/listing/display-title";
+import { resolveListingSqm } from "@/lib/listing/resolve-sqm";
 import { resolveListingGrossRoiPct } from "@/lib/listing/gross-roi";
 import { resolveRentEstMonthly } from "@/lib/listing/rent-est";
 import { isResidentialPropertyKind } from "@/lib/listing/residential-kind";
@@ -14,7 +15,10 @@ import {
 } from "@/lib/map/load-bbox-listings";
 import { fetchListingRowsInChunks } from "@/lib/supabase/fetch-in-chunks";
 import { getDbClient, requireAppUser } from "@/lib/supabase/request-client";
+import { filterListings, parseMapListingFilterParams } from "@/lib/map/map-listing-filters";
+import { EXPLORAR_MIN_ZOOM_FOR_BBOX } from "@/lib/map/cp-zone-stock";
 import { NextRequest, NextResponse } from "next/server";
+import { publicDbError } from "@/lib/ops/db-api-errors";
 
 export async function GET(req: NextRequest) {
   const auth = await requireAppUser();
@@ -30,19 +34,43 @@ export async function GET(req: NextRequest) {
   const maxLng = Number(p.get("maxLng"));
   const maxLat = Number(p.get("maxLat"));
   const zoom = p.get("zoom") != null ? Number(p.get("zoom")) : null;
+  const cpHint = p.get("cp")?.trim();
   if ([minLng, minLat, maxLng, maxLat].some((n) => Number.isNaN(n))) {
     return NextResponse.json({ error: "Invalid bbox", code: "VALIDATION" }, { status: 400 });
   }
 
-  const { rows: loadedRows, error: loadError } = await loadMapListingsInBbox(supabase, {
-    minLng,
-    minLat,
-    maxLng,
-    maxLat,
-  });
+  if (!cpHint && zoom != null && zoom < EXPLORAR_MIN_ZOOM_FOR_BBOX) {
+    return NextResponse.json({
+      features: [],
+      hint: "importa_un_cp_o_acerca_el_mapa",
+      minZoom: EXPLORAR_MIN_ZOOM_FOR_BBOX,
+    });
+  }
+
+  const mapFiltersEarly = parseMapListingFilterParams(p);
+
+  const { rows: loadedRows, error: loadError } = await loadMapListingsInBbox(
+    supabase,
+    {
+      minLng,
+      minLat,
+      maxLng,
+      maxLat,
+    },
+    mapFiltersEarly ?
+      {
+        portals: mapFiltersEarly.sourcePortals,
+        priceMin: mapFiltersEarly.priceMin,
+        priceMax: mapFiltersEarly.priceMax,
+      }
+    : {}
+  );
 
   if (loadError) {
-    return NextResponse.json({ error: loadError, code: "DB" }, { status: 500 });
+    return NextResponse.json(
+      { error: publicDbError("api/map/listings", loadError), code: "DB" },
+      { status: 500 }
+    );
   }
 
   let rows = loadedRows;
@@ -63,6 +91,8 @@ export async function GET(req: NextRequest) {
     sqm: number | null;
     property_kind: string | null;
     scraped_at: string | null;
+    is_opportunity: boolean | null;
+    opportunity_score: number | null;
     listing_investment:
       | { rent_est: number | null; rent_confidence: string | null }
       | { rent_est: number | null; rent_confidence: string | null }[]
@@ -75,7 +105,7 @@ export async function GET(req: NextRequest) {
       meta = await fetchListingRowsInChunks<ListingMetaRow>(
         supabase,
         "listings",
-        "id, source_portal, title, source_url, city, thumbnail_url, bedrooms, bathrooms, sqm, property_kind, scraped_at, listing_investment(rent_est, rent_confidence)",
+        "id, source_portal, title, source_url, city, thumbnail_url, bedrooms, bathrooms, sqm, property_kind, scraped_at, is_opportunity, opportunity_score, listing_investment(rent_est, rent_confidence)",
         ids
       );
     } catch (e) {
@@ -115,6 +145,8 @@ export async function GET(req: NextRequest) {
     sqm: number | null;
     rentEst: number | null;
     scrapedAt: string | null;
+    isOpportunity: boolean;
+    opportunityScore: number | null;
   };
 
   const features: MapFeature[] = balancedRows.map(
@@ -139,20 +171,41 @@ export async function GET(req: NextRequest) {
         geocodeQuality: row.geocode_quality ?? null,
         rentConfidence,
         source: (m?.source_portal as string) ?? null,
-        title: decodeListingTitle(m?.title as string),
+        title: cleanListingTitle(m?.title as string, (m?.property_kind as string) ?? null),
         sourceUrl: (m?.source_url as string) ?? null,
         city: (m?.city as string) ?? null,
         thumbnailUrl: (m?.thumbnail_url as string) ?? null,
         bedrooms: (m?.bedrooms as number) ?? null,
         bathrooms: (m?.bathrooms as number) ?? null,
-        sqm: (m?.sqm as number) ?? null,
+        sqm: resolveListingSqm(
+          (m?.sqm as number) ?? null,
+          (m?.title as string) ?? null
+        ),
         rentEst: rent ?? null,
         scrapedAt: (m?.scraped_at as string) ?? null,
+        isOpportunity: Boolean(m?.is_opportunity),
+        opportunityScore:
+          m?.opportunity_score != null ? Number(m.opportunity_score) : null,
       };
     }
   );
 
-  const interleaved = interleaveByPortal(features, (f) => f.source);
+  let interleaved = interleaveByPortal(features, (f) => f.source);
 
-  return NextResponse.json({ features: interleaved });
+  const mapFilters = mapFiltersEarly;
+  if (mapFilters) {
+    interleaved = filterListings(
+      interleaved.map((f) => ({
+        ...f,
+        source_portal: f.source,
+        rentConfidence: f.rentConfidence,
+      })),
+      mapFilters
+    );
+  }
+
+  return NextResponse.json({
+    features: interleaved,
+    totalBeforeFilter: mapFilters ? features.length : undefined,
+  });
 }

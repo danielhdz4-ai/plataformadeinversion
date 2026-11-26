@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
+import { publicDbError } from "@/lib/ops/db-api-errors";
 
 /** Estado operativo de scrapes (B4) — lectura pública mínima. */
 export async function GET() {
@@ -11,7 +12,10 @@ export async function GET() {
     .limit(20);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: publicDbError("api/scrape-status", error.message) },
+      { status: 500 }
+    );
   }
 
   const { data: coverage } = await admin

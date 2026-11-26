@@ -1,0 +1,38 @@
+name: Scrape Hipoges and Solvia Spain
+on:
+  schedule:
+    - cron: "0 1,7,13,19 * * *"
+  workflow_dispatch:
+    inputs:
+      max_listings:
+        description: MAX_LISTINGS total (both portals)
+        default: "1500"
+      hipoges_only:
+        description: Run only Hipoges (1=yes)
+        default: "0"
+      solvia_only:
+        description: Run only Solvia (1=yes)
+        default: "0"
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js
+      - name: Bank portals Spain
+        run: node scripts/jobs/scrape-bank-portals-spain.mjs
+        env:
+          MAX_LISTINGS: ${{ github.event.inputs.max_listings || '1500' }}
+          HIPOGES_ONLY: ${{ github.event.inputs.hipoges_only || '0' }}
+          SOLVIA_ONLY: ${{ github.event.inputs.solvia_only || '0' }}
+          HIPOGES_PAGE_SIZE: "40"
+          SOLVIA_PAGE_SIZE: "24"
+          SOLVIA_MAX_PAGES: "24"
+          PAUSE_MS: "700"
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

@@ -4,6 +4,7 @@ import { fetchOfficialMarketForPostal } from "@/lib/listing/official-market-quer
 import { fetchNotaryForListing } from "@/lib/notariado/resolve-notary";
 import { getDbClient } from "@/lib/supabase/request-client";
 import { NextResponse } from "next/server";
+import { publicDbError } from "@/lib/ops/db-api-errors";
 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
@@ -20,7 +21,12 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     .eq("id", id)
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 404 });
+  if (error) {
+    return NextResponse.json(
+      { error: publicDbError("api/listings/id", error.message, { userMessage: "No encontramos esta vivienda." }) },
+      { status: 404 }
+    );
+  }
 
   const inv = Array.isArray(data.listing_investment)
     ? data.listing_investment[0]

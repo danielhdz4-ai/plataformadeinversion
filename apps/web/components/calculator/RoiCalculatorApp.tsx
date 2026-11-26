@@ -22,16 +22,22 @@ const MODES: { id: CalculatorMode; label: string }[] = [
   { id: "flip", label: "Flipping" },
 ];
 
-export function RoiCalculatorApp() {
+export function RoiCalculatorApp({
+  initialPurchasePrice,
+  initialMonthlyRent,
+}: {
+  initialPurchasePrice?: number;
+  initialMonthlyRent?: number;
+} = {}) {
   const printRef = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<CalculatorMode>("buy_to_rent");
 
-  const [purchasePrice, setPurchasePrice] = useState(230_000);
+  const [purchasePrice, setPurchasePrice] = useState(initialPurchasePrice ?? 230_000);
   const [itpPct, setItpPct] = useState(10);
   const [ajdPct, setAjdPct] = useState(0);
   const [renovation, setRenovation] = useState(0);
 
-  const [monthlyRent, setMonthlyRent] = useState(900);
+  const [monthlyRent, setMonthlyRent] = useState(initialMonthlyRent ?? 900);
   const [occupancyPct, setOccupancyPct] = useState(100);
 
   const [pricePerNight, setPricePerNight] = useState(100);
@@ -155,16 +161,16 @@ export function RoiCalculatorApp() {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-[#f7f6f3]">
-      <div className="flex shrink-0 items-center justify-between border-b border-neutral-200 bg-white px-4 py-3 md:px-6">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-void">
+      <div className="flex shrink-0 items-center justify-between border-b border-line bg-deep px-4 py-3 md:px-6">
         <div>
-          <h1 className="text-lg font-semibold text-neutral-950">Calculadora ROI</h1>
-          <p className="text-xs text-neutral-500">Financiación, cash flow y patrimonio — España</p>
+          <h1 className="text-lg font-extrabold tracking-tight text-ink">Calculadora ROI</h1>
+          <p className="text-xs text-ink-muted">Financiación, cash flow y patrimonio — España</p>
         </div>
         <button
           type="button"
           onClick={downloadPdf}
-          className="rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium print:hidden"
+          className="rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-ink transition hover:border-lime/50 hover:text-lime print:hidden"
         >
           Descargar PDF
         </button>
@@ -175,7 +181,7 @@ export function RoiCalculatorApp() {
         id="roi-calculator-print"
         className="grid min-h-0 flex-1 grid-cols-1 gap-0 overflow-hidden lg:grid-cols-2"
       >
-        <div className="min-h-0 overflow-y-auto border-r border-neutral-200 bg-white p-4 md:p-6">
+        <div className="min-h-0 overflow-y-auto border-r border-line bg-deep p-4 md:p-6">
           <CalcSection title="Modo de calculadora">
             <div className="flex flex-wrap gap-2">
               {MODES.map((m) => (
@@ -183,17 +189,63 @@ export function RoiCalculatorApp() {
                   key={m.id}
                   type="button"
                   onClick={() => setMode(m.id)}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-medium ${
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
                     mode === m.id
-                      ? "border-neutral-950 bg-neutral-950 text-white"
-                      : "border-neutral-300 text-neutral-800"
+                      ? "bg-lime text-lime-ink"
+                      : "border border-line text-ink-muted hover:border-lime/40 hover:text-ink"
                   }`}
                 >
                   {m.label}
                 </button>
               ))}
             </div>
-            <p className="text-sm text-neutral-600">País: España · Moneda: EUR (€)</p>
+            <p className="text-xs text-ink-muted">País: España · Moneda: EUR (€)</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="rounded-full border border-line px-3 py-1 text-[11px] font-semibold text-ink-muted hover:border-lime/40 hover:text-ink"
+                onClick={() => {
+                  setPurchasePrice(180_000);
+                  setMonthlyRent(850);
+                  setItpPct(10);
+                  setDownPaymentPct(20);
+                  setMortgageRatePct(2.2);
+                }}
+              >
+                Alquiler clásico ~180 k€
+              </button>
+              <button
+                type="button"
+                className="rounded-full border border-line px-3 py-1 text-[11px] font-semibold text-ink-muted hover:border-lime/40 hover:text-ink"
+                onClick={() => {
+                  setPurchasePrice(320_000);
+                  setMonthlyRent(1_350);
+                  setItpPct(10);
+                  setDownPaymentPct(25);
+                }}
+              >
+                Ciudad ~320 k€
+              </button>
+              <button
+                type="button"
+                className="rounded-full border border-line px-3 py-1 text-[11px] font-semibold text-ink-muted hover:border-lime/40 hover:text-ink"
+                onClick={() => {
+                  setMode("airbnb");
+                  setPurchasePrice(240_000);
+                  setPricePerNight(95);
+                  setOccupancyPct(72);
+                  setFurnishing(12_000);
+                }}
+              >
+                Airbnb costa
+              </button>
+              <a
+                href="/app/explorar?pmax=200000&roi=5&sort=roi_desc"
+                className="rounded-full bg-lime px-3 py-1 text-[11px] font-bold text-lime-ink"
+              >
+                Explorar ≤200 k · ROI 5%+
+              </a>
+            </div>
           </CalcSection>
 
           <CalcSection title="Precio de la propiedad">
@@ -211,27 +263,27 @@ export function RoiCalculatorApp() {
           {mode !== "flip" && (
             <CalcSection title="Impuestos de compra">
               <div className="grid gap-3 sm:grid-cols-2">
-                <label className="text-xs text-neutral-600">
+                <label className="text-xs text-ink-muted">
                   ITP (%)
                   <input
                     type="number"
                     step={0.1}
                     value={itpPct}
                     onChange={(e) => setItpPct(Number(e.target.value))}
-                    className="mt-1 w-full rounded border px-2 py-1.5 text-sm"
+                    className="mt-1 w-full px-2.5 py-1.5 text-sm"
                   />
-                  <span className="text-neutral-500">= {fmtEuro(itpAmount)} €</span>
+                  <span className="text-ink-muted">= {fmtEuro(itpAmount)} €</span>
                 </label>
-                <label className="text-xs text-neutral-600">
+                <label className="text-xs text-ink-muted">
                   AJD (%)
                   <input
                     type="number"
                     step={0.1}
                     value={ajdPct}
                     onChange={(e) => setAjdPct(Number(e.target.value))}
-                    className="mt-1 w-full rounded border px-2 py-1.5 text-sm"
+                    className="mt-1 w-full px-2.5 py-1.5 text-sm"
                   />
-                  <span className="text-neutral-500">= {fmtEuro(ajdAmount)} €</span>
+                  <span className="text-ink-muted">= {fmtEuro(ajdAmount)} €</span>
                 </label>
               </div>
               <RangeField label="ITP" value={itpPct} min={0} max={15} step={0.1} suffix="%" onChange={setItpPct} />
@@ -268,9 +320,9 @@ export function RoiCalculatorApp() {
             <CalcSection title="Alquiler turístico">
               <RangeField label="Precio por noche" value={pricePerNight} min={30} max={600} step={5} suffix="€" onChange={setPricePerNight} />
               <RangeField label="Ocupación" value={occupancyPct} min={10} max={90} step={1} suffix="%" onChange={setOccupancyPct} />
-              <label className="block text-xs text-neutral-600">
+              <label className="block text-xs text-ink-muted">
                 Estancia media (noches)
-                <input type="number" value={avgStayNights} onChange={(e) => setAvgStayNights(Number(e.target.value))} className="mt-1 w-full rounded border px-2 py-1.5 text-sm" />
+                <input type="number" value={avgStayNights} onChange={(e) => setAvgStayNights(Number(e.target.value))} className="mt-1 w-full px-2.5 py-1.5 text-sm" />
               </label>
               <RangeField label="Limpieza por estancia" value={cleaningPerStay} min={0} max={150} step={5} suffix="€" onChange={setCleaningPerStay} />
               <RangeField label="Comisión plataforma" value={platformCommissionPct} min={0} max={25} step={1} suffix="%" onChange={setPlatformCommissionPct} />
@@ -284,7 +336,7 @@ export function RoiCalculatorApp() {
             <CalcSection title="Reforma y venta">
               <RangeField label="Tamaño" value={sqm} min={20} max={500} step={5} suffix=" m²" onChange={setSqm} />
               <RangeField label="Coste reforma / m²" value={renovationCostPerSqm} min={0} max={3000} step={50} suffix="€" onChange={setRenovationCostPerSqm} />
-              <p className="text-xs text-neutral-500">= {fmtEuro(sqm * renovationCostPerSqm)} € reforma</p>
+              <p className="text-xs text-ink-muted">= {fmtEuro(sqm * renovationCostPerSqm)} € reforma</p>
               <RangeField label="Costes transacción" value={transactionCostsPct} min={0} max={20} step={0.5} suffix="%" onChange={setTransactionCostsPct} />
               <RangeField label="Precio venta esperado" value={expectedSalePrice} min={0} max={5_000_000} step={5000} suffix="€" onChange={setExpectedSalePrice} />
             </CalcSection>
@@ -299,19 +351,19 @@ export function RoiCalculatorApp() {
               <CalcSection title="Apalancamiento">
                 <label className="flex items-center justify-between rounded-lg border p-3 text-sm">
                   Usar hipoteca
-                  <input type="checkbox" checked={leverage} onChange={(e) => setLeverage(e.target.checked)} className="h-4 w-4 accent-neutral-950" />
+                  <input type="checkbox" checked={leverage} onChange={(e) => setLeverage(e.target.checked)} className="h-4 w-4 accent-[var(--t-lime)]" />
                 </label>
                 {!leverage && (
-                  <p className="text-xs text-neutral-500">ROI sobre efectivo (entrada + impuestos).</p>
+                  <p className="text-xs text-ink-muted">ROI sobre efectivo (entrada + impuestos).</p>
                 )}
                 <RangeField label="Entrada (%)" value={downPaymentPct} min={10} max={90} step={1} suffix="%" onChange={setDownPaymentPct} />
-                <label className="text-xs text-neutral-600">
+                <label className="text-xs text-ink-muted">
                   Entrada (€)
                   <input
                     type="number"
                     value={Math.round(downPaymentEuro)}
                     onChange={(e) => setDownFromEuro(Number(e.target.value))}
-                    className="mt-1 w-full rounded border px-2 py-1.5 text-sm"
+                    className="mt-1 w-full px-2.5 py-1.5 text-sm"
                   />
                 </label>
                 <RangeField label="Plazo hipoteca" value={mortgageYears} min={5} max={40} step={1} suffix=" años" onChange={setMortgageYears} />
@@ -321,7 +373,7 @@ export function RoiCalculatorApp() {
               <CalcSection title="Impuestos anuales (IBI)">
                 <RangeField label="IBI (% valor catastral)" value={ibiRatePct} min={0} max={2} step={0.01} suffix="%" onChange={setIbiRatePct} />
                 <RangeField label="% valor catastral vs precio" value={cadastralValuePct} min={20} max={100} step={5} suffix="%" onChange={setCadastralValuePct} />
-                <p className="text-[11px] text-neutral-500">
+                <p className="text-[11px] text-ink-muted">
                   El IBI grava el valor catastral (suele ser inferior al de mercado). Titular a 1 de enero.
                 </p>
               </CalcSection>
@@ -333,8 +385,8 @@ export function RoiCalculatorApp() {
           )}
         </div>
 
-        <div className="min-h-0 overflow-y-auto p-4 md:p-6 print:bg-white">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-neutral-500">Resultados</h2>
+        <div className="min-h-0 overflow-y-auto p-4 md:p-6">
+          <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.14em] text-ink-muted">Resultados</h2>
 
           {flipResult && (
             <div className="space-y-4">
@@ -350,7 +402,7 @@ export function RoiCalculatorApp() {
               <ResultCard accent="green" title="Precio venta esperado" headline={`${fmtEuro(flipResult.expectedSalePrice)} €`}>
                 <Line label="Beneficio" value={`+${fmtEuro(flipResult.profit)} €`} tone="pos" />
               </ResultCard>
-              <p className="rounded-xl border border-neutral-200 bg-white p-4 text-sm text-neutral-600">
+              <p className="rounded-xl border border-line bg-surface p-4 text-sm text-ink-muted">
                 Fórmula: (precio venta − inversión total) / inversión total ={" "}
                 <strong>{flipResult.flipRoiPct.toFixed(2)} %</strong>
               </p>
@@ -447,7 +499,7 @@ export function RoiCalculatorApp() {
             </div>
           )}
 
-          <p className="mt-6 text-[10px] leading-relaxed text-neutral-500 print:text-neutral-700">
+          <p className="mt-6 text-[10px] leading-relaxed text-ink-muted/70">
             Estimaciones orientativas según los parámetros introducidos. Los rendimientos reales dependen del
             mercado, vacancia, fiscalidad personal y condiciones de financiación. Consulta con asesores
             financieros e inmobiliarios antes de invertir.
@@ -457,3 +509,5 @@ export function RoiCalculatorApp() {
     </div>
   );
 }
+
+

@@ -1,6 +1,7 @@
 import { portalFromNotaryRaw } from "@/lib/notariado/normalize-portal";
 import { getDbClient } from "@/lib/supabase/request-client";
 import { NextResponse } from "next/server";
+import { publicDbError } from "@/lib/ops/db-api-errors";
 
 export async function GET(_req: Request, ctx: { params: Promise<{ postalCode: string }> }) {
   const { postalCode } = await ctx.params;
@@ -17,7 +18,12 @@ export async function GET(_req: Request, ctx: { params: Promise<{ postalCode: st
     .limit(1)
     .maybeSingle();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    return NextResponse.json(
+      { error: publicDbError("api/notary", error.message, { userMessage: "No se pudieron cargar los datos notariales." }) },
+      { status: 500 }
+    );
+  }
   if (!data) {
     return NextResponse.json({ error: "Sin datos notariales para este CP" }, { status: 404 });
   }

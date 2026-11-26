@@ -2,6 +2,7 @@ import { analyzeListingWithGemini, type ListingContextForAi } from "@/lib/ai/ana
 import type { ListingAiAnalysisResponse } from "@/lib/ai/listing-analysis-types";
 import { listingAiAnalysisSchema } from "@/lib/ai/listing-analysis-types";
 import { serverAllowsAiAnalysis } from "@/lib/platform/features";
+import { publicDbError } from "@/lib/ops/db-api-errors";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAppUser } from "@/lib/supabase/request-client";
 import { NextResponse } from "next/server";
@@ -170,6 +171,13 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Error IA";
     const status = msg.includes("GEMINI_API_KEY") ? 503 : 502;
-    return NextResponse.json({ error: msg }, { status });
+    return NextResponse.json(
+      {
+        error: publicDbError("api/ai-analysis", msg, {
+          userMessage: "El análisis asistido no está disponible ahora mismo. Prueba más tarde.",
+        }),
+      },
+      { status }
+    );
   }
 }

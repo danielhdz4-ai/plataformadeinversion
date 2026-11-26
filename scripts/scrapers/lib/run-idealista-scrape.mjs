@@ -2,6 +2,7 @@ import { chromium } from "playwright";
 import { dryRun, getSupabase, maxListings } from "./env.mjs";
 import { geocodeSpain } from "./geocode-es.mjs";
 import { idealistaListUrl } from "./idealista-urls.mjs";
+import { nearAnchor, normalizeCp } from "./cp-utils.mjs";
 
 const PORTAL = "idealista";
 
@@ -21,6 +22,9 @@ function parseEuro(text) {
  * @param {{ citySlug: string, districtSlug: string, zoneName?: string, ccaa?: string }} zone
  */
 export async function runIdealistaDistrictSale(zone) {
+  const postalCodeTarget = normalizeCp(zone.postalCodeTarget);
+  const cpAnchor = zone.anchor ?? null;
+  const cpRadiusKm = Number(process.env.SCAN_CP_PORTAL_RADIUS_KM ?? "18");
   const supabase = getSupabase();
   const runKey = `${zone.citySlug}/${zone.districtSlug}`;
   const { data: run, error: runErr } = await supabase
@@ -118,6 +122,10 @@ export async function runIdealistaDistrictSale(zone) {
         lat = geo.lat;
       }
       if (lon == null || lat == null) continue;
+      const anchorPt = cpAnchor
+        ? { lat: cpAnchor.lat, lng: cpAnchor.lng ?? cpAnchor.lon }
+        : null;
+      if (postalCodeTarget && !nearAnchor(lat, lon, anchorPt, cpRadiusKm)) continue;
 
       const payload = {
         source_portal: PORTAL,
@@ -131,6 +139,8 @@ export async function runIdealistaDistrictSale(zone) {
         status: "active",
         geocode_quality: 5,
         scraped_at: new Date().toISOString(),
+        postal_code: postalCodeTarget ?? null,
+        last_seen_at: new Date().toISOString(),
       };
 
       if (dryRun()) {

@@ -34,3 +34,24 @@ export function polygonCenterAndRadiusKm(polygon) {
   }
   return { lat, lng, radiusKm: maxKm };
 }
+
+/** Punto dentro de anillo GeoJSON (lng, lat). */
+export function pointInRing(lng, lat, ring) {
+  if (!ring?.length) return false;
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const xi = ring[i][0];
+    const yi = ring[i][1];
+    const xj = ring[j][0];
+    const yj = ring[j][1];
+    const intersect =
+      yi > lat !== yj > lat && lng < ((xj - xi) * (lat - yi)) / (yj - yi + 0.0) + xi;
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+export function pointInPolygon(lng, lat, polygon) {
+  const ring = polygon?.coordinates?.[0];
+  return pointInRing(lng, lat, ring);
+}

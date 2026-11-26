@@ -23,17 +23,25 @@ export function allPrefetchZones() {
     murcia: "murcia-capital",
   };
 
-  const fixTier1Slug = (readJson("spain-locations.json").tier1 ?? []).map((c) => ({
+  const catalog = readJson("spain-locations.json");
+  const toCityZone = (c, tier) => ({
     slug: fotocasaCitySlug[c.slug] ?? c.slug,
     name: c.name,
     ccaa: c.ccaa,
     pisosDistrict: null,
     pisosCitySlug: c.pisosSlug,
+    pisosSkip: Boolean(c.pisosSkip),
     citySlug: c.slug,
     kind: "city",
+    tier,
     lat: c.center?.[1] ?? (c.bbox ? (c.bbox[1] + c.bbox[3]) / 2 : null),
     lng: c.center?.[0] ?? (c.bbox ? (c.bbox[0] + c.bbox[2]) / 2 : null),
-  }));
+  });
 
-  return [...allDistrictZonesFromCatalogs(), ...fixTier1Slug];
+  const cities = [
+    ...(catalog.tier1 ?? []).map((c) => toCityZone(c, 1)),
+    ...(catalog.tier2 ?? []).map((c) => toCityZone(c, 2)),
+  ];
+
+  return [...allDistrictZonesFromCatalogs(), ...cities];
 }
